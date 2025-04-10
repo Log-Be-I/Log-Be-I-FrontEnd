@@ -1,6 +1,8 @@
 import { useRouter } from "expo-router";
 import { FlatList, Pressable, Text, View } from "react-native";
 import ScheduleItem from "@/constants/ScheduleItem";
+import Header from "../common/Header";
+
 
 const ScheduleList = () => {
   const router = useRouter();
