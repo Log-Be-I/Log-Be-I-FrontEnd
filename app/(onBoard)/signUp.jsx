@@ -1,42 +1,57 @@
 import { View, StyleSheet, Text } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TextComponent from "../../components/onBoard/text";
 import Button from "../../components/onBoard/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LogBeIText from '../../assets/images/logBeIText.svg';
+import BirthIcon from '../../assets/images/birthDay.svg';
+import BackgroundSVG from '../../assets/images/loginPageBackground.svg';
 
 export default function SignUp() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const params = useLocalSearchParams();
+  // const [name, setName] = useState("");
+  // const [email, setEmail] = useState("");
   const [birth, setBirth] = useState("");
+  const [nickname, setNickname] = useState("");
+
+  useEffect(() => {
+    if (params.name) setName(params.name);
+    if (params.email) setEmail(params.email);
+  }, [params]);
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.background} />
+      <BackgroundSVG style={styles.background} width='100%' height='100%'  preserveAspectRatio='none'/>
       <View style={styles.contentContainer}>
         <View>
-          <LogBeIText width={100} height={40} style={styles.logo} />
+          <LogBeIText width={160} height={80} style={styles.logo} />
           <Text style={styles.title}>Register</Text>
           
           <View style={styles.inputContainer}>
             <TextComponent
-              value={name}
               handleValue={(e) => setName(e)}
-              icon="person"
-              placeholder="홍길동"
+              iconName="person"
+              placeholder={params.name}
+              editable={false}
             />
             <TextComponent
-              value={email}
               handleValue={(e) => setEmail(e)}
-              icon="mail"
-              placeholder="gildonghong@gmail.com"
+              iconName="mail"
+              placeholder={params.email}
+              editable={false}
+            />
+            <TextComponent
+              value={nickname}
+              handleValue={(e) => setNickname(e)}
+              iconName="person-outline"
+              placeholder="닉네임을 입력하세요"
             />
             <TextComponent
               value={birth}
               handleValue={(e) => setBirth(e)}
-              icon="calendar"
+              iconComponent={<BirthIcon width={20} height={20}/>}
               placeholder="1999-12-21"
             />
           </View>
@@ -44,7 +59,9 @@ export default function SignUp() {
 
         <Button 
           text="Register" 
-          onPress={() => router.push("/(tabs)")}
+          size="large"
+          onPress={() => router.push("/(tabs)")
+          }
         />
       </View>
     </SafeAreaView>
@@ -61,10 +78,8 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: '60%',
-    backgroundColor: '#E8F1FF',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    bottom: 0,
+    zIndex: -1,
   },
   contentContainer: {
     flex: 1,
@@ -85,3 +100,10 @@ const styles = StyleSheet.create({
     gap: 20,
   },
 });
+
+  {/* <DateTimePicker
+    isVisible={isDateTimePickerOpen}
+    mode="date"
+    onCancel={() => setIsDateTimePickerOpen(false)}
+  /> */}
+

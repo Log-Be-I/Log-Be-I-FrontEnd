@@ -1,25 +1,56 @@
-import { Pressable, Text, StyleSheet } from "react-native";
+import { Pressable, Text, StyleSheet, View } from "react-native";
 
-export default function Button({ text, onPress }) {
+export default function Button({ text, onPress, size = 'medium' }) {
     return (
-        <Pressable style={styles.button} onPress={onPress}>
-            <Text style={styles.buttonText}>{text}</Text>
+        <Pressable style={styles.buttonOuter} onPress={onPress}>
+            <View style={[styles.buttonInner, sizeStyle[size]]}>
+                <Text style={styles.buttonText}>{text}</Text>
+            </View>
         </Pressable>
     );
 }
 
 const styles = StyleSheet.create({
-    button: {
-        backgroundColor: '#2D64E6',
-        width: '100%',
-        padding: 15,
-        borderRadius: 25,
-        alignItems: 'center',
-        marginTop: 20,
+    buttonOuter: {
+      alignSelf: 'center',
+      borderRadius: 50,
+      padding: 2,
+      backgroundColor: '#f0f4ff', // 바깥 테두리 느낌
+      shadowColor: '#B7BFFF',
+      shadowOffset: {
+        width: 0,
+        height: 8,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 10,
+      elevation: 6,
+    },
+    buttonInner: {
+      backgroundColor: '#fff',
+      borderRadius: 50,
+      borderWidth: 1,
+      borderColor: '#E0E9FF',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     buttonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
+      color: '#69BAFF',
+      fontWeight: '600',
+      fontSize: 16,
     },
-}); 
+  });
+
+const sizeStyle = {
+    small: {
+        paddingVertical: 10,
+        paddingHorizontal: 32,
+    },
+    medium: {
+        paddingVertical: 12,
+        paddingHorizontal: 48,
+    },
+    large: {
+        paddingVertical: 14,
+        paddingHorizontal: 64,
+    },
+};
