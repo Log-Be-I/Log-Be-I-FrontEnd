@@ -28,6 +28,7 @@ export default function SignUp() {
         <View>
           <LogBeIText width={160} height={80} style={styles.logo} />
           <Text style={styles.title}>Register</Text>
+          <View style={styles.shortLine} />
           
           <View style={styles.inputContainer}>
             <TextComponent
@@ -87,14 +88,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   logo: {
-    marginTop: 40,
-    marginBottom: 20,
+    alignSelf: 'center',
+    marginTop: 100,
   },
   title: {
     fontSize: 24,
     fontWeight: '600',
     color: '#2D64E6',
-    marginBottom: 30,
+    marginBottom: 8,
+  },
+  shortLine: {
+    width: 40,
+    height: 3,
+    backgroundColor: '#1170DF',
+    marginBottom: 16,
   },
   inputContainer: {
     gap: 20,
