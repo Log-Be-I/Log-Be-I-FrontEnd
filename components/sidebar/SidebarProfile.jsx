@@ -1,6 +1,6 @@
 // components/sidebar/SidebarProfile.jsx
 import { View, StyleSheet, Text, Image } from 'react-native';
-import ProfileIcon from '../../assets/sidebar/sidebarProfile/aegilogiSidebar.svg';
+//import ProfileIcon from '../../assets/sidebar/sidebarProfile/aegilogiSidebar.svg';
 import EmailIcon from '../../assets/sidebar/sidebarProfile/caseIcon.svg';
 import pencilIcon from '../../assets/sidebar/sidebarProfile/pencil.svg';
 
@@ -10,7 +10,7 @@ export default function SidebarProfile() {
       <View style={styles.profileCard}>
         <View style={styles.profileBorderCircle}>
           <View style={styles.profileInnerCircle}>
-              <ProfileIcon width={44} height={44} />
+              
           </View>
         </View>
         <View style={styles.profileInfo}>
