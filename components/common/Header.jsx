@@ -4,6 +4,11 @@ import LogBeIText from '../../assets/images/logBeIText.svg'; // 로고 SVG
 import MenuIcon from '../../assets/images/menuIconHeader.svg'; // 메뉴 SVG
 
 export default function Header({ onMenuPress }) {
+
+  // const onMenuPress = () => {
+  //   console.log('onMenuPress');
+  // };
+
   return (
     <View style={styles.headerContainer}>
       <View style={styles.logoContainer}>

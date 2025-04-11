@@ -8,7 +8,7 @@ export default function Footer({ currentTab, onTabPress }) {
     <View style={styles.container}>
       <View style={styles.background} />
       <View style={styles.content}>
-        <FooterItem name="home" active={currentTab === 'home'} onPress={() => onTabPress('home')} />
+        <FooterItem name="index" active={currentTab === 'index'} onPress={() => onTabPress('index')} />
         <FooterItem name="daily" active={currentTab === 'daily'} onPress={() => onTabPress('daily')} />
         <FooterItem name="record" active={currentTab === 'record'} onPress={() => onTabPress('record')} isCenter />
         <FooterItem name="calendar" active={currentTab === 'calendar'} onPress={() => onTabPress('calendar')} />

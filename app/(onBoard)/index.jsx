@@ -46,7 +46,7 @@ export default function Login() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <BackgroundSVG style={styles.background} width='100%' height='100%' preserveAspectRatio='none'/>
+            <BackgroundSVG style={styles.background}/>
             <View style={styles.contentContainer}>
                 <LogBeIText width={160} height={80} style={styles.logo}/>
                 <View style={styles.loginContainer}>

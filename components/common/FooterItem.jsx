@@ -11,7 +11,7 @@ import SettingsIcon from '../../assets/footerIcon/settingsIcon.svg';
 export default function FooterItem({ name, active, onPress, isCenter }) {
   // 이름에 따라 SVG 아이콘 선택
   const IconComponent = {
-    home: HomeIcon,
+    index: HomeIcon,
     daily: DailyIcon,
     record: RecordIcon,
     calendar: CalendarIcon,
