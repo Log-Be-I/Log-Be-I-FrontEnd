@@ -1,12 +1,45 @@
-import { Image, TextInput, View } from "react-native"
+import { Image, TextInput, View, StyleSheet } from "react-native"
+import Icon from 'react-native-vector-icons/Ionicons';
 
-const TextComponent = ({value, handleValue, icon, placeholder}) => {
+const TextComponent = ({iconComponent, iconName, value, handleValue, icon, placeholder, editable}) => {
     return (
-      <View style={{backgroundColor: '#FFFFFF', flexDirection: "row"}}>
-        <Image source={{uri: icon}} width={15} height={10} />
-        <TextInput value={value} onChangeText={handleValue} placeholder={placeholder}/>
+      <View style={styles.inputWrapper}>
+        {iconComponent ? ( 
+          <View style={styles.icon}>{iconComponent}</View>
+        ) : iconName ? (
+          <Icon name={iconName} size={20} color="#999" style={styles.icon}/>
+        ) : null}
+        <TextInput 
+        value={value} 
+        onChangeText={handleValue} 
+        placeholder={placeholder}
+        placeholderTextColor="#aaa"
+        style={styles.input}
+        editable={editable}
+        />
       </View>
     );
 }
+
+const styles = StyleSheet.create({
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  icon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    fontSize: 14,
+    color: '#333',
+  },
+});
 
 export default TextComponent;
