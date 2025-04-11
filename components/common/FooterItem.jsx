@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     height: 14,
     backgroundColor: 'white',
     transform: [{ rotate: '45deg' }],
-    borderRadius: 5,
+    borderRadius: 3,
     top: -6,
   },
 });

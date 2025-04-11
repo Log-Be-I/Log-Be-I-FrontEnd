@@ -1,25 +1,57 @@
-// components/common/Header.jsx
-import { View, Pressable, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { View, Pressable, StyleSheet, Modal, BackHandler } from 'react-native';
 import LogBeIText from '../../assets/images/logBeIText.svg'; // 로고 SVG
 import MenuIcon from '../../assets/images/menuIconHeader.svg'; // 메뉴 SVG
+import Sidebar from '../sidebar/Sidebar';
 
-export default function Header({ onMenuPress }) {
+export default function Header() {
+  // const navigation = useNavigation(); //뒤로가기용
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // const onMenuPress = () => {
-  //   console.log('onMenuPress');
-  // };
+  const openSidebar = () => {
+    setIsSidebarOpen(true);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
+    // // 📱 Android 백버튼으로 사이드바 닫기
+    // useEffect(() => {
+    //   const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+    //     if (isSidebarOpen) {
+    //       closeSidebar();
+    //       return true; // 이벤트 소비
+    //     }
+    //     return false; // 기본 동작 (앱 종료 등)
+    //   });
+  
+    //   return () => backHandler.remove(); // cleanup
+    // }, [isSidebarOpen]);
 
   return (
-    <View style={styles.headerContainer}>
-      <View style={styles.logoContainer}>
-        <LogBeIText width={88} height={45} />
+    <>
+      <View style={styles.headerContainer}>
+        <View style={styles.logoContainer}>
+          <LogBeIText width={88} height={45} />
+        </View>
+
+        {/* 오른쪽 메뉴 아이콘 (누르면 onMenuPress 실행) */}
+        <Pressable onPress={openSidebar} style={styles.menuIconContainer}>
+          <MenuIcon width={21} height={16} />
+        </Pressable>
       </View>
 
-      {/* 오른쪽 메뉴 아이콘 (누르면 onMenuPress 실행) */}
-      <Pressable onPress={onMenuPress} style={styles.menuIconContainer}>
-        <MenuIcon width={21} height={16} />
-      </Pressable>
-    </View>
+      <Modal
+      visible={isSidebarOpen}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={closeSidebar} // Android back 대응
+    >
+      <Sidebar closeSidebar={closeSidebar} />
+    </Modal>
+  </>
+    
   );
 }
 
