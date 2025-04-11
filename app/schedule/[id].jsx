@@ -13,7 +13,7 @@ export default function ScheduleDetail() {
     <SafeAreaView style={{ flex: 1 }}>
       <Header />
       <Text>{id}</Text>
-        <Footer currentTab='home' onTabPress={(tabName) => console.log('선택된 탭:',tabName)} />
+        <Footer currentTab='index' onTabPress={(tabName) => console.log('선택된 탭:',tabName)} />
     </SafeAreaView>
   );
 }
