@@ -42,12 +42,12 @@ const styles = StyleSheet.create({
 
 const sizeStyle = {
     small: {
-        paddingVertical: 10,
-        paddingHorizontal: 32,
+        paddingVertical: 5,
+        paddingHorizontal: 16,
     },
     medium: {
-        paddingVertical: 12,
-        paddingHorizontal: 48,
+        paddingVertical: 6,
+        paddingHorizontal: 24,
     },
     large: {
         paddingVertical: 14,
