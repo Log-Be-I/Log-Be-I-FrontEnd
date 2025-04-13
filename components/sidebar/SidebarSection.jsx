@@ -1,59 +1,52 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import SidebarMenuItem from './SidebarMenuItem';
 
-export default function SidebarSection({ title, items }) {
+export default function SidebarSection({ title, items, onItemPress, activeItemId }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>{title}</Text>
-      <View style={styles.content}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.menuItemsContainer}>
         {items.map((item, index) => (
-          <Pressable 
-            key={index} 
-            style={[
-              styles.item,
-              index === items.length - 1 && styles.lastItem
-            ]}
-            onPress={() => {/* 각 항목 클릭 처리 */}}
-          >
-            <Text style={styles.icon}>{item.icon}</Text>
-            <Text style={styles.label}>{item.label}</Text>
-          </Pressable>
+          <SidebarMenuItem
+            key={item.id}
+            icon={item.icon}
+            label={item.label}
+            onPress={() => onItemPress?.(item.id)}
+            isActive={activeItemId === item.id}
+            isLast={index === items.length - 1}
+          />
         ))}
       </View>
+      <View style={styles.divider} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: 16,
+    marginBottom: 24,
+    position: 'relative',
   },
-  title: {
-    fontSize: 16,
+  sectionTitle: {
+    fontSize: 15,
     fontWeight: '600',
-    color: '#1170DF',
-    marginBottom: 8,
+    color: '#0057FF',
+    marginBottom: 12,
+    paddingLeft: 4,
   },
-  content: {
-    backgroundColor: '#F5F9FF',
-    borderRadius: 12,
+  menuItemsContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  lastItem: {
-    borderBottomWidth: 0,
-  },
-  icon: {
-    fontSize: 16,
-    marginRight: 12,
-  },
-  label: {
-    fontSize: 14,
-    color: '#333',
+  divider: {
+    position: 'absolute',
+    bottom: -12,
+    left: '5%',
+    right: '5%',
+    height: 1,
+    backgroundColor: 'rgba(105, 186, 255, 0.2)',
   },
 }); 

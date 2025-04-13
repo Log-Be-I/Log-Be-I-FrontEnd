@@ -1,23 +1,40 @@
-// components/sidebar/SidebarProfile.jsx
-import { View, StyleSheet, Text, Image } from 'react-native';
-//import ProfileIcon from '../../assets/sidebar/sidebarProfile/aegilogiSidebar.svg';
-import EmailIcon from '../../assets/sidebar/sidebarProfile/caseIcon.svg';
-import pencilIcon from '../../assets/sidebar/sidebarProfile/pencil.svg';
+import { View, StyleSheet, Text, Pressable } from "react-native";
+import { useRouter } from "expo-router";
+import { useUserStore } from "../../store/useUserStore";
+import ProfileIcon from "../../assets/sidebar/sidebarProfile/aegiRogiProfile.svg";
+import MyProfile from "../../assets/sidebar/sidebarProfile/myProfile.svg";
 
 export default function SidebarProfile() {
+  const { nickname } = useUserStore();
+  const router = useRouter();
+
+  const handleProfilePress = () => {
+    router.push("/profile/memberInfo");
+  };
+
   return (
     <View style={styles.profileContainer}>
-      <View style={styles.profileCard}>
-        <View style={styles.profileBorderCircle}>
-          <View style={styles.profileInnerCircle}>
-              
-          </View>
-        </View>
-        <View style={styles.profileInfo}>
-          <Text style={styles.username}>aegiRogi</Text>
-          <View style={styles.emailContainer}>
-            <EmailIcon width={16} height={16} />
-            <Text style={styles.email}>aegirogi@gmail.com</Text>
+      <View style={styles.profileCardOuter}>
+        <View style={styles.profileCardBorder}>
+          <View style={styles.profileCardInner}>
+            <View style={styles.profileOuterCircle}>
+              <View style={styles.profileInnerCircle}>
+                <ProfileIcon width={40} height={40} />
+              </View>
+            </View>
+
+            <View style={styles.profileInfo}>
+              <View style={styles.usernameRow}>
+                <Text style={styles.username}>{nickname}</Text>
+              </View>
+            </View>
+
+            <Pressable
+              onPress={handleProfilePress}
+              style={styles.pencilButtonContainer}
+            >
+              <MyProfile width={16} height={16} />
+            </Pressable>
           </View>
         </View>
       </View>
@@ -27,52 +44,63 @@ export default function SidebarProfile() {
 
 const styles = StyleSheet.create({
   profileContainer: {
-    width: '100%',
+    width: "100%",
     paddingHorizontal: 16,
     marginBottom: 16,
   },
-  profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: '#F5F9FF',
-    borderWidth: 1.5,
-    borderColor: '#A4C6FF',
-    width: '100%',
+  profileCardOuter: {
+    borderRadius: 16,
+    padding: 1.5,
+    backgroundColor: "#A4C6FF",
   },
-  profileBorderCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#A4C6FF', // 바깥 원 색상 (하늘색)
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+  profileCardBorder: {
+    borderRadius: 15,
+    padding: 1.5,
+    backgroundColor: "#FFFFFF",
+  },
+  profileCardInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 14,
+    backgroundColor: "#ffffff",
+  },
+  profileOuterCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "#A4C6FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
   },
   profileInnerCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#fff', // 안쪽 흰 배경
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
   },
   profileInfo: {
     flex: 1,
   },
+  usernameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   username: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontWeight: "600",
+    color: "#032B77",
+    marginRight: 8,
   },
-  emailContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  email: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 4,
+  pencilButtonContainer: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    padding: 4,
+    zIndex: 1,
   },
 });

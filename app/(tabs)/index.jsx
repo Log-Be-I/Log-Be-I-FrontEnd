@@ -1,15 +1,22 @@
-import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
-import ScheduleList from "@/components/schedule/scheduleList";
-import { FlatList, Pressable, Text, View } from "react-native";
-import ScheduleItem from "@/constants/ScheduleItem";
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import Text from "../../components/common/Text";
+import Weather from "../../components/home/weather";
+import MainScheduleList from "../../components/home/MainScheduleList";
 
 export default function HomeScreen() {
-  const router = useRouter();
-
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScheduleList />
-    </SafeAreaView>
+    <View style={styles.container}>
+      <Weather />
+      <MainScheduleList />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#fff",
+  },
+});
