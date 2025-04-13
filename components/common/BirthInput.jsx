@@ -1,24 +1,21 @@
 // components/BirthInput.jsx
 import { View, Pressable, Text, Platform, StyleSheet } from "react-native";
-import DateTimePicker from "react-native-date-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import BirthIcon from "../../assets/images/birthDay.svg";
 
 export default function BirthInput({ value, setValue, placeholder = "YYYY-MM-DD" }) {
   const [showPicker, setShowPicker] = useState(false);
 
-  const formatDate = (date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+  const onChange = (event, selectedDate) => {
+    setShowPicker(Platform.OS === "ios"); // iOS는 계속 보여야 함
+    if (selectedDate) {
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedDate.getDate()).padStart(2, "0");
+      setValue(`${year}-${month}-${day}`);
+    }
   };
-
-  const getValidDate = (value) => {
-    const date = new Date(value);
-    return isNaN(date.getTime()) ? new Date() : date;
-  };
-
 
   return (
     <View>
@@ -31,21 +28,15 @@ export default function BirthInput({ value, setValue, placeholder = "YYYY-MM-DD"
         </Text>
       </Pressable>
 
-      {Platform.OS === 'android' || Platform.OS === 'ios' ? (
+      {showPicker && (
         <DateTimePicker
-          modal
-          open={showPicker}
+          value={value ? new Date(value) : new Date()}
           mode="date"
-          locale="ko"
+          display="spinner"
           maximumDate={new Date()}
-          date={getValidDate(value)}
-          onConfirm={(date) => {
-            setValue(formatDate(date));
-            setShowPicker(false);
-          }}
-          onCancel={() => setShowPicker(false)}
+          onChange={onChange}
         />
-      ) : (<Text>생일선택은 실제 앱에서 가능합니다.</Text>)}
+      )}
     </View>
   );
 }

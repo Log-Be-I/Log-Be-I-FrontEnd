@@ -5,10 +5,10 @@ import TextComponent from "../../components/onBoard/text";
 import Button from "../../components/common/button";
 import { useState, useEffect } from "react";
 import LogBeIText from "../../assets/images/logBeIText.svg";
-import BirthIcon from "../../assets/images/birthDay.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
-import LocationIcon from '../../assets/sidebar/sidebarProfile/locationIcon.svg';
 import BirthInput from "../../components/common/BirthInput";
+import { RegionDropdown } from "../../components/common/RegionDropdown";
+import { postMember } from "../../api/member/memberApi";
 
 export default function SignUp() {
   const router = useRouter();
@@ -18,6 +18,28 @@ export default function SignUp() {
   const [birth, setBirth] = useState("");
   const [nickname, setNickname] = useState("");
   const [region, setRegion] = useState("");
+
+  const handleRegister = async () => {
+    try {
+      const token = await postMember({
+        email: params.email,
+        name: params.name,
+        nickname,
+        birth,
+        region,
+      });
+
+      if (token) {
+        console.log("회원 등록 성공");
+        router.push("/(tabs)");
+      } else {
+        console.error("회원 등록 실패");
+      }
+    } catch (error) {
+      console.error("회원 등록 오류", error);
+    }
+  };
+
 
   useEffect(() => {
     if (params.name) setName(params.name);
@@ -57,10 +79,7 @@ export default function SignUp() {
               setValue={setBirth}
               placeholder="1999-12-21"
             />
-            <TextComponent
-              value={region}
-              handleValue={(e) => setRegion(e)}
-              iconComponent={<LocationIcon width={20} height={20} />}
+            <RegionDropdown
               placeholder="서울특별시"
             />
           </View>
@@ -69,7 +88,7 @@ export default function SignUp() {
         <Button
           text="Register"
           size="large"
-          onPress={() => router.push("/(tabs)")}
+          onPress={() => /*handleRegister()*/ router.push("/(tabs)")}
         />
       </View>
     </SafeAreaView>
@@ -96,7 +115,8 @@ const styles = StyleSheet.create({
   },
   logo: {
     alignSelf: "center",
-    marginTop: 100,
+    marginTop: 40,
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
