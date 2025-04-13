@@ -8,6 +8,7 @@ import EmailIcon from '../assets/sidebar/sidebarProfile/caseIcon.svg';
 import LocationIcon from '../assets/sidebar/sidebarProfile/locationIcon.svg';
 import BirthIcon from '../assets/images/birthDay.svg';
 import PencilIcon from '../assets/sidebar/sidebarProfile/pencil.svg';
+import UserIcon from '../assets/sidebar/sidebarProfile/userIcon.svg';
 
 export default function MemberInfo() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function MemberInfo() {
 
             <TextComponent
               value= "기록기" /*{name}*/
-              iconName="person"
+              iconComponent={<UserIcon width={20} height={20}/>}
               editable={false}
               textColor="#032B77"
             />

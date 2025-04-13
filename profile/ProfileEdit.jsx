@@ -9,6 +9,7 @@ import ProfileIcon from '../assets/sidebar/sidebarProfile/aegiRogiProfile.svg';
 import CameraIcon from '../assets/sidebar/sidebarProfile/cameraIcon.svg';
 import EmailIcon from '../assets/sidebar/sidebarProfile/caseIcon.svg';
 import BirthIcon from '../assets/images/birthDay.svg';
+import UserIcon from '../assets/sidebar/sidebarProfile/userIcon.svg';
 import { patchMemberInfo } from '../api/member/memberApi';
 
 export default function ProfileEdit() {
@@ -94,7 +95,7 @@ export default function ProfileEdit() {
               />
               <TextComponent
                 value="기록기" /*{name}*/
-                iconName="person"
+                iconComponent={<UserIcon width={20} height={20}/>}
                 editable={false}
                 textColor="#032B77"
               />
