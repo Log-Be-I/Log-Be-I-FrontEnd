@@ -15,6 +15,7 @@ export default function SignUp() {
   // const [email, setEmail] = useState("");
   const [birth, setBirth] = useState("");
   const [nickname, setNickname] = useState("");
+  const [region, setRegion] = useState("");
 
   useEffect(() => {
     if (params.name) setName(params.name);
@@ -54,6 +55,12 @@ export default function SignUp() {
               handleValue={(e) => setBirth(e)}
               iconComponent={<BirthIcon width={20} height={20} />}
               placeholder="1999-12-21"
+            />
+            <TextComponent
+              value={region}
+              handleValue={(e) => setRegion(e)}
+              iconName="pin-outline"
+              placeholder="서울특별시"
             />
           </View>
         </View>
