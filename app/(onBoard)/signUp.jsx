@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import LogBeIText from "../../assets/images/logBeIText.svg";
 import BirthIcon from "../../assets/images/birthDay.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
+import LocationIcon from '../../assets/sidebar/sidebarProfile/locationIcon.svg';
+import BirthInput from "../../components/common/BirthInput";
 
 export default function SignUp() {
   const router = useRouter();
@@ -50,16 +52,15 @@ export default function SignUp() {
               iconName="person-outline"
               placeholder="닉네임을 입력하세요"
             />
-            <TextComponent
+            <BirthInput
               value={birth}
-              handleValue={(e) => setBirth(e)}
-              iconComponent={<BirthIcon width={20} height={20} />}
+              setValue={setBirth}
               placeholder="1999-12-21"
             />
             <TextComponent
               value={region}
               handleValue={(e) => setRegion(e)}
-              iconName="pin-outline"
+              iconComponent={<LocationIcon width={20} height={20} />}
               placeholder="서울특별시"
             />
           </View>
