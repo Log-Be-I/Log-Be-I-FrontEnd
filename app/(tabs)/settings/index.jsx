@@ -1,14 +1,13 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import Text from "../../components/common/Text";
-import Weather from "../../components/home/weather";
-import MainScheduleList from "../../components/home/MainScheduleList";
+import Text from "../../../components/common/Text";
 
-export default function HomeScreen() {
+export default function SettingsScreen() {
   return (
     <View style={styles.container}>
-      <Weather />
-      <MainScheduleList />
+      <Text variant="bold" size={24} color="#333">
+        설정
+      </Text>
     </View>
   );
 }

@@ -2,11 +2,11 @@ import { View, StyleSheet, Text } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TextComponent from "../../components/onBoard/text";
-import Button from "../../components/onBoard/button";
+import Button from "../../components/common/button";
 import { useState, useEffect } from "react";
-import LogBeIText from '../../assets/images/logBeIText.svg';
-import BirthIcon from '../../assets/images/birthDay.svg';
-import BackgroundSVG from '../../assets/images/loginPageBackground.svg';
+import LogBeIText from "../../assets/images/logBeIText.svg";
+import BirthIcon from "../../assets/images/birthDay.svg";
+import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
 
 export default function SignUp() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function SignUp() {
           <LogBeIText width={160} height={80} style={styles.logo} />
           <Text style={styles.title}>Register</Text>
           <View style={styles.shortLine} />
-          
+
           <View style={styles.inputContainer}>
             <TextComponent
               handleValue={(e) => setName(e)}
@@ -52,17 +52,16 @@ export default function SignUp() {
             <TextComponent
               value={birth}
               handleValue={(e) => setBirth(e)}
-              iconComponent={<BirthIcon width={20} height={20}/>}
+              iconComponent={<BirthIcon width={20} height={20} />}
               placeholder="1999-12-21"
             />
           </View>
         </View>
 
-        <Button 
-          text="Register" 
+        <Button
+          text="Register"
           size="large"
-          onPress={() => router.push("/(tabs)")
-          }
+          onPress={() => router.push("/(tabs)")}
         />
       </View>
     </SafeAreaView>
@@ -72,10 +71,10 @@ export default function SignUp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   background: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -85,22 +84,22 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     padding: 20,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   logo: {
-    alignSelf: 'center',
+    alignSelf: "center",
     marginTop: 100,
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
-    color: '#2D64E6',
+    fontWeight: "600",
+    color: "#2D64E6",
     marginBottom: 8,
   },
   shortLine: {
     width: 40,
     height: 3,
-    backgroundColor: '#1170DF',
+    backgroundColor: "#1170DF",
     marginBottom: 16,
   },
   inputContainer: {
@@ -108,9 +107,10 @@ const styles = StyleSheet.create({
   },
 });
 
-  {/* <DateTimePicker
+{
+  /* <DateTimePicker
     isVisible={isDateTimePickerOpen}
     mode="date"
     onCancel={() => setIsDateTimePickerOpen(false)}
-  /> */}
-
+  /> */
+}
