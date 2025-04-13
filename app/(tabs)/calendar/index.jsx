@@ -1,13 +1,12 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import Text from "../../../components/common/Text";
+import MyCalendar from "../../../components/calendar/MyCalendar";
+import AddSchedule from "../../../components/calendar/AddSchedule";
 
 export default function CalendarScreen() {
   return (
     <View style={styles.container}>
-      <Text variant="bold" size={24} color="#333">
-        캘린더
-      </Text>
+      <AddSchedule />
     </View>
   );
 }
