@@ -60,15 +60,3 @@ export const deleteSchedule = async (scheduleId) => {
     throw error;
   }
 };
-
-
-    if (!response.ok) {
-      throw new Error('일정 삭제에 실패했습니다.');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('일정 삭제 중 오류 발생:', error);
-    throw error;
-  }
-}; 
