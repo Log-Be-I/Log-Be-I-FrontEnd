@@ -10,11 +10,12 @@ WebBrowser.maybeCompleteAuthSession(); // 구글 로그인 완료 후 리다이�
 
 const useAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
       user: null,
       isLoading: false,
       error: null,
+      isHydrated: false,
 
       setToken: (token) => set({ token }), // 토큰 설정 액션
       setUser: (user) => set({ user }), // 유저 설정 액션
@@ -61,8 +62,14 @@ const useAuthStore = create(
       name: "auth-storage", // 저장소 이름
       storage: createJSONStorage(() => AsyncStorage), // 저장소 구현체
       onRehydrateStorage: () => (state) => {
+        console.log("hydration starts", state);
         state?.setHydrated();
       },
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+        isHydrated: state.isHydrated,
+      }),
     }
   )
 );

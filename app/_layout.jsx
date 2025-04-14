@@ -22,16 +22,28 @@ export default function RootLayout() {
   });
 
   const router = useRouter();
-  const segments = useSegments(); // 현재 경로 세그먼트 가져오기
-  const { token, isHydrated } = useAuthStore(); // 인증 스토어에서 토큰, 하이드레이션 상태 가져오기
+  const segments = useSegments();
+  const { token, isHydrated } = useAuthStore();
+  const [isReady, setIsReady] = useState(false);
 
   // AsyncStorage에서 상태 복원 대기
   useEffect(() => {
-    // 폰트가 로드되고 상태가 하이드레이션 되었을 때만 실행행
-    if (loaded && isHydrated) {
-      // 스플래시 스크린 숨기기기
-      SplashScreen.hideAsync();
+    async function prepare() {
+      try {
+        if (loaded && isHydrated) {
+          await SplashScreen.hideAsync();
+          setIsReady(true);
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+    }
 
+    prepare();
+  }, [loaded, isHydrated]);
+
+  useEffect(() => {
+    if (isReady) {
       const inAuthGroup = segments[0] === "(onBoard)";
 
       if (!token && !inAuthGroup) {
@@ -42,10 +54,10 @@ export default function RootLayout() {
         router.replace("/(tabs)");
       }
     }
-  }, [loaded, isHydrated, token, segments, router]);
+  }, [isReady, token, segments, router]);
 
   // 폰트나 하이드레이션이 로드되지 않았으면 로딩중 표시
-  if (!loaded || !isHydrated) {
+  if (!loaded || !isHydrated || !isReady) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#1170DF" />

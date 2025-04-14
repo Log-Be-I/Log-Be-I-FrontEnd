@@ -13,25 +13,43 @@ import { makeRedirectUri } from "expo-auth-session";
 
 export default function Login() {
   const router = useRouter();
-  const { isLoading, error } = useAuthStore();
+  const { isLoading, error, setToken, setUser } = useAuthStore();
 
-  // Google 로그인 설정을 컴포넌트 레벨에서 초기화
+  // Google 로그인 설정
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: Constants.expoConfig.extra.googleClientId,
+    clientId:
+      "215620278394-94173ohrtpcpsmj1bhf6qhabcp2p9ks9.apps.googleusercontent.com",
     redirectUri: makeRedirectUri({
-      scheme: "com.example.app",
+      scheme: "exp",
+      path: "oauth2redirect/google",
     }),
     scopes: ["email", "profile"],
   });
 
-  // 실제 로그인 없이 페이지 이동
+  // 테스트용 로그인
   const handleLogin2 = () => {
+    // 테스트용 토큰과 사용자 정보 설정
+    setToken("test-token");
+    setUser({
+      id: "test-user-id",
+      email: "test@example.com",
+      name: "Test User",
+      image: null,
+    });
+    // 메인 화면으로 이동
     router.replace("/(tabs)");
   };
 
   const handleRegister = () => {
     router.push("/(onBoard)/signUp");
   };
+
+  // 디버깅을 위한 로그 추가
+  console.log("Google Auth Request:", {
+    clientId: request?.clientId,
+    redirectUri: request?.redirectUri,
+    scopes: request?.scopes,
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -63,8 +81,7 @@ export default function Login() {
                 </Text>
               </View>
             </Pressable>
-            <GoogleLoginButton promptAsync={promptAsync} />{" "}
-            {/* promptAsync를 props로 전달 */}
+            <GoogleLoginButton promptAsync={promptAsync} />
           </View>
           {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
