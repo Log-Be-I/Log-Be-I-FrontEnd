@@ -150,6 +150,7 @@ export default function DateRangeSelector({
             onDayPress={handleDateSelect}
             markedDates={markedDates}
             style={styles.calendar}
+            monthFormat='yyyy년 MM월'
           />
         </View>
       )}

@@ -8,7 +8,6 @@ export default function DayInput({
   label, 
   date, 
   onDateChange, 
-  minimumDate,
   onPressDate,
   onTimePress
 }) {
