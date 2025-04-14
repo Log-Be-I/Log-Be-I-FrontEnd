@@ -34,7 +34,7 @@ export const createSchedule = async (scheduleData) => {
 
 export const updateSchedule = async (scheduleId, scheduleData) => {
   try {
-    const response = await axiosInstance.patch(`/api/schedules/${scheduleId}`, {
+    const response = await axiosInstance.patch(`/schedules/${scheduleId}`, {
       title: scheduleData.title,
       start_date_time: scheduleData.startTime.toISOString(),
       end_date_time: scheduleData.endTime.toISOString()
@@ -42,6 +42,33 @@ export const updateSchedule = async (scheduleId, scheduleData) => {
     return response.data;
   } catch (error) {
     console.error('일정 수정 중 오류 발생:', error);
+    throw error;
+  }
+}; 
+
+export const deleteSchedule = async (scheduleId) => {
+  try {
+    const response = await axiosInstance.delete(`/schedules/${scheduleId}`);
+
+    if (!response.ok) {
+      throw new Error('일정 삭제에 실패했습니다.');
+    }
+
+    return response.json(); 
+  } catch (error) {
+    console.error('일정 삭제 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+
+    if (!response.ok) {
+      throw new Error('일정 삭제에 실패했습니다.');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('일정 삭제 중 오류 발생:', error);
     throw error;
   }
 }; 
