@@ -8,7 +8,6 @@ import { createSchedule } from '../../../api/schedule/scheduleApi';
 export default function AddSchedule({ onClose, onAdd }) {
   const router = useRouter();
   const { selectedDate } = useLocalSearchParams();
-  
   const [title, setTitle] = useState('');
   const [startDate, setStartDate] = useState(new Date(selectedDate));
   const [endDate, setEndDate] = useState(new Date(selectedDate));

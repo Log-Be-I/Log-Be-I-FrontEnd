@@ -3,10 +3,17 @@ import { View, StyleSheet, Text, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Calendar } from 'react-native-calendars';
 import DayInput from './DayInput';
+import { set } from 'date-fns';
 
-export default function DateRangeSelector({ startDate, endDate, onDateRangeChange, disabled }) {
-  const [startDate2, setStartDate] = useState(new Date(startDate));
-  const [endDate2, setEndDate] = useState(new Date(endDate));
+export default function DateRangeSelector({ 
+  startDate, 
+  endDate, 
+  onDateRangeChange, 
+  disabled,
+  onChange, // 부모에서 내려온 setIsEditing(true)
+ }) {
+  const [startedDate, setStartedDate] = useState(new Date(startDate));
+  const [endedDate, setEndedDate] = useState(new Date(endDate));
   const [showCalendar, setShowCalendar] = useState(false);
   const [markedDates, setMarkedDates] = useState({});
   const [dateType, setDateType] = useState(null); // 'start' or 'end'
@@ -22,7 +29,6 @@ export default function DateRangeSelector({ startDate, endDate, onDateRangeChang
     } else {
       // 기간 표시
       const currentDate = new Date(start);
-      console.log('currentDate', currentDate);
       while (currentDate <= end) {
         const dateStr = currentDate.toISOString().split('T')[0];
         marks[dateStr] = {
@@ -38,55 +44,59 @@ export default function DateRangeSelector({ startDate, endDate, onDateRangeChang
     setMarkedDates(marks);
   };
 
+  const handleAllDayToggle = () => {
+    const newIsAllDay = !isAllDay;
+    if (newIsAllDay) {
+      const start = new Date(startedDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setHours(23, 50, 0, 0);
+      setStartedDate(start);
+      setEndedDate(end);
+    }
+    setIsAllDay(newIsAllDay);
+    if (onChange) onChange(); // 변경 발생 알림
+  };
+
   const handleDateSelect = (day) => {
     const selectedDateTime = new Date(day.dateString);
     
     if (dateType === 'start') {
-      selectedDateTime.setHours(startDate2.getHours());
-      selectedDateTime.setMinutes(startDate2.getMinutes());
-      setStartDate(selectedDateTime);
+      selectedDateTime.setHours(startedDate.getHours());
+      selectedDateTime.setMinutes(startedDate.getMinutes());
+      setStartedDate(selectedDateTime);
       
       // 선택된 시작일이 종료일보다 늦으면 종료일도 같이 변경
-      if (selectedDateTime > endDate2) {
-        setEndDate(selectedDateTime);
+      if (selectedDateTime > endedDate) {
+        setEndedDate(selectedDateTime);
       }
-      updateMarkedDates(selectedDateTime, selectedDateTime > endDate2 ? selectedDateTime : endDate2);
+      updateMarkedDates(selectedDateTime, selectedDateTime > endedDate ? selectedDateTime : endedDate);
     } else if (dateType === 'end') {
-      selectedDateTime.setHours(endDate2.getHours());
-      selectedDateTime.setMinutes(endDate2.getMinutes());
+      selectedDateTime.setHours(endedDate.getHours());
+      selectedDateTime.setMinutes(endedDate.getMinutes());
       
       // 선택된 종료일이 시작일보다 이르면 무시
-      if (selectedDateTime >= startDate2) {
-        setEndDate(selectedDateTime);
-        updateMarkedDates(startDate2, selectedDateTime);
+      if (selectedDateTime >= startedDate) {
+        setEndedDate(selectedDateTime);
+        updateMarkedDates(startedDate, selectedDateTime);
       }
     }
+    // 날짜가 변경되면 하루종일 토글을 false로 설정
+    setIsAllDay(false);
     setShowCalendar(false);
-  };
-
-  const handleAllDayToggle = (value) => {
-    setIsAllDay(value);
-    if (value) {
-      const start = new Date(startDate2);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(endDate2);
-      end.setHours(23, 50, 0, 0);
-      setStartDate(start);
-      setEndDate(end);
-      setShowCalendar(false);
-    }
+    if (onChange) onChange(); // 변경 발생 알림
   };
 
   const handleStartDatePress = () => {
     setDateType('start');
     setShowCalendar(true);
-    updateMarkedDates(startDate2, endDate2);
+    updateMarkedDates(startedDate, endedDate);
   };
 
   const handleEndDatePress = () => {
     setDateType('end');
     setShowCalendar(true);
-    updateMarkedDates(startDate2, endDate2);
+    updateMarkedDates(startedDate, endedDate);
   };
 
   return (
@@ -110,17 +120,23 @@ export default function DateRangeSelector({ startDate, endDate, onDateRangeChang
       <View style={styles.dateContainer}>
         <DayInput
           label="시작"
-          date={startDate2}
-          onDateChange={setStartDate}
+          date={startedDate}
+          onDateChange={(date) => {
+            setStartedDate(date)
+            if (onChange) onChange();
+          }}
           onPressDate={handleStartDatePress}
           onTimePress={() => setShowCalendar(false)}
         />
         <Icon name="arrow-forward" size={20} color="#666" style={styles.arrow} />
         <DayInput
           label="종료"
-          date={endDate2}
-          onDateChange={setEndDate}
-          minimumDate={startDate2}
+          date={endedDate}
+          onDateChange={(date) => {
+            setEndedDate(date)
+            if (onChange) onChange();
+          }}
+          minimumDate={startedDate}
           onPressDate={handleEndDatePress}
           onTimePress={() => setShowCalendar(false)}
         />
@@ -129,8 +145,8 @@ export default function DateRangeSelector({ startDate, endDate, onDateRangeChang
       {showCalendar && (
         <View style={styles.calendarContainer}>
           <Calendar
-            current={dateType === 'start' ? startDate2.toISOString() : endDate2.toISOString()}
-            minDate={dateType === 'end' ? startDate2.toISOString().split('T')[0] : undefined}
+            current={dateType === 'start' ? startedDate.toISOString() : endedDate.toISOString()}
+            minDate={dateType === 'end' ? startedDate.toISOString().split('T')[0] : undefined}
             onDayPress={handleDateSelect}
             markedDates={markedDates}
             style={styles.calendar}

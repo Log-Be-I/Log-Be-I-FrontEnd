@@ -9,8 +9,6 @@ export default function EditSchedule({ onClose, onEdit }) {
   const router = useRouter();
   const { schedule: scheduleParam } = useLocalSearchParams();
   const schedule = JSON.parse(scheduleParam); // 문자열로 받은 schedule 객체를 다시 파싱
-  console.log('schedule', schedule);
-
   const [title, setTitle] = useState(schedule.title);
   const [startTime, setStartTime] = useState(new Date(schedule.startTime));
   const [endTime, setEndTime] = useState(new Date(schedule.endTime));
@@ -59,6 +57,7 @@ export default function EditSchedule({ onClose, onEdit }) {
         endDate={endTime}
         onDateRangeChange={handleDateRangeChange}
         disabled={!isEditing} //false 여야 시간도 선택 가능
+        onChange={() => setIsEditing(true)}
       />
 
       <View style={styles.buttonContainer}>
@@ -84,7 +83,7 @@ export default function EditSchedule({ onClose, onEdit }) {
             <Button
               text="OK"
               onPress={handleCancel}
-              style={[styles.button, styles.addButton]}
+              style={styles.button}
               textStyle={{color: '#69BAFF'}}
               size="large"
             />

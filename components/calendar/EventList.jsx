@@ -12,7 +12,6 @@ export default function EventList({ schedules = [], onPress }) {
       onPress={() => onPress(item)}
     />
   );
-  console.log('schedules', schedules);
 
   return (
     <View style={styles.container}>
