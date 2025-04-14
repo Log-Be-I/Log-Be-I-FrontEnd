@@ -5,11 +5,27 @@ import Text from "../../components/common/Text";
 import GoogleSignin from "../../assets/images/googleLogo.svg";
 import LogBeIText from "../../assets/images/logBeIText.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
+import useAuthStore from "../../zustand/stores/authStore";
+import GoogleLoginButton from "../../components/onBoard/GoogleLoginButton";
+import * as Google from "expo-auth-session/providers/google";
+import Constants from "expo-constants";
+import { makeRedirectUri } from "expo-auth-session";
 
 export default function Login() {
   const router = useRouter();
+  const { isLoading, error } = useAuthStore();
 
-  const handleLogin = () => {
+  // Google 로그인 설정을 컴포넌트 레벨에서 초기화
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId: Constants.expoConfig.extra.googleClientId,
+    redirectUri: makeRedirectUri({
+      scheme: "com.example.app",
+    }),
+    scopes: ["email", "profile"],
+  });
+
+  // 실제 로그인 없이 페이지 이동
+  const handleLogin2 = () => {
     router.replace("/(tabs)");
   };
 
@@ -38,14 +54,19 @@ export default function Login() {
               </Pressable>
             </View>
           </View>
-          <Pressable style={styles.googleButton} onPress={handleLogin}>
-            <View style={styles.googleContent}>
-              <GoogleSignin width={20} height={20} />
-              <Text variant="medium" size={14} color="#666">
-                Sign In with Google
-              </Text>
-            </View>
-          </Pressable>
+          <View style={styles.buttonContainer}>
+            <Pressable style={styles.googleButton} onPress={handleLogin2}>
+              <View style={styles.googleContent}>
+                <GoogleSignin width={20} height={20} />
+                <Text variant="medium" size={14} color="#666">
+                  {isLoading ? "로그인 중..." : "Sign In with Google"}
+                </Text>
+              </View>
+            </Pressable>
+            <GoogleLoginButton promptAsync={promptAsync} />{" "}
+            {/* promptAsync를 props로 전달 */}
+          </View>
+          {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
         <View style={styles.footer}>
           <Text
@@ -69,6 +90,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  errorText: {
+    color: "red",
+    marginTop: 10,
   },
   background: {
     position: "absolute",
@@ -106,6 +131,9 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: "#1170DF",
     marginTop: 4,
+  },
+  buttonContainer: {
+    marginTop: 20,
   },
   googleButton: {
     backgroundColor: "#fff",

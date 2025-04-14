@@ -1,7 +1,7 @@
 import { View, StyleSheet, Text, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useUserStore } from "../../store/useUserStore";
+import { useUserStore } from "../../zustand/useUserStore";
 import TextComponent from "../../components/onBoard/text";
 import ProfileIcon from "../../assets/sidebar/sidebarProfile/aegiRogiProfile.svg";
 import EmailIcon from "../../assets/sidebar/sidebarProfile/caseIcon.svg";

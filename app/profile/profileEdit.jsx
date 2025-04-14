@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useState, useRef } from "react";
-import { useUserStore } from "../../store/useUserStore";
+import { useUserStore } from "../../zustand/useUserStore";
 import TextComponent from "../../components/onBoard/text";
 import { RegionDropdown } from "../../components/common/RegionDropdown";
 import ProfileIcon from "../../assets/sidebar/sidebarProfile/aegiRogiProfile.svg";

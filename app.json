@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.logbei.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -27,6 +28,7 @@
     "plugins": ["expo-router"],
     "scheme": "log-be-i",
     "extra": {
+      "googleClientId": "215620278394-94173ohrtpcpsmj1bhf6qhabcp2p9ks9.apps.googleusercontent.com",
       "router": {
         "origin": false
       }
