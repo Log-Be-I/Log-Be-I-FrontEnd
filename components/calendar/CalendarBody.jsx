@@ -12,7 +12,7 @@ export default function CalendarBody({ selected, onDayPress, markedDates }) {
         onDayPress={onDayPress}
         markedDates={markedDates}
         monthFormat='yyyy년 MM월'
-        hideArrows={true}
+        //hideArrows={true}
         hideExtraDays={false}
         dayComponent={({ date, state }) => (
           <CalendarDay
@@ -25,7 +25,10 @@ export default function CalendarBody({ selected, onDayPress, markedDates }) {
         theme={{
           selectedDayBackgroundColor: '#4A90E2',
           selectedDayTextColor: 'white',
-          todayTextColor: '#4A90E2',
+          todayTextColor: '#69BAFF',
+          textDayFontFamily: 'Pretendard-Regular',
+          textDayHeaderFontFamily: 'Pretendard-Regular',
+          textDisabledColor: '#ccc',
           dotColor: '#69BAFF',
           dayTextColor: '#222',
           selectedDotColor: 'white',
@@ -49,6 +52,7 @@ const styles = StyleSheet.create({
   calendar: {
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
+    height: 350,
   },
 }); 
 // 해당 날짜에 일정이 있는지 여부를 Boolean으로 전달하는 prop이다.
