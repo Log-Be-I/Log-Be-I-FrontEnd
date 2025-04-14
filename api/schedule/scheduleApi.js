@@ -20,7 +20,7 @@ export const fetchSchedules = async (year, month) => {
 
 export const createSchedule = async (scheduleData) => {
   try {
-    const response = await axiosInstance.post('/api/schedules', {
+    const response = await axiosInstance.post('/text-schedules', {
       title: scheduleData.title,
       start_date_time: scheduleData.startDate.toISOString(),
       end_date_time: scheduleData.endDate.toISOString(),
@@ -28,6 +28,20 @@ export const createSchedule = async (scheduleData) => {
     return response.data;
   } catch (error) {
     console.error('일정 생성 실패:', error);
+    throw error;
+  }
+};
+
+export const updateSchedule = async (scheduleId, scheduleData) => {
+  try {
+    const response = await axiosInstance.patch(`/api/schedules/${scheduleId}`, {
+      title: scheduleData.title,
+      start_date_time: scheduleData.startTime.toISOString(),
+      end_date_time: scheduleData.endTime.toISOString()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('일정 수정 중 오류 발생:', error);
     throw error;
   }
 }; 

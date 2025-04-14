@@ -1,23 +1,30 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
-export default function ScheduleComponent({ title, startTime, endTime }) {
+export default function ScheduleComponent({ title, startTime, endTime, onPress, schedule }) {
+
   const formatDateTime = (dateTimeStr) => {
     const date = new Date(dateTimeStr);
     return format(date, 'M월 d일 HH:mm'/*, { locale: ko }*/);
   };
 
+  const handlePress = () => {
+    if (onPress) {
+      onPress(schedule);
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <Pressable style={styles.container} onPress={handlePress}>
       <Text style={styles.title}>{title}</Text>
       <View style={styles.timeContainer}>
         <Text style={styles.timeText}>
           {formatDateTime(startTime)} ~ {formatDateTime(endTime)}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
