@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     flex : 1,
   },
   inputContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
   },
   label: {

@@ -13,60 +13,77 @@ export default function AddSchedule({ selectedDate = new Date(), onClose, onAdd 
   const [showCalendar, setShowCalendar] = useState(false);
   const [isAllDay, setIsAllDay] = useState(false);
   const [markedDates, setMarkedDates] = useState({});
+  const [dateType, setDateType] = useState(null); // 'start' or 'end'
 
-  const handleDateSelect = (day) => {
-    const selectedDateTime = new Date(day.dateString);
-    selectedDateTime.setHours(startDate.getHours());
-    selectedDateTime.setMinutes(startDate.getMinutes());
+  const updateMarkedDates = (start, end) => {
+    const marks = {};
+    const startStr = start.toISOString().split('T')[0];
+    const endStr = end.toISOString().split('T')[0];
 
-    if (!startDate || day.dateString === startDate.toISOString().split('T')[0]) {
-      // 시작일을 선택하거나 같은 날짜를 선택한 경우
-      setStartDate(selectedDateTime);
-      setEndDate(selectedDateTime);
-      setShowCalendar(false);
-      setMarkedDates({
-        [day.dateString]: { selected: true, selectedColor: '#69BAFF' }
-      });
+    if (startStr === endStr) {
+      marks[startStr] = { selected: true, selectedColor: '#69BAFF' };
     } else {
-      // 종료일을 선택한 경우
-      setEndDate(selectedDateTime);
-      setShowCalendar(false);
-
-      // 기간 표시를 위한 마커 설정
-      const start = new Date(startDate);
-      const end = new Date(selectedDateTime);
-      const marks = {};
-      
-      for (let date = start; date <= end; date.setDate(date.getDate() + 1)) {
-        const dateString = date.toISOString().split('T')[0];
-        marks[dateString] = {
+      // 기간 표시
+      const currentDate = new Date(start);
+      while (currentDate <= end) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        marks[dateStr] = {
           marked: true,
           dotColor: '#69BAFF'
         };
+        currentDate.setDate(currentDate.getDate() + 1);
       }
-
       // 시작일과 종료일 강조
-      marks[startDate.toISOString().split('T')[0]] = {
-        ...marks[startDate.toISOString().split('T')[0]],
-        selected: true,
-        selectedColor: '#69BAFF'
-      };
-      marks[day.dateString] = {
-        ...marks[day.dateString],
-        selected: true,
-        selectedColor: '#69BAFF'
-      };
-
-      setMarkedDates(marks);
+      marks[startStr] = { ...marks[startStr], selected: true, selectedColor: '#69BAFF' };
+      marks[endStr] = { ...marks[endStr], selected: true, selectedColor: '#69BAFF' };
     }
+    setMarkedDates(marks);
+  };
+
+  const handleDateSelect = (day) => {
+    const selectedDateTime = new Date(day.dateString);
+    
+    if (dateType === 'start') {
+      selectedDateTime.setHours(startDate.getHours());
+      selectedDateTime.setMinutes(startDate.getMinutes());
+      setStartDate(selectedDateTime);
+      
+      // 선택된 시작일이 종료일보다 늦으면 종료일도 같이 변경
+      if (selectedDateTime > endDate) {
+        setEndDate(selectedDateTime);
+      }
+      updateMarkedDates(selectedDateTime, selectedDateTime > endDate ? selectedDateTime : endDate);
+    } else if (dateType === 'end') {
+      selectedDateTime.setHours(endDate.getHours());
+      selectedDateTime.setMinutes(endDate.getMinutes());
+      
+      // 선택된 종료일이 시작일보다 이르면 무시
+      if (selectedDateTime >= startDate) {
+        setEndDate(selectedDateTime);
+        updateMarkedDates(startDate, selectedDateTime);
+      }
+    }
+    setShowCalendar(false);
+  };
+
+  const handleStartDatePress = () => {
+    setDateType('start');
+    setShowCalendar(true);
+    updateMarkedDates(startDate, endDate);
+  };
+
+  const handleEndDatePress = () => {
+    setDateType('end');
+    setShowCalendar(true);
+    updateMarkedDates(startDate, endDate);
   };
 
   const handleAllDayToggle = (value) => {
     setIsAllDay(value);
     if (value) {
-      const start = new Date(startDate);
+      const start = new Date(selectedDate);
       start.setHours(0, 0, 0, 0);
-      const end = new Date(endDate);
+      const end = new Date(selectedDate);
       end.setHours(23, 50, 0, 0);
       setStartDate(start);
       setEndDate(end);
@@ -94,14 +111,30 @@ export default function AddSchedule({ selectedDate = new Date(), onClose, onAdd 
         onChangeText={setTitle}
         autoFocus
       />
+
+      <View style={styles.allDayContainer}>
+            <View style={styles.allDayLeft}>
+                <Icon name="time-outline" size={24} color="#666" />
+                <Text style={styles.allDayText}>하루종일</Text>
+            <Switch
+            trackColor={{
+                true: '#69BAFF',
+                false: '#E5E5E5',
+            }}
+            thumbColor={isAllDay ? '#69BAFF' : '#E5E5E5'}
+            value={isAllDay}
+            onValueChange={handleAllDayToggle}
+            />
+            </View>
+      </View>
       
       <View style={styles.dateContainer}>
         <DayInput
           label="시작"
           date={startDate}
           onDateChange={setStartDate}
-          onPressDate={() => setShowCalendar(true)}
-          onTimePress={() => setShowTimePicker(false)}
+          onPressDate={handleStartDatePress}
+          onTimePress={() => setShowCalendar(false)}
         />
         <Icon name="arrow-forward" size={20} color="#666" style={styles.arrow} />
         <DayInput
@@ -109,18 +142,16 @@ export default function AddSchedule({ selectedDate = new Date(), onClose, onAdd 
           date={endDate}
           onDateChange={setEndDate}
           minimumDate={startDate}
-          onPressDate={() => {
-            if (startDate) setShowCalendar(true);
-          }}
-          onTimePress={() => setShowTimePicker(false)}
+          onPressDate={handleEndDatePress}
+          onTimePress={() => setShowCalendar(false)}
         />
       </View>
 
       {showCalendar && (
         <View style={styles.calendarContainer}>
           <Calendar
-            current={startDate.toISOString()}
-            minDate={startDate.toISOString().split('T')[0]}
+            current={dateType === 'start' ? startDate.toISOString() : endDate.toISOString()}
+            minDate={dateType === 'end' ? startDate.toISOString().split('T')[0] : undefined}
             onDayPress={handleDateSelect}
             markedDates={markedDates}
             style={styles.calendar}
@@ -128,35 +159,19 @@ export default function AddSchedule({ selectedDate = new Date(), onClose, onAdd 
         </View>
       )}
 
-      <View style={styles.allDayContainer}>
-        <View style={styles.allDayLeft}>
-            <Icon name="time-outline" size={24} color="#666" />
-            <Text style={styles.allDayText}>하루종일</Text>
-        </View>
-        <Switch
-          trackColor={{
-            true: '#69BAFF',
-            false: '#E5E5E5',
-          }}
-          thumbColor={isAllDay ? '#69BAFF' : '#E5E5E5'}
-          value={isAllDay}
-          onValueChange={handleAllDayToggle}
-        />
-      </View>
-
       <View style={styles.buttonContainer}>
         <Button
-          title="Cancel"
+          text="Cancel"
           onPress={onClose}
           style={[styles.button, styles.cancelButton]}
-          textStyle={styles.cancelButtonText}
+          textStyle={{color: '#FF9500'}}
           size="large"
         />
         <Button
-          title="Add"
+          text="Add"
           onPress={handleAdd}
           style={[styles.button, styles.addButton]}
-          textStyle={styles.addButtonText}
+          textStyle={{color: '#69BAFF'}}
           size="large"
         />
       </View>
@@ -169,6 +184,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     padding: 16,
+    marginTop: 20,
   },
   titleInput: {
     fontSize: 16,
@@ -177,6 +193,24 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginBottom: 16,
   },
+  allDayContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    paddingHorizontal: 16,
+    marginLeft: 180,
+},
+  allDayLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+},
+  allDayText: {
+    fontSize: 14,
+    color: '#333',
+    marginLeft: 4,
+},
   dateContainer: {
     marginBottom: 16,
     flexDirection: 'row',
@@ -195,30 +229,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E5E5',
   },
-  allDayContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-    paddingHorizontal: 16,
-    allDayLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    allDayText: {
-        fontSize: 14,
-        color: '#333',
-        marginLeft: 4,
-    },
-  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 24,
+    bottom: 100,
     left: 16,
     right: 16,
+    gap: 50,
   },
   button: {
     flex: 1,
@@ -233,11 +251,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderWidth: 1,
     borderColor: '#69BAFF',
-  },
-  cancelButtonText: {
-    color: '#FF9500',
-  },
-  addButtonText: {
-    color: '#69BAFF',
   },
 }); 
