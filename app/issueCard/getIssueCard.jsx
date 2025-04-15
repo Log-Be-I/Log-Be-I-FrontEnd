@@ -36,14 +36,11 @@ export default function GetIssueCard() {
   }, [paramKeywords]);
 
   const handleEdit = () => {
-    try {
-      router.push({
-        pathname: '/issueCard',
-        params: { selectedKeywords: JSON.stringify(keywords) }
-      });
-    } catch (error) {
-      console.error('라우팅 에러:', error);
-    }
+    const selectedKeywords = keywords[activeTab];
+    router.push({
+      pathname: '/issueCard',
+      params: { editKeywords: JSON.stringify(selectedKeywords) }
+    });
   };
 
   const handleTabPress = (index) => {

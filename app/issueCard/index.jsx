@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import InterestButton from '../../components/issueCard/InterestButton';
 import SearchInput from '../../components/issueCard/SearchInput';
 import StartButton from '../../components/issueCard/StartButton';
 import Toast from '../../components/common/Toast';
-import { useRouter } from 'expo-router';
+import { useRouter, useSearchParams } from 'expo-router';
 import { postKeywords } from '../../api/issueCard/issueCardApi';
 
 export default function IssueCardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editKeywords = searchParams.get('editKeywords');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [customInterests, setCustomInterests] = useState([]);
@@ -30,9 +32,16 @@ export default function IssueCardPage() {
     ],
     [
       { title: '여행/음식', icon: '✈️' },
-      { title: '지기계발', icon: '📚' },
+      { title: '지기계발', icon: '��' },
     ],
   ];
+
+  useEffect(() => {
+    if (editKeywords) {
+      const parsedKeywords = JSON.parse(editKeywords);
+      setSelectedInterests(parsedKeywords);
+    }
+  }, [editKeywords]);
 
   const handleBack = () => {
     router.back();
@@ -74,25 +83,17 @@ export default function IssueCardPage() {
   };
 
   const handleStart = async () => {
-    console.log('시작하기 버튼 클릭')
-    const selectedKeywords = [
-      ...selectedInterests,
-      ...customInterests
-    ];
-
-    if (selectedKeywords.length === 0) {
+    if (selectedInterests.length === 0) {
       setShowToast(true);
       return;
     }
-
+    
     try {
-      //API 호출 없이 먼저 페이지 이동 테스트트
+      await postKeywords(selectedInterests);
       router.push({
         pathname: '/issueCard/getIssueCard',
-        params: { keywords: JSON.stringify(selectedKeywords) }
+        params: { keywords: JSON.stringify(selectedInterests) }
       });
-      // 페이지 이동 후 API 호출출
-      await postKeywords(selectedKeywords);
     } catch (error) {
       console.error('키워드 등록 실패:', error);
       setShowToast(true);
