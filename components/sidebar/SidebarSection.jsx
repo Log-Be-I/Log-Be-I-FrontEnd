@@ -11,7 +11,7 @@ export default function SidebarSection({ title, items, onItemPress, activeItemId
             key={item.id}
             icon={item.icon}
             label={item.label}
-            onPress={() => onItemPress?.(item.id)}
+            onPress={() => onItemPress?.(item.route)} // route전달
             isActive={activeItemId === item.id}
             isLast={index === items.length - 1}
           />
