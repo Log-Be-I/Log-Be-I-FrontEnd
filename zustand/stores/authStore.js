@@ -26,22 +26,48 @@ const useAuthStore = create(
           if (response?.type === "success") {
             // 인증 성공시
             const { authentication } = response; // 인증 정보 추출
+
+            // Google API를 통해 사용자 정보 가져오기
+            const userInfoResponse = await fetch(
+              "https://www.googleapis.com/oauth2/v2/userinfo",
+              {
+                headers: {
+                  Authorization: `Bearer ${authentication.accessToken}`,
+                },
+              }
+            );
+
+            // 사용자 정보 파싱
+            const userInfo = await userInfoResponse.json();
+            console.log("✅ Google User Info:", userInfo);
+
             // 백엔드로 토큰을 보내서 검증하고 JWT 토큰 받아오기
-            // const result = await api.post("/auth/google", { idToken: authentication.idToken });
+            // const result = await api.post("/auth/google", { idToken: authentication.accessToken });
             // set({ token: result.data.token, user: result.data.user });
+
             // 임시로 Google 토큰을 직접 저장 (백엔드 검증 후 JWT 저장해야함)
             set({
-              token: authentication.idToken,
+              token: authentication.accessToken,
               user: {
-                id: authentication.id,
-                email: authentication.email,
-                name: authentication.name,
-                image: authentication.picture,
+                id: userInfo.id,
+                email: userInfo.email,
+                name: userInfo.name,
+                picture: userInfo.picture,
               },
+              error: null,
             });
+
+            return true;
           }
+
+          set({ error: "Google 로그인에 실패했습니다." });
+          return false;
         } catch (error) {
-          set({ error: error.message });
+          console.error("Google Login Error:", error);
+          set({
+            error: error.message || "Google 로그인 중 오류가 발생했습니다.",
+          });
+          return false;
         } finally {
           set({ isLoading: false }); // 로딩 종료
         }
@@ -56,7 +82,10 @@ const useAuthStore = create(
       getUser: () => get().user,
 
       // 하이드레이션 완료 설정 액션
-      setHydrated: () => set({ isHydrated: true }),
+      setHydrated: () => {
+        console.log("Setting hydrated to true");
+        set({ isHydrated: true });
+      },
     }),
     {
       name: "auth-storage", // 저장소 이름

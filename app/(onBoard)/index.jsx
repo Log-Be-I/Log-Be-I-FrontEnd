@@ -8,23 +8,43 @@ import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
 import useAuthStore from "../../zustand/stores/authStore";
 import GoogleLoginButton from "../../components/onBoard/GoogleLoginButton";
 import * as Google from "expo-auth-session/providers/google";
-import Constants from "expo-constants";
-import { makeRedirectUri } from "expo-auth-session";
+import * as AuthSession from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
+import React from "react";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const router = useRouter();
   const { isLoading, error, setToken, setUser } = useAuthStore();
 
+  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+  console.log("✅ redirectUri", redirectUri);
+
   // Google 로그인 설정
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId:
-      "215620278394-94173ohrtpcpsmj1bhf6qhabcp2p9ks9.apps.googleusercontent.com",
-    redirectUri: makeRedirectUri({
-      scheme: "exp",
-      path: "oauth2redirect/google",
-    }),
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    // redirectUri: "https://auth.expo.io/@taekho/Log-Be-I-FrontEnd",
+    useProxy: true,
     scopes: ["email", "profile"],
   });
+
+  // 디버깅을 위한 로그 추가
+  console.log("Google Auth Request Config:", {
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    redirectUri: request?.redirectUri,
+  });
+
+  // response 모니터링 추가
+  React.useEffect(() => {
+    if (response?.type === "success") {
+      console.log("Auth Success Response:", response);
+    } else if (response?.type === "error") {
+      console.log("Auth Error Response:", response);
+    }
+  }, [response]);
 
   // 테스트용 로그인
   const handleLogin2 = () => {
@@ -43,13 +63,6 @@ export default function Login() {
   const handleRegister = () => {
     router.push("/(onBoard)/signUp");
   };
-
-  // 디버깅을 위한 로그 추가
-  console.log("Google Auth Request:", {
-    clientId: request?.clientId,
-    redirectUri: request?.redirectUri,
-    scopes: request?.scopes,
-  });
 
   return (
     <SafeAreaView style={styles.container}>

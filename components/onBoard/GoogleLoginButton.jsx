@@ -1,9 +1,11 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet, Pressable } from "react-native";
 import useAuthStore from "../../zustand/stores/authStore";
+import { useRouter } from "expo-router";
 
 const GoogleLoginButton = ({ promptAsync }) => {
   const { googleLogin, isLoading } = useAuthStore();
+  const router = useRouter();
 
   const handlePress = async () => {
     try {
@@ -13,8 +15,13 @@ const GoogleLoginButton = ({ promptAsync }) => {
 
       if (result?.type === "success") {
         console.log("Google 로그인 성공, 토큰 저장 시도");
-        await googleLogin(result);
-        console.log("토큰 저장 완료");
+        const loginSuccess = await googleLogin(result);
+        console.log("토큰 저장 완료:", loginSuccess);
+
+        if (loginSuccess) {
+          console.log("메인 화면으로 이동");
+          router.replace("/(tabs)");
+        }
       } else {
         console.log("Google 로그인 실패:", result?.type);
       }
@@ -24,16 +31,14 @@ const GoogleLoginButton = ({ promptAsync }) => {
   };
 
   return (
-    <Pressable onPress={handlePress}>
-      <TouchableOpacity
-        style={[styles.button, isLoading && styles.disabledButton]}
-        disabled={isLoading}
-      >
-        {/* 로딩 상태에 따라 로그인 버튼 텍스트 변경 */}
-        <Text style={styles.buttonText}>
-          {isLoading ? "로그인 중..." : "Google로 로그인"}
-        </Text>
-      </TouchableOpacity>
+    <Pressable
+      onPress={handlePress}
+      style={[styles.button, isLoading && styles.disabledButton]}
+      disabled={isLoading}
+    >
+      <Text style={styles.buttonText}>
+        {isLoading ? "로그인 중..." : "Google로 로그인"}
+      </Text>
     </Pressable>
   );
 };

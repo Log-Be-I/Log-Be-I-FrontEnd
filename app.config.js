@@ -27,16 +27,17 @@ export default {
       favicon: "./assets/favicon.png",
     },
     plugins: ["expo-router"],
+    // scheme: "logbei"
     scheme: "exp",
     extra: {
       weatherApiKey: "cfd7da48004b32b5707dc9057ee32248",
       eas: {
         projectId: "eb44fbab-8a26-4d1f-9cab-feab7bfda629",
       },
-      googleRedirectUri: "exp://localhost:19000/--/oauth2redirect/google",
-      // googleRedirectUri: "https://auth.expo.io/@taekho/log-be-i-frontend",
+      // googleRedirectUri: "exp://localhost:19000/--/oauth2redirect/google",
+      googleRedirectUri: "https://auth.expo.io/@taekho/log-be-i-frontend",
       androidClientId:
-        "215620278394-94173ohrtpcpsmj1bhf6qhabcp2p9ks9.apps.googleusercontent.com",
+        "381665725956-je1p8o9a7cq2s565rfiejb1f5vvd9h3k.apps.googleusercontent.com",
       router: {
         origin: false,
       },
