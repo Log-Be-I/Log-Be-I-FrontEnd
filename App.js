@@ -1,5 +1,6 @@
 import { ExpoRoot } from "expo-router";
 
 export default function App() {
-  return <ExpoRoot />;
+  const ctx = require.context("./app");
+  return <ExpoRoot context={ctx} />;
 }

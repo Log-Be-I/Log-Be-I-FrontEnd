@@ -6,12 +6,19 @@ import SidebarProfile from "./SidebarProfile";
 import SidebarNavMenu from "./SidebarNavMenu";
 import SidebarSection from "./SidebarSection";
 import LogoutIcon from "../../assets/sidebar/logoutIcon.svg";
+import useAuthStore from "../../zustand/stores/authStore";
 
 export default function Sidebar({ onClose }) {
   const router = useRouter();
+  const { logout } = useAuthStore();
 
-  const handleLogout = () => {
-    router.push("/");
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace("/");
+    } catch (error) {
+      console.error("로그아웃 에러:", error);
+    }
   };
 
   return (
