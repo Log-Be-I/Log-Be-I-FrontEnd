@@ -1,54 +1,136 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Animated, Pressable } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import NewsCard from '../../components/issueCard/issue/NewsCard';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Button from '../../components/common/button';
+import { getKeywords } from '../../api/issueCard/issueCardApi';
 
-const GetIssueCard = () => {
-  const { keywords } = useLocalSearchParams();
-  const parsedKeywords = keywords ? JSON.parse(keywords) : [];
+export default function GetIssueCard() {
+  const router = useRouter();
+  const { keywords: paramKeywords } = useLocalSearchParams();
+  const [keywords, setKeywords] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const handleTabPress = (index) => {
-    const direction = index > activeTab ? 1 : -1;
-    Animated.timing(slideAnim, {
-      toValue: direction * -100,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setActiveTab(index);
-      slideAnim.setValue(0);
-    });
+  useEffect(() => {
+    const fetchKeywords = async () => {
+      try {
+        // URL 파라미터로 전달된 키워드가 있으면 사용
+        if (paramKeywords) {
+          const parsedKeywords = JSON.parse(paramKeywords);
+          setKeywords(parsedKeywords);
+          return;
+        }
+        // 없으면 API 호출
+        const response = await getKeywords();
+        if (response && response.length > 0) {
+          setKeywords(response.map(item => item['keyword-name']));
+        }
+      } catch (error) {
+        console.error('키워드 조회 실패:', error);
+      }
+    };
+
+    fetchKeywords();
+  }, [paramKeywords]);
+
+  const handleEdit = () => {
+    try {
+      router.push({
+        pathname: '/issueCard',
+        params: { selectedKeywords: JSON.stringify(keywords) }
+      });
+    } catch (error) {
+      console.error('라우팅 에러:', error);
+    }
   };
 
-  // 임시 뉴스 데이터
-  const dummyNews = [
-    {
-      title: '출퇴근 시간대 지하철 운행 중단',
-      content: '오늘 오전 출퇴근 시간대 지하철 2호선에서 신호 장애가 발생하여 약 30분간 운행이 중단되었습니다. 이로 인해 많은 시민들이 불편을 겪었으며, 서울교통공사는 신속한 복구 작업을 진행했다고 밝혔습니다.',
-    },
-    {
-      title: '새로운 AI 기술 발표',
-      content: '구글은 오늘 새로운 AI 모델을 발표했습니다. 이 모델은 기존 모델보다 30% 더 효율적이며, 특히 자연어 처리 분야에서 획기적인 성능 향상을 보여주고 있습니다.',
-    },
-    {
-      title: '주식시장 강세',
-      content: '글로벌 경제 지표 호조에 힘입어 국내 주식시장이 강세를 보이고 있습니다. 특히 IT와 반도체 업종이 상승을 주도하고 있으며, 외국인 투자자들의 매수세가 지속되고 있습니다.',
-    },
-  ];
+  const handleTabPress = (index) => {
+    if (index === activeTab) return;
+
+    const direction = index > activeTab ? 1 : -1;
+    setActiveTab(index);
+    slideAnim.setValue(direction * 100);
+
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // Mock news data for each keyword
+  const mockNewsData = {
+    'IT/기술': [
+      {
+        title: '새로운 AI 기술 발표',
+        content: '구글은 오늘 새로운 AI 모델을 발표했습니다. 이 모델은 기존 모델보다 30% 더 효율적이며, 특히 자연어 처리 분야에서 획기적인 성능 향상을 보여주고 있습니다.',
+      },
+      {
+        title: '삼성전자 신제품 출시',
+        content: '삼성전자가 새로운 스마트폰을 출시했습니다. 혁신적인 폴더블 디스플레이와 향상된 카메라 성능이 특징입니다.',
+      },
+      {
+        title: '메타버스 시장 성장',
+        content: '글로벌 메타버스 시장이 급성장하고 있습니다. 주요 기업들의 투자가 이어지고 있으며, 새로운 비즈니스 모델이 등장하고 있습니다.',
+      },
+    ],
+    '경제/금융': [
+      {
+        title: '주식시장 강세',
+        content: '글로벌 경제 지표 호조에 힘입어 국내 주식시장이 강세를 보이고 있습니다. 특히 IT와 반도체 업종이 상승을 주도하고 있습니다.',
+      },
+      {
+        title: '금리 동결 결정',
+        content: '한국은행이 기준금리를 현행 수준에서 동결하기로 결정했습니다. 물가안정과 경제성장을 고려한 결정이라고 밝혔습니다.',
+      },
+      {
+        title: '원화 강세',
+        content: '글로벌 달러 약세 영향으로 원화 가치가 상승하고 있습니다. 수출기업들의 실적에 미치는 영향이 주목됩니다.',
+      },
+    ],
+    '건강/웰빙': [
+      {
+        title: '새로운 치료제 개발',
+        content: '국내 제약회사가 혁신적인 항암제를 개발했습니다. 임상시험에서 높은 효과를 보여 기대를 모으고 있습니다.',
+      },
+      {
+        title: '건강보험 정책 변경',
+        content: '정부가 새로운 건강보험 정책을 발표했습니다. 의료 서비스 접근성 향상과 의료비 부담 경감이 주요 내용입니다.',
+      },
+    ],
+    '스포츠': [
+      {
+        title: '월드컵 예선 승리',
+        content: '한국 축구 대표팀이 2026 월드컵 예선에서 승리를 거뒀습니다. 이로써 본선 진출 가능성이 한층 높아졌습니다.',
+      },
+      {
+        title: '프로야구 개막',
+        content: '2024 KBO 리그가 개막했습니다. 각 구단은 우승을 향한 새로운 도전을 시작했습니다.',
+      },
+    ],
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
         <View style={styles.titleBorder} />
-        <Text style={styles.title}>Daily <Text style={styles.titleHighlight}>I</Text>ssue</Text>
+        <View style={styles.titleRow}>
+          <Pressable onPress={() => router.back()} style={styles.backButton}>
+            <Icon name="chevron-back" size={24} color="#000" />
+          </Pressable>
+          <View style={styles.titleWrapper}>
+            <Text style={styles.title}>Daily <Text style={styles.titleHighlight}>I</Text>ssue</Text>
+          </View>
+        </View>
         <View style={styles.titleBorder} />
       </View>
 
       <View style={styles.tabContainer}>
         <View style={styles.tabBorder} />
         <View style={styles.tabs}>
-          {parsedKeywords.map((keyword, index) => (
+          {keywords.map((keyword, index) => (
             <Pressable
               key={index}
               style={[
@@ -62,6 +144,7 @@ const GetIssueCard = () => {
             </Pressable>
           ))}
         </View>
+        <View style={styles.tabBorder} />
       </View>
 
       <Animated.View
@@ -71,14 +154,15 @@ const GetIssueCard = () => {
             transform: [{
               translateX: slideAnim.interpolate({
                 inputRange: [-100, 0, 100],
-                outputRange: ['100%', '0%', '-100%']
+                outputRange: ['-100%', '0%', '100%']
               })
             }]
           }
         ]}
       >
         <ScrollView>
-          {dummyNews.map((news, index) => (
+        {/*{dummyNews.map((news, index) => ( */}
+          {keywords[activeTab] && mockNewsData[keywords[activeTab]]?.map((news, index) => (
             <NewsCard
               key={index}
               title={news.title}
@@ -90,23 +174,50 @@ const GetIssueCard = () => {
           ))}
         </ScrollView>
       </Animated.View>
+      <View style={styles.editButtonContainer}>
+      <Button
+            text="Edit"
+            size="medium"
+            textStyle={{color: "#69BAFF"}}
+            onPress={handleEdit}
+            style={styles.editButton}
+          />
+      </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   titleContainer: {
     paddingVertical: 20,
+  },
+  titleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    paddingHorizontal: 20,
   },
   titleBorder: {
     height: 1,
     width: '100%',
     backgroundColor: '#3650FA',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    paddingVertical: 8,
+    zIndex: 10,
+  },
+  titleWrapper: {
+    flex: 1,
+    alignItems: 'center',
   },
   title: {
     fontSize: 32,
@@ -144,11 +255,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: '#3650FA',
+    backgroundColor: '#1E3A8A',
+  },
+  editButtonContainer: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    zIndex: 10,
+  },
+  editButton: {
+    right: 20,
+    zIndex: 10,
   },
   content: {
     flex: 1,
   },
 });
-
-export default GetIssueCard;
