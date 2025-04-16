@@ -1,12 +1,12 @@
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  Pressable,
   StyleSheet,
-  Animated,
   Modal,
+  Pressable,
+  Animated,
 } from "react-native";
-import { useState, useRef, useEffect } from "react";
 import CalendarPicker from "react-native-calendar-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -18,7 +18,7 @@ const QUICK_SELECTIONS = [
   { label: "이번 달", days: 30 },
 ];
 
-export default function RecordDateRange({ onRangeChange }) {
+export default function RecordDateRange({ onRangeChange, isSelectMode }) {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [showModal, setShowModal] = useState(false);
@@ -259,24 +259,42 @@ export default function RecordDateRange({ onRangeChange }) {
         <MaterialCommunityIcons
           name="calendar"
           size={32}
-          color="#69BAFF"
+          color={isSelectMode ? "#CCCCCC" : "#69BAFF"}
           style={styles.calendarIcon}
         />
         <Pressable
-          style={styles.dateRangeButton}
-          onPress={() => setShowModal(true)}
+          style={[
+            styles.dateRangeButton,
+            isSelectMode && styles.dateRangeButtonDisabled,
+          ]}
+          onPress={isSelectMode ? null : () => setShowModal(true)}
         >
           <View style={styles.dateTextContainer}>
-            <Text style={styles.dateText}>{formatDate(startDate)}</Text>
-            <Text style={styles.separator}>~</Text>
-            <Text style={styles.dateText}>{formatDate(endDate)}</Text>
+            <Text
+              style={[styles.dateText, isSelectMode && styles.dateTextDisabled]}
+            >
+              {formatDate(startDate)}
+            </Text>
+            <Text
+              style={[
+                styles.separator,
+                isSelectMode && styles.dateTextDisabled,
+              ]}
+            >
+              ~
+            </Text>
+            <Text
+              style={[styles.dateText, isSelectMode && styles.dateTextDisabled]}
+            >
+              {formatDate(endDate)}
+            </Text>
           </View>
         </Pressable>
       </View>
 
       <Modal
         transparent={true}
-        visible={showModal}
+        visible={showModal && !isSelectMode}
         animationType="fade"
         onRequestClose={() => setShowModal(false)}
       >
@@ -331,7 +349,6 @@ export default function RecordDateRange({ onRangeChange }) {
               selectedStartDate={tempStartDate}
               selectedEndDate={tempEndDate}
               onDateChange={handleDateChange}
-              maxDate={new Date()}
               width={300}
               selectedDayColor="#69BAFF"
               selectedDayTextColor="#FFFFFF"
@@ -348,6 +365,7 @@ export default function RecordDateRange({ onRangeChange }) {
                 fontSize: 16,
                 fontWeight: "600",
               }}
+              dayLabelsWrapper={{ borderBottomWidth: 0, borderTopWidth: 0 }}
               customDatesStyles={[
                 {
                   date: new Date(),
@@ -367,6 +385,7 @@ export default function RecordDateRange({ onRangeChange }) {
               previousTitleStyle={{ color: "#666666" }}
               nextTitleStyle={{ color: "#666666" }}
             />
+
             <View style={styles.buttonContainer}>
               <Pressable
                 style={[styles.button, styles.cancelButton]}
@@ -496,5 +515,12 @@ const styles = StyleSheet.create({
   },
   confirmButtonText: {
     color: "#FFFFFF",
+  },
+  dateRangeButtonDisabled: {
+    backgroundColor: "#F5F5F5",
+    opacity: 0.7,
+  },
+  dateTextDisabled: {
+    color: "#999999",
   },
 });
