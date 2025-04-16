@@ -1,6 +1,6 @@
 import { View, StyleSheet, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import { useUserStore } from "../../store/useUserStore";
+import { useUserStore } from "../../zustand/useUserStore";
 import ProfileIcon from "../../assets/sidebar/sidebarProfile/aegiRogiProfile.svg";
 import MyProfile from "../../assets/sidebar/sidebarProfile/myProfile.svg";
 

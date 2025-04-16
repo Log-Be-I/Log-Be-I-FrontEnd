@@ -5,11 +5,58 @@ import Text from "../../components/common/Text";
 import GoogleSignin from "../../assets/images/googleLogo.svg";
 import LogBeIText from "../../assets/images/logBeIText.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
+import useAuthStore from "../../zustand/stores/authStore";
+import GoogleLoginButton from "../../components/onBoard/GoogleLoginButton";
+import * as Google from "expo-auth-session/providers/google";
+import * as AuthSession from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
+import React from "react";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const router = useRouter();
+  const { isLoading, error, setToken, setUser } = useAuthStore();
 
-  const handleLogin = () => {
+  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+  console.log("✅ redirectUri", redirectUri);
+
+  // Google 로그인 설정
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    // redirectUri: "https://auth.expo.io/@taekho/Log-Be-I-FrontEnd",
+    useProxy: true,
+    scopes: ["email", "profile"],
+  });
+
+  // 디버깅을 위한 로그 추가
+  console.log("Google Auth Request Config:", {
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    redirectUri: request?.redirectUri,
+  });
+
+  // response 모니터링 추가
+  React.useEffect(() => {
+    if (response?.type === "success") {
+      console.log("Auth Success Response:", response);
+    } else if (response?.type === "error") {
+      console.log("Auth Error Response:", response);
+    }
+  }, [response]);
+
+  // 테스트용 로그인
+  const handleLogin2 = () => {
+    // 테스트용 토큰과 사용자 정보 설정
+    setToken("test-token");
+    setUser({
+      id: "test-user-id",
+      email: "test@example.com",
+      name: "Test User",
+      image: null,
+    });
+    // 메인 화면으로 이동
     router.replace("/(tabs)");
   };
 
@@ -38,14 +85,18 @@ export default function Login() {
               </Pressable>
             </View>
           </View>
-          <Pressable style={styles.googleButton} onPress={handleLogin}>
-            <View style={styles.googleContent}>
-              <GoogleSignin width={20} height={20} />
-              <Text variant="medium" size={14} color="#666">
-                Sign In with Google
-              </Text>
-            </View>
-          </Pressable>
+          <View style={styles.buttonContainer}>
+            <Pressable style={styles.googleButton} onPress={handleLogin2}>
+              <View style={styles.googleContent}>
+                <GoogleSignin width={20} height={20} />
+                <Text variant="medium" size={14} color="#666">
+                  {isLoading ? "로그인 중..." : "Sign In with Google"}
+                </Text>
+              </View>
+            </Pressable>
+            <GoogleLoginButton promptAsync={promptAsync} />
+          </View>
+          {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
         <View style={styles.footer}>
           <Text
@@ -69,6 +120,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  errorText: {
+    color: "red",
+    marginTop: 10,
   },
   background: {
     position: "absolute",
@@ -106,6 +161,9 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: "#1170DF",
     marginTop: 4,
+  },
+  buttonContainer: {
+    marginTop: 20,
   },
   googleButton: {
     backgroundColor: "#fff",

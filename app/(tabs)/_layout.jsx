@@ -4,13 +4,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../../components/common/Footer";
 import Header from "../../components/common/Header";
 import Sidebar from "../../components/sidebar/Sidebar";
-import { Slot, useRouter } from "expo-router";
+import { Slot, useRouter, usePathname } from "expo-router";
 
 export default function TabLayout() {
   const [currentTab, setCurrentTab] = useState("index");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(-100)).current;
   const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const path = pathname.split("/")[1] || "index";
+    setCurrentTab(path);
+  }, [pathname]);
 
   const handleTabPress = (tabName) => {
     setCurrentTab(tabName);
