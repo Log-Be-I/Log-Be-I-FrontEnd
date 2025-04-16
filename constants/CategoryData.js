@@ -16,13 +16,13 @@ export const CATEGORIES = [
     category_id: 3,
     name: "할일",
     icon: "clipboard-check-outline",
-    color: "#4CAF50",
+    color: "#FF3D92",
   },
   {
     category_id: 4,
     name: "건강",
-    icon: "heart-pulse",
-    color: "#FF5656",
+    icon: "clipboard-pulse",
+    color: "#FF9FCF",
   },
   {
     category_id: 5,
@@ -47,8 +47,8 @@ export const CATEGORY_ICONS = {
     color: "#4CAF50",
   },
   건강: {
-    name: "heart-pulse",
-    color: "#FF5656",
+    name: "clipboard-pulse",
+    color: "#FF3D92",
   },
   기타: {
     name: "dots-horizontal-circle-outline",

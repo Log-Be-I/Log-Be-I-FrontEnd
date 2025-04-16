@@ -15,7 +15,7 @@ export default function RecordItem({
   return (
     <Pressable
       style={[styles.container, isSelected && styles.selectedContainer]}
-      onPress={isSelectMode ? onSelect : undefined}
+      onPress={onSelect}
     >
       <View style={styles.leftSection}>
         <MaterialCommunityIcons
@@ -33,7 +33,7 @@ export default function RecordItem({
         </Text>
       </View>
       <View style={styles.rightSection}>
-        <Text style={styles.writeTimeText}>Created. {writeTime}</Text>
+        <Text style={styles.writeTimeText}>{writeTime}</Text>
       </View>
       {isSelectMode && (
         <View style={[styles.checkbox, isSelected && styles.checked]}>
@@ -91,16 +91,16 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   writeTimeText: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#666666",
   },
   checkbox: {
     position: "absolute",
-    right: 8,
-    top: 8,
+    left: -5,
+    top: -5,
     width: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: "#69BAFF",
     backgroundColor: "#FFFFFF",
