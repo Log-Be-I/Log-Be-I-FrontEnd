@@ -1,11 +1,14 @@
 // components/sidebar/SidebarNavMenu.jsx
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, Text } from 'react-native';
 import RecordIcon from '../../assets/sidebar/sidebarNav/sideNavIcon.svg';
 import WebRTCIcon from '../../assets/sidebar/sidebarNav/webRtcIcon.svg';
 import NoticeIcon from '../../assets/sidebar/sidebarNav/noticeIcon.svg';
+import { useRouter } from 'expo-router';
 
 // 사이드바의 왼쪽 네비게이션 메뉴를 담당하는 컴포넌트
 export default function SidebarNavMenu() {
+  const router = useRouter();
+  
   return (
     <View style={styles.navMenu}>
       {/* 네비게이션 아이콘들 */}
@@ -20,8 +23,11 @@ export default function SidebarNavMenu() {
           <WebRTCIcon width={24} height={24} />
         </Pressable>
         
-        <Pressable style={styles.iconWrapper}>
+        <Pressable style={styles.iconWrapper} onPress={() => router.push('/notice/')}>
           <NoticeIcon width={24} height={24} />
+          <View style={styles.noticeCount}>
+            <Text style={styles.noticeCountText}>공지사항</Text>
+          </View>
         </Pressable>
       </View>
     </View>
@@ -59,4 +65,14 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }], // 45도 회전하여 다이아몬드 모양 생성
     borderRadius: 2,
   },
+  noticeCount: {
+    position: 'absolute',
+    top: 40,
+    
+  },
+  noticeCountText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  }
 });
