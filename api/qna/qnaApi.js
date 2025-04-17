@@ -16,3 +16,30 @@ export const getMyQuestions = async (token, page = 1, size = 4) => {
     throw error;
   }
 };
+
+export const postMyQuestion = async (token, memberId, title, content, questionImage = null, createdAt) => {
+  try {
+    const response = await axiosInstance.post(
+      '/questions',
+      {
+        memberId,
+        title,
+        content,
+        question_image: questionImage, // 이미지 URL 없으면 null
+        createdAt: createdAt || new Date().toISOString().split('T')[0],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log('문의 등록 성공:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('문의 등록 실패:', error);
+    throw error;
+  }
+};
+

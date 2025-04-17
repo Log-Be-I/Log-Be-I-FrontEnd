@@ -1,14 +1,16 @@
 // components/qna/QnaCardWithIcon.jsx
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import QnaCard from './QnaCard';
 import IconComponent from './IconComponent';
 
-export default function QnaCardWrapper({ title, createAt, status }) {
+export default function QnaCardWrapper({ title, createAt, status, onPress }) {
   return (
-    <View style={styles.wrapper}>
-      <QnaCard title={title} createAt={createAt} />
-      <IconComponent status={status} />
-    </View>
+    <Pressable onPress={onPress}>
+      <View style={styles.wrapper}>
+        <QnaCard title={title} createAt={createAt} />
+        <IconComponent status={status} />
+      </View>
+    </Pressable>
   );
 }
 
@@ -16,6 +18,5 @@ const styles = StyleSheet.create({
   wrapper: {
     position: 'relative',
     overflow: 'visible',
-    marginBottom: 8,
   },
 });

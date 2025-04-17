@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
 
-const Toast = ({ message, visible, onHide }) => {
+export default function Toast ({ message, visible, onHide }) {
   const opacity = new Animated.Value(0);
 
   useEffect(() => {
@@ -50,5 +50,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
-export default Toast; 

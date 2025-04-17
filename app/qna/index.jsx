@@ -1,10 +1,11 @@
 import { View, Text, Pressable, StyleSheet, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import CustomSelectBox from '../../components/qna/CustomSelectBox';
 import QnaCardWrapper from '../../components/qna/QnaCardWrapper';
 import Pagination from '../../components/common/Pagination';
+import SaveButton from '../../components/qna/SaveButton';
 // import { getMyQuestion } from '../../api/qna/qnaApi';
 import { qnaData } from '../../dummyData/qnaData';
 
@@ -16,6 +17,18 @@ export default function QnaPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [groupIndex, setGroupIndex] = useState(0);
   const itemsPerPage = 5;
+  const { keywords } = useLocalSearchParams();
+  const [titleKeyword, setTitleKeyword] = useState('');
+
+  useEffect(() => {
+    if (keywords) {
+      try{ const parsedKeywords = JSON.parse(keywords); // title만 넘긴 경우에는 그냥 string으로 받음
+        setTitleKeyword(parsedKeywords.title || '');
+      } catch (error) {
+        console.error('키워드 파싱 오류:', error);
+      }
+    }
+  }, [keywords]);
 
   // 현재 페이지 이동시에 groupIndex 업데이트
   useEffect(() => {
@@ -34,6 +47,18 @@ export default function QnaPage() {
       const dateB = new Date(b.createAt);
       return selected === 'latest' ? dateB - dateA : dateA - dateB;
     });
+
+    // 키워드가 있으면 해당 제목을 가진 질문을 맨 앞으로 정렬
+    let prioritized = sortedData;
+    if (titleKeyword) {
+      prioritized = sortedData.sort((a, b) => {
+        const isA = a.title.includes(titleKeyword);
+        const isB = b.title.includes(titleKeyword);
+        if (isA && !isB) return -1;
+        if (!isA && isB) return 1;
+        return 0;
+      });
+    }
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -66,15 +91,20 @@ export default function QnaPage() {
         <Text style={styles.headerTitle}>나의 QnA</Text>
       </View>
       
-      <View style={styles.dropdownContainer}>
-        <CustomSelectBox
-          selected={selected}
-          setSelected={setSelected}
-          options={[
-            { key: 'latest', value: '최신글' },
-            { key: 'oldest', value: '오래된 글' },
-          ]}
-        />
+      <View style={styles.buttonContainer}>
+        <View style={styles.dropdownContainer}>
+          <CustomSelectBox
+            selected={selected}
+            setSelected={setSelected}
+            options={[
+              { key: 'latest', value: '최신글' },
+              { key: 'oldest', value: '오래된 글' },
+            ]}
+          />
+        </View>
+        <SaveButton onPress={() => router.push('/qna/register')}>
+          <Text style={styles.butontext}>Register</Text>
+        </SaveButton>
       </View>
 
       <FlatList
@@ -85,6 +115,17 @@ export default function QnaPage() {
             title={item.title}
             createAt={item.createAt}
             status={item.question_status}
+            onPress={() => router.push({
+              pathname: `/qna/detailQnA`,
+              params: {
+                id: item.id,
+                title: item.title,
+                content: item.content,
+                createAt: item.createAt,
+                status: item.question_status,
+                questionImage: item.question_image,
+              }
+            })}
           />
         )}
         keyExtractor={(item) => item.id.toString()}
@@ -129,10 +170,23 @@ const styles = StyleSheet.create({
     marginRight: 44,
     color: '#032B77',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  butontext: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   dropdownContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     position: 'relative',
+    //right:280,
   },
   listContainer: {
     paddingVertical: 8,

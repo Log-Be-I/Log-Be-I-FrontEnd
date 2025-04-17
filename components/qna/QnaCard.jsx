@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native'; 
 
-export default function QnaCard({ title, createAt, status }) {
+export default function QnaCard({ title, createAt }) {
   return (
     <View style={styles.container}>
       <Text style={styles.date}>{createAt}</Text>
@@ -30,11 +30,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     textAlign: 'right',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   title: {
     fontSize: 16,
     color: '#333',
-    marginBottom: 8,
+    marginBottom: 16,
   },
 }); 
