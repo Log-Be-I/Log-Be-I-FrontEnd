@@ -2,8 +2,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-export default function CalendarDay({ date, selected, onPress, hasEvent }) {
-  const isSelected = selected === date.dateString;
+export default function CalendarDay({ date, selected, onPress, hasEvent, isHoliday, holidayName }) {
+  const isToday = date.dateString === new Date().toISOString().split('T')[0];
+  const isSelected = (selected ?? isToday) === date.dateString;
+  const dayOfWeek = new Date(date.dateString).getDay();
+  const isSunday = dayOfWeek === 0;
+  const isSaturday = dayOfWeek === 6;
 
   return (
     <TouchableOpacity
@@ -12,18 +16,23 @@ export default function CalendarDay({ date, selected, onPress, hasEvent }) {
     >
       <View style={[
         styles.dayContainer,
-        isSelected && styles.selectedDay
+        isSelected && styles.selectedDay,
       ]}>
         <Text style={[
           styles.dayText,
-          isSelected && styles.selectedDayText
+          isToday && styles.todayText,
+          isSunday && styles.sundayText,
+          isSaturday && styles.saturdayText,
+          isHoliday && styles.holidayText,
+          isSelected && styles.selectedDayText,
         ]}>
           {date.day}
         </Text>
       </View>
-      {hasEvent && (
+      {(hasEvent || isHoliday) && (
         <View style={[
           styles.dot,
+          isHoliday && styles.holidayDot,
           isSelected && styles.selectedDot
         ]} />
       )}
@@ -47,11 +56,24 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   selectedDay: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: '#69BAFF',
   },
   dayText: {
     fontSize: 14,
     color: '#333',
+  },
+  todayText: {
+    color: '#69BAFF',
+    fontWeight: '600',
+  },
+  sundayText: {
+    color: '#FF4B4B',
+  },
+  saturdayText: {
+    color: '#4B75FF',
+  },
+  holidayText: {
+    color: '#FF4B4B',
   },
   selectedDayText: {
     color: 'white',
@@ -63,6 +85,9 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: '#69BAFF',
     marginTop: 4,
+  },
+  holidayDot: {
+    backgroundColor: 'orange',
   },
   selectedDot: {
     backgroundColor: 'white',
