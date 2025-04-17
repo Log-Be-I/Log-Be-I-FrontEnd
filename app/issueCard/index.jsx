@@ -5,13 +5,13 @@ import InterestButton from '../../components/issueCard/InterestButton';
 import SearchInput from '../../components/issueCard/SearchInput';
 import StartButton from '../../components/issueCard/StartButton';
 import Toast from '../../components/common/Toast';
-import { useRouter, useSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { postKeywords } from '../../api/issueCard/issueCardApi';
 
 export default function IssueCardPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const editKeywords = searchParams.get('editKeywords');
+  const searchParams = useLocalSearchParams();
+  const editKeywords = searchParams?.editKeywords ?? '';
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [customInterests, setCustomInterests] = useState([]);
@@ -32,7 +32,7 @@ export default function IssueCardPage() {
     ],
     [
       { title: '여행/음식', icon: '✈️' },
-      { title: '지기계발', icon: '��' },
+      { title: '지기계발', icon: '📚' },
     ],
   ];
 
