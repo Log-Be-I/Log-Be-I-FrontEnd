@@ -29,14 +29,15 @@ export default function RecordList({
   records,
   selectedStartDate,
   isSelectMode,
-  onToggleSelectMode,
-  onDelete,
-  onNew,
+  selectedRecords,
+  onRecordSelect,
+  onUpdateRecord,
 }) {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [currentDate, setCurrentDate] = useState(null);
   const scrollY = useRef(new Animated.Value(0)).current;
 
   // 날짜별로 데이터 그룹화
@@ -81,7 +82,7 @@ export default function RecordList({
 
   const handleRecordPress = (record) => {
     if (isSelectMode) {
-      toggleItemSelection(record.record_id);
+      onRecordSelect(record.record_id);
     } else {
       setSelectedRecord(record);
       setShowDetailModal(true);
@@ -89,6 +90,7 @@ export default function RecordList({
   };
 
   const handleSaveRecord = (updatedRecord) => {
+    onUpdateRecord(updatedRecord);
     // TODO: 실제 데이터 업데이트 로직 구현
     console.log("Updated record:", updatedRecord);
     setShowDetailModal(false);
@@ -127,28 +129,20 @@ export default function RecordList({
     </View>
   );
 
-  const renderItem = ({ item, index, section }) => {
-    const isFirstItem = index === 0;
-    const categoryInfo = CATEGORIES.find(
-      (cat) => cat.category_id === item.category_id
-    );
+  const renderItem = ({ item }) => {
+    const isSelected = selectedRecords?.includes(item.record_id);
+
     return (
-      <View style={isFirstItem && styles.firstItemContainer}>
-        <RecordItem
-          key={item.record_id}
-          id={item.record_id}
-          category={categoryInfo.name}
-          categoryInfo={CATEGORY_ICONS[categoryInfo.name]}
-          time={item.record_time}
-          content={item.content}
-          writeTime={item.record_date}
-          isSelectMode={isSelectMode}
-          isSelected={selectedItems.includes(item.record_id)}
-          onSelect={() => handleRecordPress(item)}
-        />
-      </View>
+      <RecordItem
+        record={item}
+        onSelect={() => handleRecordPress(item)}
+        isSelectMode={isSelectMode}
+        isSelected={isSelected}
+      />
     );
   };
+
+  const ListFooter = () => <View style={styles.footer} />;
 
   return (
     <View style={styles.container}>
@@ -161,12 +155,11 @@ export default function RecordList({
           keyExtractor={(item) => item.record_id}
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            {
-              useNativeDriver: false,
-            }
+            { useNativeDriver: false }
           )}
           scrollEventThrottle={16}
           ListEmptyComponent={EmptyState}
+          ListFooterComponent={ListFooter}
           contentContainerStyle={[
             styles.listContentContainer,
             filteredSections.length === 0 && styles.emptyContentContainer,
@@ -254,5 +247,8 @@ const styles = StyleSheet.create({
   },
   firstItemContainer: {
     paddingTop: 8,
+  },
+  footer: {
+    height: 100, // 하단 탭바와 패딩을 고려한 높이
   },
 });

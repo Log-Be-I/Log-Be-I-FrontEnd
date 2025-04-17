@@ -68,6 +68,8 @@ const RecordEditDateRange = ({ date, onDateChange }) => {
           "11월",
           "12월",
         ]}
+        maxDate={new Date()}
+        disabledDates={(date) => date > new Date()}
       />
     </View>
   );

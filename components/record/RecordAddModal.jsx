@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -14,15 +14,14 @@ import CategoryDropdown from "./CategoryDropdown";
 import RecordEditDateRange from "./RecordEditDateRange";
 import { CATEGORIES } from "../../constants/CategoryData";
 
-export default function RecordDetailModal({
-  visible,
-  onClose,
-  record,
-  onSave,
-}) {
-  const [isEditing, setIsEditing] = useState(false);
+export default function RecordAddModal({ visible, onClose, onSave }) {
   const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState("00:00");
+  const [time, setTime] = useState(
+    new Date().toLocaleTimeString("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  );
   const [category, setCategory] = useState(CATEGORIES[0].category_id);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
@@ -32,9 +31,8 @@ export default function RecordDetailModal({
   const scaleAnim = React.useRef(new Animated.Value(0.95)).current;
   const opacityAnim = React.useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (visible) {
-      setInitialData();
       Animated.parallel([
         Animated.timing(scaleAnim, {
           toValue: 1,
@@ -53,27 +51,6 @@ export default function RecordDetailModal({
     }
   }, [visible]);
 
-  const setInitialData = () => {
-    if (record) {
-      setDate(new Date(record.record_date));
-      setTime(record.record_time);
-      setCategory(record.category_id || CATEGORIES[0].category_id);
-      setContent(record.content || "");
-      setCharCount(record.content?.length || 0);
-    } else {
-      setDate(new Date());
-      setTime(
-        new Date().toLocaleTimeString("ko-KR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      );
-      setCategory(CATEGORIES[0].category_id);
-      setContent("");
-      setCharCount(0);
-    }
-  };
-
   const handleSave = () => {
     if (!content.trim()) {
       setError("내용을 입력해주세요.");
@@ -91,8 +68,17 @@ export default function RecordDetailModal({
   };
 
   const handleClose = () => {
-    setIsEditing(false);
     setError("");
+    setContent("");
+    setCharCount(0);
+    setDate(new Date());
+    setTime(
+      new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
+    setCategory(CATEGORIES[0].category_id);
     onClose();
   };
 
@@ -110,10 +96,6 @@ export default function RecordDetailModal({
       month: "long",
       day: "numeric",
     });
-  };
-
-  const handleDateChange = (newDate) => {
-    setDate(newDate.toDate());
   };
 
   return (
@@ -136,12 +118,12 @@ export default function RecordDetailModal({
           <View style={styles.contentWrapper}>
             <Pressable
               style={styles.dateContainer}
-              onPress={() => isEditing && setShowCalendar(true)}
+              onPress={() => setShowCalendar(true)}
             >
               <MaterialCommunityIcons
                 name="calendar"
                 size={20}
-                color={isEditing ? "#69BAFF" : "#666666"}
+                color="#69BAFF"
               />
               <Text style={styles.dateText}>{formatDate(date)}</Text>
             </Pressable>
@@ -151,7 +133,7 @@ export default function RecordDetailModal({
               <TimePickerInput
                 value={time}
                 onChange={setTime}
-                isEditing={isEditing}
+                isEditing={true}
                 style={styles.timeInput}
               />
               <View style={styles.timeLine} />
@@ -161,59 +143,39 @@ export default function RecordDetailModal({
               <CategoryDropdown
                 value={category}
                 onChange={setCategory}
-                isEditing={isEditing}
+                isEditing={true}
               />
             </View>
 
-            <TextInput
-              style={[
-                styles.contentInput,
-                isEditing ? styles.contentInputEditing : null,
-                error ? styles.contentInputError : null,
-              ]}
-              multiline
-              value={content}
-              onChangeText={handleContentChange}
-              editable={isEditing}
-              placeholder={isEditing ? "내용을 입력하세요" : ""}
-              placeholderTextColor="#999999"
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[
+                  styles.contentInput,
+                  error ? styles.contentInputError : null,
+                ]}
+                multiline
+                value={content}
+                onChangeText={handleContentChange}
+                placeholder="내용을 입력하세요"
+                placeholderTextColor="#999999"
+              />
+              <Text style={styles.charCount}>{charCount}/500</Text>
+            </View>
             {error && <Text style={styles.errorText}>{error}</Text>}
-            {isEditing && <Text style={styles.charCount}>{charCount}/500</Text>}
           </View>
 
           <View style={styles.buttonContainer}>
             <Pressable
-              style={[
-                styles.button,
-                isEditing ? styles.cancelButton : styles.editButton,
-              ]}
-              onPress={() => (isEditing ? handleClose() : setIsEditing(true))}
+              style={[styles.button, styles.cancelButton]}
+              onPress={handleClose}
             >
-              <Text
-                style={[
-                  styles.buttonText,
-                  isEditing ? styles.cancelButtonText : styles.editButtonText,
-                ]}
-              >
-                {isEditing ? "취소" : "수정"}
-              </Text>
+              <Text style={styles.cancelButtonText}>취소</Text>
             </Pressable>
             <Pressable
-              style={[
-                styles.button,
-                isEditing ? styles.saveButton : styles.okButton,
-              ]}
-              onPress={isEditing ? handleSave : handleClose}
+              style={[styles.button, styles.saveButton]}
+              onPress={handleSave}
             >
-              <Text
-                style={[
-                  styles.buttonText,
-                  isEditing ? styles.saveButtonText : styles.okButtonText,
-                ]}
-              >
-                {isEditing ? "저장" : "확인"}
-              </Text>
+              <Text style={styles.saveButtonText}>기록</Text>
             </Pressable>
           </View>
         </Animated.View>
@@ -300,6 +262,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     alignSelf: "flex-start",
   },
+  inputContainer: {
+    marginBottom: 8,
+  },
   contentInput: {
     minHeight: 120,
     backgroundColor: "#FFFFFF",
@@ -312,23 +277,17 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#69BAFF",
   },
-  contentInputEditing: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#69BAFF",
-  },
   contentInputError: {
     borderColor: "#FF4444",
-  },
-  errorText: {
-    color: "#FF4444",
-    fontSize: 12,
-    marginTop: 4,
   },
   charCount: {
     fontSize: 12,
     color: "#666666",
     textAlign: "right",
+  },
+  errorText: {
+    color: "#FF4444",
+    fontSize: 12,
     marginTop: 4,
   },
   buttonContainer: {
@@ -344,12 +303,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-  editButton: {
-    backgroundColor: "#F5F5F5",
-  },
-  okButton: {
-    backgroundColor: "#69BAFF",
-  },
   cancelButton: {
     backgroundColor: "#F5F5F5",
   },
@@ -360,16 +313,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-  editButtonText: {
-    color: "#666666",
-  },
-  okButtonText: {
-    color: "#FFFFFF",
-  },
   cancelButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
     color: "#666666",
   },
   saveButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
     color: "#FFFFFF",
   },
   calendarModalOverlay: {
