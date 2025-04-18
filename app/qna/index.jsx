@@ -20,6 +20,8 @@ export default function QnaPage() {
   const { keywords } = useLocalSearchParams();
   const [titleKeyword, setTitleKeyword] = useState('');
 
+  const { updatedId, updatedTitle, updatedContent } = useLocalSearchParams();
+
   useEffect(() => {
     if (keywords) {
       try{ const parsedKeywords = JSON.parse(keywords); // title만 넘긴 경우에는 그냥 string으로 받음
@@ -30,6 +32,15 @@ export default function QnaPage() {
     }
   }, [keywords]);
 
+  useEffect(() => {
+    if (updatedId) {
+      setQuestions(prev => prev.map(question => 
+        question.id === Number(updatedId) ? { ...question, title: updatedTitle, content: updatedContent } 
+        : question
+      ));
+    }
+  }, [updatedId]);
+  
   // 현재 페이지 이동시에 groupIndex 업데이트
   useEffect(() => {
     const newGroupIndex = Math.floor((currentPage - 1) / itemsPerPage);
@@ -176,6 +187,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    backgroundColor: '#ffffff',
+    zIndex: 100,
   },
   butontext: {
     color: '#FFFFFF',

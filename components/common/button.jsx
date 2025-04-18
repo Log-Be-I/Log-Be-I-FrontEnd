@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     borderColor: "#E0E9FF",
     alignItems: "center",
     justifyContent: "center",
+    textAlign: "center",
   },
 });
 
@@ -42,6 +43,7 @@ const sizeStyle = {
   small: {
     paddingVertical: 5,
     paddingHorizontal: 16,
+    width: 80,
   },
   medium: {
     paddingVertical: 6,

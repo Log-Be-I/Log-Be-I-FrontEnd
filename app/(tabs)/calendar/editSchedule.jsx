@@ -5,9 +5,9 @@ import DateRangeSelector from '../../../components/calendar/DateRangeSelector';
 import Button from '../../../components/common/button';
 import { updateSchedule, deleteSchedule } from '../../../api/schedule/scheduleApi';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import CancelModal from '../../../components/common/CancelModal';
 
 export default function EditSchedule() {
-  const router = useRouter();
   const params = useLocalSearchParams();
   const schedule = JSON.parse(params.schedule);
   const [title, setTitle] = useState(schedule.title);
@@ -53,7 +53,7 @@ export default function EditSchedule() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
+        <TouchableOpacity onPress={() => setModalVisible(true)} style={{borderWidth: 1, borderColor: '#FF9500', borderRadius: 5, padding: 5}}>
           <Icon name="delete" size={24} color="#FF9500" />
         </TouchableOpacity>
       </View>
@@ -110,32 +110,11 @@ export default function EditSchedule() {
         )}
       </View>
 
-      <Modal
-        animationType="fade"
-        transparent={true}
+      <CancelModal
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>일정을 삭제하시겠습니까?</Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.deleteButton]}
-                onPress={handleDelete}
-              >
-                <Text style={styles.buttonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onCancel={() => setModalVisible(false)}
+        onDelete={handleDelete}
+      />
     </View>
   );
 }
@@ -177,44 +156,5 @@ const styles = StyleSheet.create({
   },
   button: {
     minWidth: 100,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-    width: '80%',
-    alignItems: 'center',
-  },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-  },
-  modalButton: {
-    padding: 10,
-    borderRadius: 5,
-    width: '40%',
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#69BAFF',
-  },
-  deleteButton: {
-    backgroundColor: '#FF9500',
-  },
-  buttonText: {
-    fontSize: 16,
-    color: 'white',
   },
 });

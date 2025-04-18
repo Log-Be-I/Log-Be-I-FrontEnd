@@ -1,11 +1,10 @@
 import { Pressable, Text, StyleSheet, View } from 'react-native';
 
-export default function SaveButton({ onPress, children }) {
+export default function SaveButton({ onPress, children, style }) {
   return (
-    <View style={styles.shadowWrapper}>
-      <Pressable onPress={onPress} style={styles.button}>
+    <View style={[styles.shadowWrapper, style]}>
+      <Pressable onPress={onPress} style={[styles.button, style]}>
         {children}
-        {/*<Text style={styles.buttonText}>Register</Text>*/}
       </Pressable>
     </View>
   );
@@ -23,11 +22,11 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#61B9FF',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 9999,
     alignItems: 'center',
-    minWidth: 100,
+    minWidth: 80,
   },
   buttonText: {
     color: '#FFFFFF',

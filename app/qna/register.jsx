@@ -15,8 +15,6 @@ export default function RegisterQnaPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-
-
   const handleBack = () => {
     router.back();
   };
@@ -77,16 +75,18 @@ export default function RegisterQnaPage() {
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>내용</Text>
           <View style={styles.contentContainer}>
-            <TextInput
-              placeholder="자세한 내용을 적어주시면 더 정확히 답변드릴 수 있어요."
-              placeholderTextColor="#9CA3AF"
-              value={contentValue}
-              onChangeText={handleContentChange} // 값 변경시 자동 업데이트
-              multiline={true}
-              textAlignVertical="top"
-              scrollEnabled={true}
-              maxLength={500}
-            />
+            <ScrollView>
+              <TextInput
+                placeholder="자세한 내용을 적어주시면 더 정확히 답변드릴 수 있어요."
+                placeholderTextColor="#9CA3AF"
+                value={contentValue}
+                onChangeText={handleContentChange} // 값 변경시 자동 업데이트
+                multiline={true}
+                textAlignVertical="top"
+                scrollEnabled={true}
+                maxLength={500}
+              />
+            </ScrollView>
           </View>
           <Text style={styles.charCount}>{charCount}/500</Text>
         </View>
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    height: 200,
+    height: 110,
     textAlignVertical: 'top',
   },
   contentText: {

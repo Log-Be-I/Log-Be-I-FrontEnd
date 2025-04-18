@@ -39,7 +39,7 @@ export default function QnaLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="noQuestion" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen name="detail" options={{ headerShown: false }} />
+        <Stack.Screen name="detailQnA" options={{ headerShown: false }} />
         </Stack>
         <Footer />
     </SafeAreaView>
