@@ -1,99 +1,181 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Calendar } from 'react-native-calendars';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, parseISO } from 'date-fns';
 import CalendarDay from './CalendarDay';
+//import { getAllSchedules } from '../../api/schedule/scheduleApi';
 import { Holidays } from '../../dummyData/Holidays';
+import { mockSchedules } from './mockData';
 
-export default function CalendarBody({ selected, onDayPress, markedDates }) {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+export default function CalendarBody () {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [schedules, setSchedules] = useState([]);
 
-  const handleDayPress = (day) => {
-    const holidayInfo = Holidays[day.dateString];
-    setSelectedDate(day.dateString); // 선택 날자 갱신
-    onDayPress?.({...day, 
-      isHoliday: !!holidayInfo, 
-      holidayName: holidayInfo?.name
-    });
+  useEffect(() => {
+    fetchSchedules();
+  }, []);
+
+  const fetchSchedules = async () => {
+    try {
+      //const response = await getAllSchedules();
+      //setSchedules(response.data);
+      setSchedules(mockSchedules);
+    } catch (error) {
+      console.error('일정을 불러오는데 실패했습니다:', error);
+    }
   };
 
-  const [currentDate] = useState(new Date().toISOString().split('T')[0]);
-  
-  // 공휴일과 일정을 합친 markedDates 생성
-  const combinedMarkedDates = {
-    ...Object.keys(Holidays).reduce((acc, date) => ({
-      ...acc,
-      [date]: {
-        marked: true,
-        type: 'holiday',
-        name: Holidays[date].name
+  const onPrevMonth = () => {
+    setCurrentDate(subMonths(currentDate, 1));
+  };
+
+  const onNextMonth = () => {
+    setCurrentDate(addMonths(currentDate, 1));
+  };
+
+  const getDaysInMonth = () => {
+    const start = startOfMonth(currentDate);
+    const end = endOfMonth(currentDate);
+    return eachDayOfInterval({ start, end });
+  };
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <TouchableOpacity onPress={onPrevMonth}>
+        <Text style={styles.headerButton}>{'<'}</Text>
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>
+        {format(currentDate, 'yyyy년 MM월')}
+      </Text>
+      <TouchableOpacity onPress={onNextMonth}>
+        <Text style={styles.headerButton}>{'>'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderDays = () => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return (
+      <View style={styles.daysRow}>
+        {days.map((day, index) => (
+          <Text
+            key={day}
+            style={[
+              styles.dayLabel,
+              index === 0 ? styles.sundayLabel : null,
+              index === 6 ? styles.saturdayLabel : null,
+            ]}
+          >
+            {day}
+          </Text>
+        ))}
+      </View>
+    );
+  };
+
+  const renderCalendar = () => {
+    const days = getDaysInMonth();
+    const firstDayOfMonth = startOfMonth(currentDate).getDay();
+    const weeks = [];
+    let week = new Array(7).fill(null);
+    
+    // 이전 달의 날짜 채우기
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      const prevDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), -firstDayOfMonth + i + 1);
+      week[i] = prevDate;
+    }
+
+    days.forEach((day, index) => {
+      const weekDay = (firstDayOfMonth + index) % 7;
+      week[weekDay] = day;
+      
+      if (weekDay === 6) {
+        weeks.push([...week]);
+        week = new Array(7).fill(null);
       }
-    }), {}),
-    ...markedDates
+    });
+
+    // 마지막 주 채우기
+    if (week.some(day => day !== null)) {
+      let nextMonthDay = 1;
+      for (let i = 0; i < 7; i++) {
+        if (!week[i]) {
+          week[i] = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, nextMonthDay++);
+        }
+      }
+      weeks.push(week);
+    }
+
+    return weeks.map((week, weekIndex) => (
+      <View key={weekIndex} style={styles.week}>
+        {week.map((day, dayIndex) => (
+          <CalendarDay
+            key={dayIndex}
+            date={day}
+            currentDate={currentDate}
+            selectedDate={selectedDate}
+            onSelectDate={(date) => {
+              setSelectedDate(date);
+              if (!isSameMonth(date, currentDate)) {
+                setCurrentDate(date);
+              }
+            }}
+            schedules={schedules} // 전체 일정 리스트
+            holidays={Holidays}
+          />
+        ))}
+      </View>
+    ));
   };
 
   return (
     <View style={styles.container}>
-      <Calendar
-        style={styles.calendar}
-        onDayPress={(day) => {
-          // 공휴일 정보가 있으면 함께 전달
-          const holidayInfo = Holidays[day.dateString];
-          onDayPress({
-            ...day,
-            isHoliday: !!holidayInfo,
-            holidayName: holidayInfo?.name
-          });
-        }}
-        current={currentDate}
-        markedDates={combinedMarkedDates}
-        monthFormat='yyyy년 MM월'
-        hideExtraDays={false}
-        enableSwipeMonths={true}
-        dayComponent={({ date, state }) => (
-          <CalendarDay
-            date={date}
-            selected={selected}
-            onPress={handleDayPress}
-            hasEvent={markedDates[date.dateString]?.marked}
-            isHoliday={Holidays[date.dateString]?.type === 'holiday'}
-            holidayName={Holidays[date.dateString]?.name}
-          />
-        )}
-        theme={{
-          selectedDayBackgroundColor: '#69BAFF',
-          selectedDayTextColor: 'white',
-          textDayFontFamily: 'Pretendard-Regular',
-          textDayHeaderFontFamily: 'Pretendard-Regular',
-          textDisabledColor: '#ccc',
-          dotColor: '#69BAFF',
-          dayTextColor: '#222',
-          selectedDotColor: 'white',
-          arrowColor: '#69BAFF',
-          monthTextColor: '#333',
-          textMonthFontFamily: 'Pretendard-Medium',
-          textDayHeaderFontSize: 14,
-          'stylesheet.calendar.main': {
-            week: {
-              marginTop: 2,
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-            },
-          },
-        }}
-      />
+      {renderHeader()}
+      {renderDays()}
+      {renderCalendar()}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
+    padding: 10,
   },
-  calendar: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    //paddingVertical: 10,
+  },
+  headerButton: {
+    fontSize: 20,
+    padding: 10,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  daysRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 4,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-    height: 350,
+    borderBottomColor: '#eee',
   },
-}); 
-// 해당 날짜에 일정이 있는지 여부를 Boolean으로 전달하는 prop이다.
-// hasEvent 값이 true이면 dot을 표시하고, false이면 dot을 표시하지 않는다.
+  dayLabel: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 14,
+  },
+  sundayLabel: {
+    color: 'red',
+  },
+  saturdayLabel: {
+    color: 'blue',
+  },
+  week: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+});

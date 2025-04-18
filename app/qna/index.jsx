@@ -60,7 +60,7 @@ export default function QnaPage() {
     });
 
     // 키워드가 있으면 해당 제목을 가진 질문을 맨 앞으로 정렬
-    let prioritized = sortedData;
+    const prioritized = sortedData;
     if (titleKeyword) {
       prioritized = sortedData.sort((a, b) => {
         const isA = a.title.includes(titleKeyword);

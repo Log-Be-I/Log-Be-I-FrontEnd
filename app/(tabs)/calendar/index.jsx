@@ -5,6 +5,7 @@ import EventList from '../../../components/calendar/EventList';
 import { mockSchedules } from '../../../components/calendar/mockData';
 import { useRouter } from 'expo-router';
 import CalendarBody from '../../../components/calendar/CalendarBody';
+import ScheduleComponent from '../../../components/calendar/ScheduleComponent';
 
 export default function MyCalendar() {
   const router = useRouter();
@@ -85,7 +86,8 @@ export default function MyCalendar() {
         onDayPress={handleDayPress}
         markedDates={markedDates}
       />
-      <EventList schedules={selectedDaySchedules} onPress={handleSchedulePress} />
+      {/* <EventList schedules={selectedDaySchedules} onPress={handleSchedulePress} /> */}
+      <ScheduleComponent schedules={selectedDaySchedules} onPress={handleSchedulePress} />
       <TouchableOpacity style={styles.addButton} onPress={handleAddSchedule}>
         <Icon name="add" size={24} color="white" />
       </TouchableOpacity>
@@ -97,6 +99,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+    padding: 0,
   },
   calendar: {
     borderBottomWidth: 1,
