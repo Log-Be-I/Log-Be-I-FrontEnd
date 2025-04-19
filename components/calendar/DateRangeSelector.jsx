@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Switch } from 'react-native';
+import { View, StyleSheet, Text, Switch, Keyboard } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Calendar } from 'react-native-calendars';
 import DayInput from './DayInput';
 import { set } from 'date-fns';
+import CalendarBody from './CalendarBody';
 
 export default function DateRangeSelector({ 
   startDate, 
@@ -11,6 +12,7 @@ export default function DateRangeSelector({
   onDateRangeChange, 
   disabled,
   onChange, // 부모에서 내려온 setIsEditing(true)
+  onCalendarOpen, // 부모로부터 받은 콜백
  }) {
   const [startedDate, setStartedDate] = useState(new Date(startDate));
   const [endedDate, setEndedDate] = useState(new Date(endDate));
@@ -91,12 +93,16 @@ export default function DateRangeSelector({
     setDateType('start');
     setShowCalendar(true);
     updateMarkedDates(startedDate, endedDate);
+    if (onCalendarOpen) onCalendarOpen(); // 부모로 콜백 전달
+    Keyboard.dismiss();
   };
 
   const handleEndDatePress = () => {
     setDateType('end');
     setShowCalendar(true);
     updateMarkedDates(startedDate, endedDate);
+    if (onCalendarOpen) onCalendarOpen(); // 부모로 콜백 전달
+    Keyboard.dismiss();
   };
 
   return (
@@ -150,7 +156,6 @@ export default function DateRangeSelector({
             onDayPress={handleDateSelect}
             markedDates={markedDates}
             style={styles.calendar}
-            monthFormat='yyyy년 MM월'
           />
         </View>
       )}

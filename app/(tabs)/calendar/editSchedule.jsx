@@ -8,11 +8,12 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import CancelModal from '../../../components/common/CancelModal';
 
 export default function EditSchedule() {
+  const router = useRouter();
   const params = useLocalSearchParams();
   const schedule = JSON.parse(params.schedule);
   const [title, setTitle] = useState(schedule.title);
-  const [startTime, setStartTime] = useState(new Date(schedule.startTime));
-  const [endTime, setEndTime] = useState(new Date(schedule.endTime));
+  const [startTime, setStartTime] = useState(new Date(schedule.startDateTime));
+  const [endTime, setEndTime] = useState(new Date(schedule.endDateTime));
   const [isEditing, setIsEditing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -53,7 +54,7 @@ export default function EditSchedule() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => setModalVisible(true)} style={{borderWidth: 1, borderColor: '#FF9500', borderRadius: 5, padding: 5}}>
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Icon name="delete" size={24} color="#FF9500" />
         </TouchableOpacity>
       </View>
@@ -78,6 +79,7 @@ export default function EditSchedule() {
         disabled={!isEditing} //false 여야 시간도 선택 가능
         onChange={() => setIsEditing(true)}
       />
+
 
       <View style={styles.buttonContainer}>
         {isEditing ? (
@@ -129,21 +131,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    padding: 16,
+    padding: 10,
+    marginBottom: 50,
     //borderBottomWidth: 1,
     //borderBottomColor: '#E5E5E5',
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: 'semibold',
     marginBottom: 20,
+    left: 20,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
+    width: '90%',
+    borderBottomWidth: 1,
+    borderColor: '#E5E5E5',
     padding: 10,
     marginBottom: 20,
     borderRadius: 5,
+    fontSize: 18,
+    left: 18,
   },
   buttonContainer: {
     flexDirection: 'row',

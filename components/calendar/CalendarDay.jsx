@@ -29,9 +29,9 @@ export default function CalendarDay({ date, currentDate, selectedDate, onSelectD
   const getDayColor = () => {
     if (!isCurrentMonth) return '#D1D5DB';
     if (isSelected) return '#fff'; // 선택된 날짜는 흰색 텍스트
+    if (isToday) return '#69BAFF'; 
     if (isHoliday || isSunday) return '#FF4B4B'; // 공휴일 또는 일요일
     if (isSaturday) return '#4B75FF'; // 토요일
-    if (isToday) return '#69BAFF'; // 오늘 날짜
     return '#000'; // 기본 텍스트 색
   };
 

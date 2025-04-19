@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import EventList from '../../../components/calendar/EventList';
 import { mockSchedules } from '../../../components/calendar/mockData';
 import { useRouter } from 'expo-router';
 import CalendarBody from '../../../components/calendar/CalendarBody';
@@ -9,7 +8,7 @@ import ScheduleComponent from '../../../components/calendar/ScheduleComponent';
 
 export default function MyCalendar() {
   const router = useRouter();
-  const [selected, setSelected] = useState('');
+  const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDaySchedules, setSelectedDaySchedules] = useState([]);
 
@@ -81,13 +80,23 @@ export default function MyCalendar() {
 
   return (
     <View style={styles.container}>
-      <CalendarBody
-        selected={selected}
-        onDayPress={handleDayPress}
-        markedDates={markedDates}
-      />
+      <View style={styles.calendarWrapper}>
+        <CalendarBody
+          selected={selected}
+          onDayPress={handleDayPress}
+          markedDates={markedDates}
+        />
+      </View>
+
+      {/* 일정 리스트 컴포넌트 */}
+      <View style={styles.scheduleWrapper}>
       {/* <EventList schedules={selectedDaySchedules} onPress={handleSchedulePress} /> */}
-      <ScheduleComponent schedules={selectedDaySchedules} onPress={handleSchedulePress} />
+        <ScheduleComponent 
+        schedules={selectedDaySchedules} 
+        onPress={handleSchedulePress} />
+      </View>
+
+      {/* 일정 추가 버튼 */}
       <TouchableOpacity style={styles.addButton} onPress={handleAddSchedule}>
         <Icon name="add" size={24} color="white" />
       </TouchableOpacity>
@@ -99,7 +108,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-    padding: 0,
+    //padding: 0,
+  },
+  calendarWrapper: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+    paddingBottom: 10,
+  },
+  scheduleWrapper: {
+    flex: 1, // 리스트가 남은 공간을 차지하게
+    paddingHorizontal: 10,
   },
   calendar: {
     borderBottomWidth: 1,

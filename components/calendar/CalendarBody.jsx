@@ -6,7 +6,7 @@ import CalendarDay from './CalendarDay';
 import { Holidays } from '../../dummyData/Holidays';
 import { mockSchedules } from './mockData';
 
-export default function CalendarBody () {
+export default function CalendarBody ({ selected, onDayPress}) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [schedules, setSchedules] = useState([]);
@@ -39,16 +39,28 @@ export default function CalendarBody () {
     return eachDayOfInterval({ start, end });
   };
 
+  // const handleDayPress = (day) => {
+  //   setSelectedDate(day.dateString);
+  //   onDayPress?.({ dateString: format(day.date, 'yyyy-MM-dd') });
+  // };
+  const handleSelectDate = (date) => {
+    setSelectedDate(date); // 내부 선택 상태 업데이트
+    onDayPress?.({ dateString: format(date, 'yyyy-MM-dd') }); // 외부 콜백 호출
+    if (!isSameMonth(date, currentDate)) {
+      setCurrentDate(date);
+    }
+  };
+
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity onPress={onPrevMonth}>
-        <Text style={styles.headerButton}>{'<'}</Text>
+        <Text style={[styles.headerButton, {color: '#69BAFF'}]}>{'<'}</Text>
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>
+      <Text style={[styles.headerTitle, {color: '#5B75B1'}]}>
         {format(currentDate, 'yyyy년 MM월')}
       </Text>
       <TouchableOpacity onPress={onNextMonth}>
-        <Text style={styles.headerButton}>{'>'}</Text>
+        <Text style={[styles.headerButton, {color: '#69BAFF'}]}>{'>'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -114,12 +126,7 @@ export default function CalendarBody () {
             date={day}
             currentDate={currentDate}
             selectedDate={selectedDate}
-            onSelectDate={(date) => {
-              setSelectedDate(date);
-              if (!isSameMonth(date, currentDate)) {
-                setCurrentDate(date);
-              }
-            }}
+            onSelectDate={handleSelectDate}
             schedules={schedules} // 전체 일정 리스트
             holidays={Holidays}
           />
