@@ -9,46 +9,62 @@ import useAuthStore from "../../zustand/stores/authStore";
 import GoogleLoginButton from "../../components/onBoard/GoogleLoginButton";
 import * as Google from "expo-auth-session/providers/google";
 import * as AuthSession from "expo-auth-session";
-import * as WebBrowser from "expo-web-browser";
-import React from "react";
+// import * as WebBrowser from "expo-web-browser";
+import React, { useEffect } from "react";
 
-WebBrowser.maybeCompleteAuthSession();
+// WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const router = useRouter();
-  const { isLoading, error, setToken, setUser } = useAuthStore();
+  const { isLoading, error, setToken, setUser, googleLogin } = useAuthStore();
 
-  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
-  console.log("✅ redirectUri", redirectUri);
+  const redirectUri = AuthSession.makeRedirectUri({ useProxy: false });
 
-  // Google 로그인 설정
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    // redirectUri: "https://auth.expo.io/@taekho/Log-Be-I-FrontEnd",
-    useProxy: true,
-    scopes: ["email", "profile"],
-  });
+  const [request, response, promptAsync] = Google.useAuthRequest(
+    {
+      webClientId:
+        "381665725956-rmfoi0jbmi555etmjnh2c7suaa9nhinq.apps.googleusercontent.com",
+      androidClientId:
+        "626966709748-j3to6polebke9oj5rprnqu7s6ravfu7p.apps.googleusercontent.com",
+      responseType: "code",
+      shouldAutoExchangeCode: false,
+      scopes: ["email", "profile", "openid"],
+      usePKCE: false,
+      redirectUri: redirectUri,
+      extraParams: {
+        prompt: "consent",
+        access_type: "offline",
+      },
+      skipCodeExchange: true,
+    },
+    {
+      useProxy: false,
+    }
+  );
 
-  // 디버깅을 위한 로그 추가
-  console.log("Google Auth Request Config:", {
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    redirectUri: request?.redirectUri,
-  });
-
-  // response 모니터링 추가
-  React.useEffect(() => {
+  useEffect(() => {
     if (response?.type === "success") {
-      console.log("Auth Success Response:", response);
-    } else if (response?.type === "error") {
-      console.log("Auth Error Response:", response);
+      const { code } = response.params;
+      if (code) {
+        console.log("📦 Received authorization code:", code);
+        (async () => {
+          const loginResult = await googleLogin(code);
+          console.log("📥 Login result:", loginResult);
+
+          if (loginResult.isRegistered) {
+            router.replace("/(tabs)");
+          } else {
+            router.push({
+              pathname: "/(onBoard)/signUp",
+              params: loginResult.signUpData,
+            });
+          }
+        })();
+      }
     }
   }, [response]);
 
-  // 테스트용 로그인
   const handleLogin2 = () => {
-    // 테스트용 토큰과 사용자 정보 설정
     setToken("test-token");
     setUser({
       id: "test-user-id",
@@ -56,7 +72,6 @@ export default function Login() {
       name: "Test User",
       image: null,
     });
-    // 메인 화면으로 이동
     router.replace("/(tabs)");
   };
 
@@ -193,6 +208,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-
-// StyleSheet는 SafeAreaView와 무관하다.
-// SafeAreaView는 UI 컴포넌트 배치를 위한 영역이고, Style Sheet는 스타일을 적용하기 위한 영역이다.

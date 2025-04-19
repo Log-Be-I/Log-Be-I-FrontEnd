@@ -11,8 +11,8 @@ import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
 export default function SignUp() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  // const [name, setName] = useState("");
-  // const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [birth, setBirth] = useState("");
   const [nickname, setNickname] = useState("");
   const [region, setRegion] = useState("");

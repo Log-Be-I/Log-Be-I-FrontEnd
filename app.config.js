@@ -8,7 +8,7 @@ export default {
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     splash: {
-      image: "./assets/splash.png",
+      image: "./assets/splashscreen_logo.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff",
     },
@@ -21,23 +21,31 @@ export default {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff",
       },
-      package: "host.exp.exponent",
+      package: "com.taekho.logbei",
+      intentFilters: [
+        {
+          action: "VIEW",
+          data: [
+            {
+              scheme: "com.taekho.logbei",
+              host: "oauthredirect",
+            },
+          ],
+          category: ["BROWSABLE", "DEFAULT"],
+        },
+      ],
     },
     web: {
       favicon: "./assets/favicon.png",
     },
     plugins: ["expo-router"],
     // scheme: "logbei"
-    scheme: "exp",
+    scheme: "com.taekho.logbei",
     extra: {
       weatherApiKey: "cfd7da48004b32b5707dc9057ee32248",
       eas: {
         projectId: "eb44fbab-8a26-4d1f-9cab-feab7bfda629",
       },
-      // googleRedirectUri: "exp://localhost:19000/--/oauth2redirect/google",
-      googleRedirectUri: "https://auth.expo.io/@taekho/log-be-i-frontend",
-      androidClientId:
-        "381665725956-je1p8o9a7cq2s565rfiejb1f5vvd9h3k.apps.googleusercontent.com",
       router: {
         origin: false,
       },
@@ -45,9 +53,7 @@ export default {
     updates: {
       url: "https://u.expo.dev/eb44fbab-8a26-4d1f-9cab-feab7bfda629",
     },
-    runtimeVersion: {
-      policy: "appVersion",
-    },
+    runtimeVersion: "1.0.0",
     fonts: [
       "./assets/fonts/Pretendard-Regular.otf",
       "./assets/fonts/Pretendard-Bold.otf",
