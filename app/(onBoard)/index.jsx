@@ -10,7 +10,8 @@ import GoogleLoginButton from "../../components/onBoard/GoogleLoginButton";
 import * as Google from "expo-auth-session/providers/google";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
-import React from "react";
+import React, { useEffect } from "react";
+import ErrorBoundary from "../../components/common/ErrorBoundary";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -37,6 +38,27 @@ export default function Login() {
     }
   );
 
+  // // ✅ 자동 요청 실패 무시하고 화면 오류 방지
+  // useEffect(() => {
+  //   const handler = (event) => {
+  //     if (
+  //       event?.reason?.message?.includes("client_secret is missing") ||
+  //       event?.reason?.toString().includes("client_secret is missing")
+  //     ) {
+  //       event.preventDefault();
+  //       console.log("🚫 무시된 자동 token 요청 에러:", event.reason);
+  //     }
+  //   };
+
+  //   window.addEventListener("unhandledrejection", handler);
+  //   window.addEventListener("error", handler);
+
+  //   return () => {
+  //     window.removeEventListener("unhandledrejection", handler);
+  //     window.removeEventListener("error", handler);
+  //   };
+  // }, []);
+
   const handleLogin2 = () => {
     setToken("test-token");
     setUser({
@@ -53,6 +75,7 @@ export default function Login() {
   };
 
   return (
+    // <ErrorBoundary>
     <SafeAreaView style={styles.container}>
       <BackgroundSVG style={styles.background} />
       <View style={styles.contentContainer}>
@@ -101,6 +124,7 @@ export default function Login() {
         </View>
       </View>
     </SafeAreaView>
+    // {/* </ErrorBoundary> */}
   );
 }
 
