@@ -9,28 +9,23 @@ import useAuthStore from "../../zustand/stores/authStore";
 import GoogleLoginButton from "../../components/onBoard/GoogleLoginButton";
 import * as Google from "expo-auth-session/providers/google";
 import * as AuthSession from "expo-auth-session";
-// import * as WebBrowser from "expo-web-browser";
-import React, { useEffect } from "react";
+import * as WebBrowser from "expo-web-browser";
+import React from "react";
 
-// WebBrowser.maybeCompleteAuthSession();
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const router = useRouter();
-  const { isLoading, error, setToken, setUser, googleLogin } = useAuthStore();
-
-  const redirectUri = AuthSession.makeRedirectUri({ useProxy: false });
+  const { isLoading, error, setToken, setUser } = useAuthStore();
 
   const [request, response, promptAsync] = Google.useAuthRequest(
     {
-      webClientId:
-        "381665725956-rmfoi0jbmi555etmjnh2c7suaa9nhinq.apps.googleusercontent.com",
-      androidClientId:
-        "626966709748-j3to6polebke9oj5rprnqu7s6ravfu7p.apps.googleusercontent.com",
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
       responseType: "code",
-      shouldAutoExchangeCode: false,
       scopes: ["email", "profile", "openid"],
       usePKCE: false,
-      redirectUri: redirectUri,
+      redirectUri: AuthSession.makeRedirectUri({ useProxy: false }),
       extraParams: {
         prompt: "consent",
         access_type: "offline",
@@ -41,28 +36,6 @@ export default function Login() {
       useProxy: false,
     }
   );
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { code } = response.params;
-      if (code) {
-        console.log("📦 Received authorization code:", code);
-        (async () => {
-          const loginResult = await googleLogin(code);
-          console.log("📥 Login result:", loginResult);
-
-          if (loginResult.isRegistered) {
-            router.replace("/(tabs)");
-          } else {
-            router.push({
-              pathname: "/(onBoard)/signUp",
-              params: loginResult.signUpData,
-            });
-          }
-        })();
-      }
-    }
-  }, [response]);
 
   const handleLogin2 = () => {
     setToken("test-token");
@@ -132,14 +105,8 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  errorText: {
-    color: "red",
-    marginTop: 10,
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  errorText: { color: "red", marginTop: 10 },
   background: {
     position: "absolute",
     top: 0,
@@ -148,47 +115,23 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: -1,
   },
-  contentContainer: {
-    flex: 1,
-    padding: 24,
-    justifyContent: "space-between",
-  },
-  logo: {
-    alignSelf: "center",
-    marginTop: 60,
-  },
-  loginContainer: {
-    width: "100%",
-    paddingHorizontal: 16,
-    marginTop: -100,
-  },
+  contentContainer: { flex: 1, padding: 24, justifyContent: "space-between" },
+  logo: { alignSelf: "center", marginTop: 60 },
+  loginContainer: { width: "100%", paddingHorizontal: 16, marginTop: -100 },
   titleWrapper: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 24,
-    width: "100%",
   },
-  titleContainer: {
-    alignItems: "flex-start",
-  },
-  underline: {
-    width: 40,
-    height: 2,
-    backgroundColor: "#1170DF",
-    marginTop: 4,
-  },
-  buttonContainer: {
-    marginTop: 20,
-  },
+  titleContainer: { alignItems: "flex-start" },
+  underline: { width: 40, height: 2, backgroundColor: "#1170DF", marginTop: 4 },
+  buttonContainer: { marginTop: 20 },
   googleButton: {
     backgroundColor: "#fff",
     borderRadius: 8,
     width: "100%",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
@@ -200,11 +143,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-  footer: {
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  footerText: {
-    marginBottom: 2,
-  },
+  footer: { alignItems: "center", marginBottom: 16 },
+  footerText: { marginBottom: 2 },
 });
