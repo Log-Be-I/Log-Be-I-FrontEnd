@@ -1,26 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  StyleSheet, 
+  Keyboard,
+  TouchableWithoutFeedback,
+  TouchableOpacity, 
+  ScrollView,
+  KeyboardAvoidingView,
+  Alert 
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateRangeSelector from '../../../components/calendar/DateRangeSelector';
-import Button from '../../../components/common/button';
+import CalendarButton from '../../../components/calendar/CalendarButton';
 import { updateSchedule, deleteSchedule } from '../../../api/schedule/scheduleApi';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CancelModal from '../../../components/common/CancelModal';
+import Toast from '../../../components/common/Toast';
+
 
 export default function EditSchedule() {
   const router = useRouter();
+  const scrollViewRef = useRef(null);
   const params = useLocalSearchParams();
   const schedule = JSON.parse(params.schedule);
-  const [title, setTitle] = useState(schedule.title);
+  console.log("수정할editSchedule",schedule);
+  const [title, setTitle] = useState(schedule.title || schedule.name);
   const [startTime, setStartTime] = useState(new Date(schedule.startDateTime));
   const [endTime, setEndTime] = useState(new Date(schedule.endDateTime));
   const [isEditing, setIsEditing] = useState(false);
+  const [originalTitle, setOriginalTitle] = useState(title);
+  const [originalStartTime, setOriginalStartTime] = useState(startTime);
+  const [originalEndTime, setOriginalEndTime] = useState(endTime);
+
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarOpenCount, setCalendarOpenCount] = useState(0);
+
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+
 
   const handleDateRangeChange = (start, end) => {
     setStartTime(start);
     setEndTime(end);
   };
+
+  const handleCalendarOpen = () => {
+    setShowCalendar(true);
+    setCalendarOpenCount(prev => prev +1);
+  }
+
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      // 달력이 열릴때 자동 스크롤
+      scrollViewRef.current?.scrollTo({ y: 85, animated: true });
+    }
+  }, [calendarOpenCount]);
+
 
   const handleEdit = async () => {
     try {
@@ -29,139 +67,201 @@ export default function EditSchedule() {
         startTime,
         endTime
       });
+      setOriginalTitle(title);
+      setOriginalStartTime(startTime);
+      setOriginalEndTime(endTime);
       setIsEditing(false);
-      router.back(); // 수정 완료 후 이전 화면으로 돌아가기
+      setTimeout(() => {
+        router.replace('/calendar/');
+      }, 1000);
     } catch (error) {
       console.error('일정 수정 실패:', error);
+      setToastMessage('일정 수정에 실패했습니다.');
+      setShowToast(true);
     }
   };
 
-  const handleCancel = () => {
-    router.back(); // 취소하면 이전 화면으로 돌아가기
+  const handleCancelEdit = async () => {
+    setTitle(originalTitle);
+    setStartTime(originalStartTime);
+    setEndTime(originalEndTime);
+    setIsEditing(false);
   };
 
   const handleDelete = async () => {
     try {
       await deleteSchedule(schedule.id);
-      setModalVisible(false);
-      Alert.alert('성공', '일정이 삭제되었습니다.');
-      router.back();
+      router.replace('/calendar/');
     } catch (error) {
-      Alert.alert('오류', '일정 삭제 중 오류가 발생했습니다.');
+      console.error('일정 삭제 실패:', error);
+      setToastMessage('일정 삭제에 실패했습니다.');
+      setShowToast(true);
     }
   };
 
+  const handleCancel = async () => {
+    router.back(); // 취소하면 이전 화면으로 돌아가기
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Icon name="delete" size={24} color="#FF9500" />
-        </TouchableOpacity>
-      </View>
+    <KeyboardAvoidingView behavior="height" style={styles.container}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.inner}>
+          <View style={styles.buttonContainer}>
+            {isEditing ? (
+              <View style={styles.editButtonContainer}>
+                  <CalendarButton
+                    text="Cancel"
+                    onPress={handleCancelEdit}
+                    style={[styles.button, styles.cancelButton]}
+                    textStyle={{color: '#FF9500'}}
+                  />
+                  <CalendarButton
+                    text="Edit"
+                    onPress={handleEdit}
+                    style={[styles.button, styles.cancelButton]}
+                    textStyle={{color: '#69BAFF'}}
+                  />
+              </View>
+            ) : (
+              <View style={styles.deleteButtonContainer}>
+                <TouchableOpacity onPress={() => setModalVisible(true)}>
+                  <Icon name="delete" size={24} color="#FF9500" />
+                </TouchableOpacity>
 
-      {isEditing ? (
-        <TextInput
-          style={styles.input}
-          value={title}
-          onChangeText={setTitle}
-          placeholder="일정"
-        />
-      ) : (
-        <Text style={styles.title} onPress={() => setIsEditing(true)}>
-          {title}
-        </Text>
-      )}
+                <CalendarButton
+                  text="OK"
+                  onPress={handleCancel}
+                  style={styles.button}
+                  textStyle={{color: '#69BAFF'}}
+                  size="large"
+                />
+                <Toast
+                  visible={showToast}
+                  message={toastMessage}
+                  onHide={() => setShowToast(false)}
+                  />
+              </View>
+            )}
+          </View>
 
-      <DateRangeSelector
-        startDate={startTime}
-        endDate={endTime}
-        onDateRangeChange={handleDateRangeChange}
-        disabled={!isEditing} //false 여야 시간도 선택 가능
-        onChange={() => setIsEditing(true)}
-      />
-
-
-      <View style={styles.buttonContainer}>
-        {isEditing ? (
-          <>
-            <Button
-              text="Edit"
-              onPress={handleEdit}
-              style={[styles.button, styles.cancelButton]}
-              textStyle={{color: '#69BAFF'}}
-              size="large"
+          {isEditing ? (
+            <TextInput
+              style={styles.input}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="일정"
             />
-            <Button
-              text="Cancel"
-              onPress={handleCancel}
-              style={[styles.button, styles.cancelButton]}
-              textStyle={{color: '#FF9500'}}
-              size="large"
-            />
-          </>
-        ) : (
-          <>
-            <Button
-              text="OK"
-              onPress={handleCancel}
-              style={styles.button}
-              textStyle={{color: '#69BAFF'}}
-              size="large"
-            />
-          </>
-        )}
-      </View>
+          ) : (
+            <Text style={styles.title} onPress={() => setIsEditing(true)}>
+              {title}
+            </Text>
+          )}
+
+          <View style={styles.scrollWrapper}>
+            <ScrollView
+              ref={scrollViewRef}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+              // keyboardShouldPersistTaps='handled'
+            >
+              <DateRangeSelector
+                startDate={startTime}
+                endDate={endTime}
+                onDateRangeChange={handleDateRangeChange}
+                disabled={!isEditing} //false 여야 시간도 선택 가능
+                onChange={() => setIsEditing(true)}
+                onCalendarOpen={handleCalendarOpen}
+              />
+            </ScrollView>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
 
       <CancelModal
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
         onDelete={handleDelete}
       />
-    </View>
+      <Toast
+        visible={showToast}
+        message={toastMessage}
+        onHide={() => setShowToast(false)}
+        />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: 'white',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    padding: 10,
-    marginBottom: 50,
-    //borderBottomWidth: 1,
-    //borderBottomColor: '#E5E5E5',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'semibold',
-    marginBottom: 20,
-    left: 20,
-  },
-  input: {
-    width: '90%',
-    borderBottomWidth: 1,
-    borderColor: '#E5E5E5',
-    padding: 10,
-    marginBottom: 20,
-    borderRadius: 5,
-    fontSize: 18,
-    left: 18,
+  inner: {
+    flex: 1,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    position: 'absolute',
-    bottom: 100,
-    left: 16,
-    right: 16,
-    gap: 50,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginTop: 10,
+    backgroundColor: 'white',
+    width: '100%',
+    gap: 24,
+    paddingVertical: 5,
+    paddingHorizontal: 16,
   },
-  button: {
-    minWidth: 100,
+  deleteButtonContainer: {    
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginTop: 10,
+    backgroundColor: 'white',
+    width: '100%',
+    gap: 24,
+    paddingVertical: 5,
+    paddingHorizontal: 16,
+  },
+  editButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
+    marginTop: 10,
+    backgroundColor: 'white',
+    width: '100%',
+    gap: 24,
+    paddingVertical: 5,
+    paddingHorizontal: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#032B77',
+    borderBottomWidth: 1,
+    borderColor: '#E5E5E5',
+    paddingVertical: 8,
+    marginHorizontal: 24,
+    top: 10,
+  },
+  input: {
+    fontSize: 18,
+    fontWeight: 'semibold',
+    color: '#032B77',
+    borderBottomWidth: 1,
+    borderColor: '#E5E5E5',
+    paddingVertical: 10,
+    marginHorizontal: 24,
+    top: 10,
+    lineHeight: 24,
+  },
+  scrollWrapper: {
+    flex: 1,
+    marginTop: 10,
+    backgroundColor: 'white',
+  },
+  scrollContent: {
+    paddingBottom: 100,
+    paddingTop: 0,
+    flexGrow: 1, // 내용이 적어도 ScrollView가 가능하도록
   },
 });

@@ -3,8 +3,6 @@ import { View, StyleSheet, Text, Switch, Keyboard } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Calendar } from 'react-native-calendars';
 import DayInput from './DayInput';
-import { set } from 'date-fns';
-import CalendarBody from './CalendarBody';
 
 export default function DateRangeSelector({ 
   startDate, 
@@ -156,6 +154,7 @@ export default function DateRangeSelector({
             onDayPress={handleDateSelect}
             markedDates={markedDates}
             style={styles.calendar}
+            monthFormat={'yyyy년 MM월'}
           />
         </View>
       )}
@@ -173,20 +172,20 @@ const styles = StyleSheet.create({
   allDayContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginLeft: 180,
-},
+    justifyContent: 'flex-end',
+    paddingHorizontal: 0,
+    //marginTop: 4,
+  },
   allDayLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-},
-allDayText: {
-  fontSize: 14,
-  color: '#333',
-  marginLeft: 4,
-},
+  },
+  allDayText: {
+    fontSize: 14,
+    color: '#888',
+    marginLeft: 4,
+  },
   dateContainer: {
     marginBottom: 16,
     flexDirection: 'row',
@@ -204,5 +203,10 @@ allDayText: {
   calendar: {
     borderWidth: 1,
     borderColor: '#E5E5E5',
+    borderRadius: 12,
+    backgroundColor: 'white',
+    elevation: 4,
+    padding: 5,
+    marginTop: 4,
   },
 }); 

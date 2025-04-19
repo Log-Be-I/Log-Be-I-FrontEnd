@@ -4,15 +4,14 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterv
 import CalendarDay from './CalendarDay';
 //import { getAllSchedules } from '../../api/schedule/scheduleApi';
 import { Holidays } from '../../dummyData/Holidays';
-import { mockSchedules } from './mockData';
 
-export default function CalendarBody ({ selected, onDayPress}) {
+export default function CalendarBody ({ selected, onDayPress, schedules = []}) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [schedules, setSchedules] = useState([]);
+
 
   useEffect(() => {
-    fetchSchedules();
+    // fetchSchedules();
   }, []);
 
   const fetchSchedules = async () => {

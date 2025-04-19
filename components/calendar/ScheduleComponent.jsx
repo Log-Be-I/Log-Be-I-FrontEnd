@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, Pressable, FlatList, Image } from 'react-native';
 import { format } from 'date-fns';
 import  Text from '../common/Text';
+import { Holidays } from '../../dummyData/Holidays';
 
 // 일정 항목 하나를 렌더링 하는 컴포넌트트
-const ScheduleItem = ({ title, startDateTime, endDateTime}) => {
+const ScheduleItem = ({ title, startDateTime, endDateTime, isHoliday}) => {
   const scheduledStartDay = format(new Date(startDateTime), 'MM월dd일');
   const scheduledStartTime = `${format(new Date(startDateTime), 'HH:mm')}`;
 
@@ -12,7 +13,7 @@ const ScheduleItem = ({ title, startDateTime, endDateTime}) => {
   const scheduledEndTime = `${format(new Date(endDateTime), 'HH:mm')}`;
 
   return (
-    <View style={styles.scheduleItem}>
+    <View style={[styles.scheduleItem, isHoliday && styles.holidayItem]}>
       <View style={styles.leftContent}>
         <Image
           source={require("../../assets/schedule/check.png")}
@@ -54,33 +55,37 @@ const ScheduleItem = ({ title, startDateTime, endDateTime}) => {
 };
 
 // 전체 일정을 렌더링 하는 컴포넌트
-export default function ScheduleComponent({ schedules = [], onPress }) {
+export default function ScheduleComponent({ schedules = [], onPress, selectedDate }) {
+  const combinedSchedules = useMemo(() => {
+    const holiday = Holidays[selectedDate];
+    if(!holiday) return schedules;
+    return [...schedules, {
+      name: holiday.name,
+      startDateTime: `${selectedDate}T12:00:00`,
+      endDateTime: `${selectedDate}T23:50:00`,
+      isHoliday: true,
+      }
+    ];
+  }, [schedules, selectedDate]);
 
-// 날짜 포맷 함수
-  const formatDateTime = (dateTimeStr) => {
-    const date = new Date(dateTimeStr);
-    return format(date, 'M월 d일 HH:mm'/*, { locale: ko }*/);
-  };
+// // 날짜 포맷 함수
+//   const formatDateTime = (dateTimeStr) => {
+//     const date = new Date(dateTimeStr);
+//     return format(date, 'M월 d일 HH:mm'/*, { locale: ko }*/);
+//   };
 
   // 각 항목을 렌더링 하는 함수 (Pressable로 감싸 클릭 처리)
   const renderItem = ({ item }) => (
     <Pressable onPress={() => onPress?.(item)}>
       <ScheduleItem 
-        title={item.title}
-        startDateTime={item.startDateTime}
-        endDateTime={item.endDateTime}
+        title={item.title || item.name}
+        startDateTime={item.startDateTime || `${item.date}T12:00:00`}
+        endDateTime={item.endDateTime || `${item.date}T23:50:00`}
+        isHoliday={item.isHoliday}
       />
     </Pressable>
   );
 
-// 일정이 없을 경우 표시
-  if (!schedules || schedules.length === 0) {
-    return (
-        <Text style={{textAlign: 'center', marginTop: 30}}>
-          일정이 없습니다.
-        </Text>
-    );
-  }
 
 // 일정 리스트를 FlatList로 표시
   return (
@@ -98,15 +103,15 @@ export default function ScheduleComponent({ schedules = [], onPress }) {
         </View>
       </View>
 
-    {schedules.length === 0 ? (
+    {combinedSchedules.length === 0 ? (
       <Text style={{textAlign: 'center', marginTop: 30}}>
         일정이 없습니다.
       </Text>
     ) : (
       <FlatList
-      data={schedules}
+      data={combinedSchedules}
       renderItem={renderItem}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={(item) => item.id}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.listContent}
       />
@@ -163,6 +168,9 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#F5F9FF",
     borderRadius: 12,
+  },
+  holidayItem: {
+    backgroundColor: "#FFF0F0",
   },
   leftContent: {
     flexDirection: "row",

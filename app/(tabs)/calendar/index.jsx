@@ -1,60 +1,142 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { mockSchedules } from '../../../components/calendar/mockData';
 import { useRouter } from 'expo-router';
+import { getAllSchedules } from '../../../api/schedule/scheduleApi';
+import { useFocusEffect } from '@react-navigation/native';
+
 import CalendarBody from '../../../components/calendar/CalendarBody';
 import ScheduleComponent from '../../../components/calendar/ScheduleComponent';
+import { Holidays } from '../../../dummyData/Holidays';
+
 
 export default function MyCalendar() {
   const router = useRouter();
   const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDaySchedules, setSelectedDaySchedules] = useState([]);
+  const [allSchedules, setAllSchedules] = useState(null);
 
-  useEffect(() => {
-    // 마커 설정
-    const marks = {};
-    Object.keys(mockSchedules).forEach((date) => {
-      marks[date] = {
-        marked: true,
-        dotColor: '#69BAFF',
-      };
-    });
+  const fetchSchedules = async () => {
+    try {
+      const now = new Date();
+      const data = await getAllSchedules(now.getFullYear(), now.getMonth() + 1);
+      const safeDate = selected || new Date().toISOString().split('T')[0];
+      //data를 날짜별로 묶는 형태로 가공해야 한다.
+      const formatted = {};
+      const marks = {};
+      data?.data?.forEach((item) => {
+        const start = new Date(item.startDateTime);
+        const end = new Date(item.endDateTime);
+        const current = new Date(start);
 
-    setMarkedDates(marks);
-  }, []);
+        while (current <= end) {
+          const dateKey = current.toISOString().split('T')[0]; // ex) '2025-04-20'
 
-  useEffect(() => {
-    if (selected) {
-      // 선택된 날짜의 일정 설정
-      setSelectedDaySchedules(mockSchedules[selected] || []);
+          // 날짜 일정 목록 구성
+          if (!formatted[dateKey]) formatted[dateKey] = [];
+          formatted[dateKey].push({
+            id: item.id,
+            title: item.title,
+            startDateTime: item.startDateTime,
+            endDateTime: item.endDateTime,
+            calendarId: item.calendarId,
+          });
 
-      // 마커 업데이트
-      setMarkedDates(prev => {
-        const newMarkedDates = { ...prev };
-        
-        // 이전 선택 제거
-        Object.keys(newMarkedDates).forEach(date => {
-          if (newMarkedDates[date].selected) {
-            delete newMarkedDates[date].selected;
-            if (mockSchedules[date]) {
-              newMarkedDates[date].dotColor = '#69BAFF';
-            }
-          }
-        });
+          // 마커 설정
+          marks[dateKey] = {
+            marked: true,
+            dotColor: '#69BAFF',
+          };
 
-        // 새로운 선택 추가
-        newMarkedDates[selected] = {
-          ...newMarkedDates[selected],
-          selected: true,
-          dotColor: mockSchedules[selected] ? 'white' : undefined,
+          current.setDate(current.getDate() + 1);
+        }
+      });
+
+      // 공휴일 마커 추가
+      Object.keys(Holidays).forEach((date) => {
+        marks[date] = {
+          ...(marks[date] || {}),
+          marked: true,
+          dotColor: '#FF4B4B',
         };
 
-        return newMarkedDates;
+      // 공휴일을 일정으로 포함
+      if(!formatted[date]) formatted[date] = [];
+      formatted[date].push({
+        title: Holidays[date].name,
+        startDateTime: `${date}T12:00:00`,
+        endDateTime: `${date}T23:50:00`,
+        isHoliday: true,
       });
+    });
+
+      //마커 설정
+        marks[safeDate] = {
+        ...(marks[safeDate] || {}),
+        selected: true,
+        dotColor: formatted[safeDate] ? 'white' : '#69BAFF',
+      };
+
+      setAllSchedules(formatted);
+      // 선택된 날짜의 일정 리스트를 ScheduleComponent에 전달
+      setSelectedDaySchedules(formatted[safeDate] || []);
+      setMarkedDates(marks);
+
+    } catch (error) {
+      console.error('일정 조회 실패:', error);
     }
-  }, [selected]);
+  };
+
+// expo-router에서 페이지가 포커싱될 때마다 재요청
+  useFocusEffect(
+    useCallback(() => {
+      fetchSchedules();
+    }, []) // selected를 넣어 날짜가 바뀔때마다 조회된다. 최초만 하고 싶다면 제거하자!
+  );
+
+  
+  // useEffect(() => {
+  //   // 마커 설정
+  //   const marks = {};
+  //   Object.keys(mockSchedules).forEach((date) => {
+  //     marks[date] = {
+  //       marked: true,
+  //       dotColor: '#69BAFF',
+  //     };
+  //   });
+
+  //   setMarkedDates(marks);
+  // }, []);
+
+  useEffect(() => {
+    if (!allSchedules)  return
+      // 선택된 날짜의 일정 설정
+      setSelectedDaySchedules(allSchedules[selected] || []);
+      // // 마커 업데이트
+      // setMarkedDates(prev => {
+      //   const newMarkedDates = { ...prev };
+        
+      //   // 이전 선택 제거
+      //   Object.keys(newMarkedDates).forEach(date => {
+      //     if (newMarkedDates[date].selected) {
+      //       delete newMarkedDates[date].selected;
+      //       // if (mockSchedules[date]) {
+      //       //   newMarkedDates[date].dotColor = '#69BAFF';
+      //       // }
+      //     }
+      //   });
+
+      //   // 새로운 선택 추가
+      //   newMarkedDates[selected] = {
+      //     ...(newMarkedDates[selected] || {}),
+      //     selected: true,
+      //     dotColor: allSchedules[selected] ? 'white' : '#69BAFF',
+      //   };
+
+      //   return newMarkedDates;
+      // });
+  }, [selected, allSchedules]);
 
   const handleDayPress = (day) => {
     setSelected(day.dateString);
@@ -85,6 +167,7 @@ export default function MyCalendar() {
           selected={selected}
           onDayPress={handleDayPress}
           markedDates={markedDates}
+          schedules={selectedDaySchedules}
         />
       </View>
 
@@ -93,7 +176,9 @@ export default function MyCalendar() {
       {/* <EventList schedules={selectedDaySchedules} onPress={handleSchedulePress} /> */}
         <ScheduleComponent 
         schedules={selectedDaySchedules} 
-        onPress={handleSchedulePress} />
+        onPress={handleSchedulePress} 
+        selectedDate={selected}
+        />
       </View>
 
       {/* 일정 추가 버튼 */}

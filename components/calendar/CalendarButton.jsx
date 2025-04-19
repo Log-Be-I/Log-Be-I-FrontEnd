@@ -2,11 +2,14 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Text from "../common/Text";
 
-export default function CalendarButton({ text, onPress, textStyle }) {
+export default function CalendarButton({ text, onPress, textStyle, disabled }) {
   return (
-    <Pressable style={styles.buttonOuter} onPress={onPress}>
+    <Pressable style={[styles.buttonOuter, disabled && styles.disabledButton]} 
+    onPress={onPress} 
+    disabled={disabled}
+    >
       <View style={styles.buttonInner}>
-        <Text variant="semiBold" size={16} style={textStyle}>
+        <Text variant="semiBold" size={12} style={textStyle}>
           {text}
         </Text>
       </View>
@@ -29,6 +32,11 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
   },
+  disabledButton: {
+    borderRadius: 50,
+    backgroundColor: '#f0f4ff',
+    //shadowColor: '#f5f5f5',
+  },
   buttonInner: {
     backgroundColor: "#fff",
     borderRadius: 50,
@@ -36,7 +44,7 @@ const styles = StyleSheet.create({
     borderColor: "#E0E9FF",
     alignItems: "center",
     justifyContent: "center",
-    width: 100,
-    height: 40,
+    width: 80,
+    height: 35,
   },
 });

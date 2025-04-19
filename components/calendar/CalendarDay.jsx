@@ -44,28 +44,28 @@ export default function CalendarDay({ date, currentDate, selectedDate, onSelectD
 
   return (
     <TouchableOpacity
-      style={[
-        styles.dayContainer,
-        isSelected && styles.selectedDay, // 선택한 날짜 배경
-      ]}
+      style={styles.dayContainer}
       onPress={() => onSelectDate(date)}
     >
-      <Text
-        style={[
-          styles.dayText, // 오늘 날짜 텍스트 파란색
-          { color: getDayColor() },
-        ]}
-      >
-        {format(date, 'd')}
-      </Text>
+      <View style = {styles.dayContent}>
+        {isSelected && <View style = {styles.selectedCircle} />}
+        <Text
+          style={[
+            styles.dayText, // 오늘 날짜 텍스트 파란색
+            { color: getDayColor() },
+          ]}
+        >
+          {format(date, 'd')}
+        </Text>
+      </View>
       {isHoliday
         //<Text style={styles.holidayText} numberOfLines={1}>
           //{holidayName}
         //</Text>
       }
-      <View style = {[styles.dotWrapper]}>
+      <View style = {styles.dotWrapper}>
         {(isHoliday || hasSchedule) && (
-        <View style={[styles.dot, {backgroundColor: getDotColor() }]} />
+          <View style={[styles.dot, {backgroundColor: getDotColor() }]} />
       )}
       </View>
     </TouchableOpacity>
@@ -80,11 +80,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 2,
   },
-  selectedDay: {
+  dayContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedCircle: {
+    position: 'absolute',
     backgroundColor: '#69BAFF',
     borderRadius: 999,
-    width: 28,
-    height: 28,
+    width: 40,
+    height: 40,
+    transform: [{ translateY: 2 }]
   },
   dayText: {
     fontSize: 14,
