@@ -5,8 +5,7 @@ import * as Google from "expo-auth-session/providers/google"; // expo 구글 로
 import { makeRedirectUri } from "expo-auth-session"; // expo 구글 로그인 리다이렉션 라이브러리
 import * as WebBrowser from "expo-web-browser"; // expo 웹 브라우저 라이브러리
 import Constants from "expo-constants"; // expo 환경 변수 라이브러리
-import axios from "axios";
-import { BASE_URL } from "@env";
+import { axiosWithoutToken } from "../../api/axios/axios";
 
 WebBrowser.maybeCompleteAuthSession(); // 구글 로그인 완료 후 리다이렉션 처리
 
@@ -53,13 +52,10 @@ const useAuthStore = create(
         try {
           // 백엔드로 authorization code 전송
           console.log("📤 Sending code to backend");
-          const response = await axios.post(
-            `${BASE_URL}/api/auth/google/code`,
-            { code },
+          const response = await axiosWithoutToken.post(
+            "/api/auth/google/code",
             {
-              headers: {
-                "Content-Type": "application/json",
-              },
+              code,
             }
           );
 
@@ -122,7 +118,6 @@ const useAuthStore = create(
         set({ isLoading: true, error: null });
 
         try {
-          // 기본 프로필 이미지 설정
           const signUpRequest = {
             name: signUpData.name,
             nickname: signUpData.nickname,
@@ -134,14 +129,9 @@ const useAuthStore = create(
           };
 
           console.log("📤 Sending sign up data:", signUpRequest);
-          const response = await axios.post(
-            `${BASE_URL}/members`,
-            signUpRequest,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
+          const response = await axiosWithoutToken.post(
+            "/members",
+            signUpRequest
           );
 
           console.log("📥 Received sign up response:", response);
@@ -157,8 +147,8 @@ const useAuthStore = create(
             });
             return { success: true };
           } else {
-            console.error("❌ No access token in response");
-            return { success: false, error: "No access token received" };
+            console.error("❌ No authorization token in response");
+            return { success: false, error: "No authorization token received" };
           }
         } catch (error) {
           console.error("❌ Sign up error:", error.response?.data || error);
