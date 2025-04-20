@@ -34,14 +34,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   leftIcon: {
-    width: 40,
+    width: 50,
     alignItems: "flex-start",
     padding: 8,
   },
   headerContent: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
   },
   backButton: {
     padding: 4,

@@ -47,26 +47,28 @@ export default function Sidebar({ onClose }) {
             <SidebarSection
               title="My Record"
               items={[
-                { id: "daily", label: "나의 일상", icon: "📔" },
-                { id: "spending", label: "나의 소비", icon: "💰" },
-                { id: "todo", label: "나의 할 일", icon: "📝" },
-                { id: "health", label: "나의 건강", icon: "🩺" },
-                { id: "etc", label: "그 외 등등", icon: "📦" },
+                { id: "daily", label: "나의 일상", icon: "📔", route: '/daily' },
+                { id: "spending", label: "나의 소비", icon: "💰", route: '/consume' },
+                { id: "todo", label: "나의 할 일", icon: "📝", route: '/todo' },
+                { id: "health", label: "나의 건강", icon: "🩺", route: '/health' },
+                { id: "etc", label: "그 외 등등", icon: "📦", route: '/etc' },
               ]}
+              onItemPress={(route) => router.push(route)}
             />
 
             <SidebarSection
               title="My Report"
-              items={[{ id: "analysis", label: "나의 일상 분석", icon: "📊" }]}
+              items={[{ id: "analysis", label: "나의 일상 분석", icon: "📊", route: '/analysis' }]}
+              onItemPress={(route) => router.push(route)}
             />
 
             <SidebarSection
               title="My Activity"
               items={[
-                { id: "issue", label: "오늘의 이슈", icon: "🔍" },
-                { id: "qna", label: "나의 QnA", icon: "💭" },
-                { id: "faq", label: "자주 하는 질문", icon: "❓" },
-              ]}
+                { id: "issue", label: "오늘의 이슈", icon: "🔍", route: '/issueCard' },
+                { id: "qna", label: "나의 QnA", icon: "💭", route: '/qna' },
+                { id: "faq", label: "자주 하는 질문", icon: "❓", route: '/faq' }]}
+                onItemPress={(route) => router.push(route)}
             />
           </ScrollView>
 
