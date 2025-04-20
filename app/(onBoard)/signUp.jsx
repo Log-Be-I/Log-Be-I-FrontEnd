@@ -1,26 +1,70 @@
-import { View, StyleSheet, Text } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TextComponent from "../../components/onBoard/text";
-import Button from "../../components/common/button";
-import { useState, useEffect } from "react";
 import LogBeIText from "../../assets/images/logBeIText.svg";
 import BirthIcon from "../../assets/images/birthDay.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
+import useAuthStore from "../../zustand/stores/authStore";
 
-export default function SignUp() {
+const SignUp = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [birth, setBirth] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [region, setRegion] = useState("");
+  const { signUp, isLoading } = useAuthStore();
 
-  useEffect(() => {
-    if (params.name) setName(params.name);
-    if (params.email) setEmail(params.email);
-  }, [params]);
+  // 초기 상태를 params로 설정
+  const [formData, setFormData] = useState({
+    email: params.email || "",
+    name: params.name || "",
+    nickname: "",
+    region: "",
+    birth: "",
+  });
+
+  const handleSignUp = async () => {
+    try {
+      // 필수 필드 검증
+      if (
+        !formData.email ||
+        !formData.name ||
+        !formData.nickname ||
+        !formData.region ||
+        !formData.birth
+      ) {
+        console.error("❌ 모든 필드를 입력해주세요.");
+        return;
+      }
+
+      // 닉네임 유효성 검사 (한글과 영어 소문자만, 2-8자)
+      const nicknameRegex = /^[가-힣a-z]{2,8}$/;
+      if (!nicknameRegex.test(formData.nickname)) {
+        console.error(
+          "❌ 닉네임은 2 ~ 8자의 한글 또는 영어 소문자만 가능합니다."
+        );
+        return;
+      }
+
+      // 생년월일 유효성 검사 (YYYY-MM-DD 형식)
+      const birthRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!birthRegex.test(formData.birth)) {
+        console.error("❌ 생년월일은 YYYY-MM-DD 형식이어야 합니다.");
+        return;
+      }
+
+      const signUpResult = await signUp(formData);
+      if (signUpResult.success) {
+        console.log("✅ Sign up successful, navigating to main screen");
+        router.replace("/(tabs)");
+      } else {
+        console.error("❌ Sign up failed:", signUpResult.error);
+      }
+    } catch (error) {
+      console.error("❌ Sign up error:", error);
+    }
+  };
+
+  // useEffect 제거 - 초기 상태에서 이미 params를 설정했기 때문에 필요 없음
 
   return (
     <SafeAreaView style={styles.container}>
@@ -33,47 +77,63 @@ export default function SignUp() {
 
           <View style={styles.inputContainer}>
             <TextComponent
-              handleValue={(e) => setName(e)}
+              value={formData.email}
+              handleValue={(text) =>
+                setFormData((prev) => ({ ...prev, email: text }))
+              }
               iconName="person"
-              placeholder={params.name}
-              editable={false}
+              placeholder="이메일"
+              editable={!params.email}
             />
             <TextComponent
-              handleValue={(e) => setEmail(e)}
+              value={formData.name}
+              handleValue={(text) =>
+                setFormData((prev) => ({ ...prev, name: text }))
+              }
               iconName="mail"
-              placeholder={params.email}
-              editable={false}
+              placeholder="이름"
+              editable={!params.name}
             />
             <TextComponent
-              value={nickname}
-              handleValue={(e) => setNickname(e)}
+              value={formData.nickname}
+              handleValue={(text) =>
+                setFormData((prev) => ({ ...prev, nickname: text }))
+              }
               iconName="person-outline"
-              placeholder="닉네임을 입력하세요"
+              placeholder="닉네임을 입력해주세요. (2-8자의 한글/영어 소문자)"
             />
             <TextComponent
-              value={birth}
-              handleValue={(e) => setBirth(e)}
+              value={formData.birth}
+              handleValue={(text) =>
+                setFormData((prev) => ({ ...prev, birth: text }))
+              }
               iconComponent={<BirthIcon width={20} height={20} />}
-              placeholder="1999-12-21"
+              placeholder="생년월일을 입력해주세요요 (YYYY-MM-DD)"
             />
             <TextComponent
-              value={region}
-              handleValue={(e) => setRegion(e)}
+              value={formData.region}
+              handleValue={(text) =>
+                setFormData((prev) => ({ ...prev, region: text }))
+              }
               iconName="pin-outline"
-              placeholder="서울특별시"
+              placeholder="지역을 선택해주세요."
             />
           </View>
         </View>
 
-        <Button
-          text="Register"
-          size="large"
-          onPress={() => router.push("/(tabs)")}
-        />
+        <Pressable
+          style={[styles.button, isLoading && styles.disabledButton]}
+          onPress={handleSignUp}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? "Registering..." : "Register"}
+          </Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -112,7 +172,23 @@ const styles = StyleSheet.create({
   inputContainer: {
     gap: 20,
   },
+  button: {
+    backgroundColor: "#4285F4",
+    padding: 15,
+    borderRadius: 5,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  disabledButton: {
+    backgroundColor: "#cccccc",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
 });
+
+export default SignUp;
 
 {
   /* <DateTimePicker

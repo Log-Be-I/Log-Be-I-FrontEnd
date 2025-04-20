@@ -8,7 +8,7 @@ import MainScheduleList from "../../components/home/MainScheduleList";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
 
   const handleLogout = async () => {
     try {
@@ -18,6 +18,8 @@ export default function HomeScreen() {
       console.error("로그아웃 에러:", error);
     }
   };
+
+  console.log(user);
 
   return (
     <View style={styles.container}>

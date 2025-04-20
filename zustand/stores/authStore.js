@@ -10,11 +10,25 @@ import { BASE_URL } from "@env";
 
 WebBrowser.maybeCompleteAuthSession(); // 구글 로그인 완료 후 리다이렉션 처리
 
+// User 타입 정의
+const user = {
+  memberId: null,
+  name: "",
+  nickname: "",
+  email: "",
+  region: "",
+  birth: "",
+  profile: "",
+  notification: false,
+  memberStatus: "",
+  lastLoginAt: null,
+};
+
 const useAuthStore = create(
   persist(
     (set, get) => ({
       token: null,
-      user: null,
+      user: user,
       isLoading: false,
       error: null,
       isHydrated: false,
@@ -88,7 +102,7 @@ const useAuthStore = create(
       // 로그아웃 액션
       logout: () => {
         console.log("🚪 Logging out");
-        set({ token: null, user: null });
+        set({ token: null, user: user });
       },
 
       // 현재 토큰 반환 액션
@@ -101,6 +115,66 @@ const useAuthStore = create(
       setHydrated: () => {
         console.log("💾 Setting hydrated to true");
         set({ isHydrated: true });
+      },
+
+      signUp: async (signUpData) => {
+        console.log("📤 Starting sign up process");
+        set({ isLoading: true, error: null });
+
+        try {
+          // 기본 프로필 이미지 설정
+          const signUpRequest = {
+            name: signUpData.name,
+            nickname: signUpData.nickname,
+            email: signUpData.email,
+            region: signUpData.region,
+            birth: signUpData.birth,
+            profile: "assets/sitting-nalco.png",
+            notification: false,
+          };
+
+          console.log("📤 Sending sign up data:", signUpRequest);
+          const response = await axios.post(
+            `${BASE_URL}/members`,
+            signUpRequest,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          console.log("📥 Received sign up response:", response);
+          console.log("3", response.headers["authorization"]);
+          console.log(response.data.data);
+
+          if (response.headers["authorization"]) {
+            console.log("✅ Sign up successful");
+            set({
+              token: response.headers["authorization"],
+              user: response.data.data,
+              error: null,
+            });
+            return { success: true };
+          } else {
+            console.error("❌ No access token in response");
+            return { success: false, error: "No access token received" };
+          }
+        } catch (error) {
+          console.error("❌ Sign up error:", error.response?.data || error);
+          set({
+            error:
+              error.response?.data?.message ||
+              "회원가입 중 오류가 발생했습니다.",
+          });
+          return {
+            success: false,
+            error: error.response?.data?.message || error.message,
+            details: error.response?.data,
+          };
+        } finally {
+          set({ isLoading: false });
+        }
       },
     }),
     {
