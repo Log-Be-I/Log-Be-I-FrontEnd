@@ -1,11 +1,11 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Text from "./Text";
 
-export default function Button({ text, onPress, size = "medium" }) {
+export default function Button({ text, onPress, size = "medium", textStyle }) {
   return (
     <Pressable style={styles.buttonOuter} onPress={onPress}>
       <View style={[styles.buttonInner, sizeStyle[size]]}>
-        <Text variant="semiBold" size={16} color="#69BAFF">
+        <Text variant="semiBold" size={16} style={textStyle}>
           {text}
         </Text>
       </View>
@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     borderColor: "#E0E9FF",
     alignItems: "center",
     justifyContent: "center",
+    textAlign: "center",
   },
 });
 
@@ -42,6 +43,7 @@ const sizeStyle = {
   small: {
     paddingVertical: 5,
     paddingHorizontal: 16,
+    width: 80,
   },
   medium: {
     paddingVertical: 6,

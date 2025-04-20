@@ -18,17 +18,21 @@ export default function TimePickerInput({ value, onChange, isEditing }) {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <Pressable
         style={styles.timeContainer}
         onPress={() => isEditing && setShowTimePicker(true)}
       >
-        <MaterialCommunityIcons
-          name="clock-outline"
-          size={24}
-          color={isEditing ? "#69BAFF" : "#666666"}
-        />
-        <Text style={styles.timeText}>{value}</Text>
+        <View style={styles.iconContainer}>
+          <MaterialCommunityIcons
+            name="clock-outline"
+            size={24}
+            color={isEditing ? "#69BAFF" : "#666666"}
+          />
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.timeText}>{value}</Text>
+        </View>
       </Pressable>
 
       {showTimePicker && (
@@ -45,10 +49,20 @@ export default function TimePickerInput({ value, onChange, isEditing }) {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   timeContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+  },
+  iconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textContainer: {
+    justifyContent: "center",
   },
   timeText: {
     fontSize: 16,

@@ -39,11 +39,9 @@ export default function RecordItem({
       </View>
       {isSelectMode && (
         <View style={[styles.checkbox, isSelected && styles.checked]}>
-          <MaterialCommunityIcons
-            name={isSelected ? "check" : ""}
-            size={16}
-            color="#FFFFFF"
-          />
+          {isSelected && (
+            <MaterialCommunityIcons name="check" size={16} color="#FFFFFF" />
+          )}
         </View>
       )}
     </Pressable>

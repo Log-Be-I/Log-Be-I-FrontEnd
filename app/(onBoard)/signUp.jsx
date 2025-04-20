@@ -4,9 +4,11 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TextComponent from "../../components/onBoard/text";
 import LogBeIText from "../../assets/images/logBeIText.svg";
-import BirthIcon from "../../assets/images/birthDay.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
 import useAuthStore from "../../zustand/stores/authStore";
+import BirthInput from "../../components/common/BirthInput";
+import { RegionDropdown } from "../../components/common/RegionDropdown";
+import { postMember } from "../../api/member/memberApi";
 
 const SignUp = () => {
   const router = useRouter();
@@ -18,8 +20,8 @@ const SignUp = () => {
     email: params.email || "",
     name: params.name || "",
     nickname: "",
-    region: "",
-    birth: "",
+    region: "서울특별시",
+    birth: "1998-12-25",
   });
 
   const handleSignUp = async () => {
@@ -102,21 +104,20 @@ const SignUp = () => {
               iconName="person-outline"
               placeholder="닉네임을 입력해주세요. (2-8자의 한글/영어 소문자)"
             />
-            <TextComponent
+            <BirthInput
               value={formData.birth}
               handleValue={(text) =>
-                setFormData((prev) => ({ ...prev, birth: text }))
+                setFormData((prev) => ({ ...prev, nickname: text }))
               }
-              iconComponent={<BirthIcon width={20} height={20} />}
-              placeholder="생년월일을 입력해주세요요 (YYYY-MM-DD)"
+              placeholder="1999-12-21"
             />
-            <TextComponent
+            <RegionDropdown
               value={formData.region}
               handleValue={(text) =>
                 setFormData((prev) => ({ ...prev, region: text }))
               }
               iconName="pin-outline"
-              placeholder="지역을 선택해주세요."
+              placeholder="서울특별시"
             />
           </View>
         </View>
@@ -155,7 +156,8 @@ const styles = StyleSheet.create({
   },
   logo: {
     alignSelf: "center",
-    marginTop: 100,
+    marginTop: 40,
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,

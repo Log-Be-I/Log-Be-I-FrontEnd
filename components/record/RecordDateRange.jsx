@@ -11,6 +11,8 @@ import CalendarPicker from "react-native-calendar-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import RecordButton from "../common/RecordButton";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 const QUICK_SELECTIONS = [
   { label: "오늘", days: 0 },
@@ -29,6 +31,7 @@ export default function RecordDateRange({ onRangeChange, isSelectMode }) {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [activeQuickSelect, setActiveQuickSelect] = useState("today");
+  const [showQuickSelectModal, setShowQuickSelectModal] = useState(false);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -40,10 +43,7 @@ export default function RecordDateRange({ onRangeChange, isSelectMode }) {
 
   const formatDate = (date) => {
     if (!date) return "";
-    return date.toLocaleDateString("ko-KR", {
-      month: "long",
-      day: "numeric",
-    });
+    return format(date, "yyyy.MM.dd", { locale: ko });
   };
 
   const handleDateChange = (date, type) => {
@@ -420,6 +420,20 @@ export default function RecordDateRange({ onRangeChange, isSelectMode }) {
           onChange={handleEndDateChange}
         />
       )}
+
+      {showQuickSelectModal && (
+        <View style={styles.modalContainer}>
+          <Pressable style={styles.modalOption} onPress={handleToday}>
+            <Text style={styles.modalOptionText}>오늘</Text>
+          </Pressable>
+          <Pressable style={styles.modalOption} onPress={handleThisWeek}>
+            <Text style={styles.modalOptionText}>이번 주</Text>
+          </Pressable>
+          <Pressable style={styles.modalOption} onPress={handleThisMonth}>
+            <Text style={styles.modalOptionText}>이번 달</Text>
+          </Pressable>
+        </View>
+      )}
     </Animated.View>
   );
 }
@@ -522,5 +536,29 @@ const styles = StyleSheet.create({
   },
   dateTextDisabled: {
     color: "#999999",
+  },
+  modalContainer: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    right: 0,
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 16,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalOption: {
+    paddingVertical: 12,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: "#333333",
   },
 });

@@ -148,12 +148,14 @@ export default function RecordDetailModal({
 
             <View style={styles.timeContainer}>
               <View style={styles.timeLine} />
-              <TimePickerInput
-                value={time}
-                onChange={setTime}
-                isEditing={isEditing}
-                style={styles.timeInput}
-              />
+              <View style={styles.timeInputContainer}>
+                <TimePickerInput
+                  value={time}
+                  onChange={setTime}
+                  isEditing={isEditing}
+                  style={styles.timeInput}
+                />
+              </View>
               <View style={styles.timeLine} />
             </View>
 
@@ -165,21 +167,25 @@ export default function RecordDetailModal({
               />
             </View>
 
-            <TextInput
-              style={[
-                styles.contentInput,
-                isEditing ? styles.contentInputEditing : null,
-                error ? styles.contentInputError : null,
-              ]}
-              multiline
-              value={content}
-              onChangeText={handleContentChange}
-              editable={isEditing}
-              placeholder={isEditing ? "내용을 입력하세요" : ""}
-              placeholderTextColor="#999999"
-            />
-            {error && <Text style={styles.errorText}>{error}</Text>}
-            {isEditing && <Text style={styles.charCount}>{charCount}/500</Text>}
+            <View style={styles.contentInputContainer}>
+              <TextInput
+                style={[
+                  styles.contentInput,
+                  isEditing ? styles.contentInputEditing : null,
+                  error ? styles.contentInputError : null,
+                ]}
+                multiline
+                value={content}
+                onChangeText={handleContentChange}
+                editable={isEditing}
+                placeholder={isEditing ? "내용을 입력하세요" : ""}
+                placeholderTextColor="#999999"
+              />
+              {error && <Text style={styles.errorText}>{error}</Text>}
+              {isEditing && (
+                <Text style={styles.charCount}>{charCount}/500</Text>
+              )}
+            </View>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -293,12 +299,26 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#69BAFF",
   },
+  timeInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 20,
+  },
   timeInput: {
     marginHorizontal: 20,
   },
   categoryContainer: {
     marginBottom: 16,
     alignSelf: "flex-start",
+  },
+  contentInputContainer: {
+    minHeight: 120,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 8,
+    borderWidth: 0.5,
+    borderColor: "#69BAFF",
   },
   contentInput: {
     minHeight: 120,
@@ -308,9 +328,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333333",
     textAlignVertical: "top",
-    marginBottom: 8,
-    borderWidth: 0.5,
-    borderColor: "#69BAFF",
   },
   contentInputEditing: {
     backgroundColor: "#FFFFFF",
