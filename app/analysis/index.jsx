@@ -23,17 +23,18 @@ export default function AnalysisPage() {
       // setReports(response);
 
       // Mock 데이터 사용
-      const filteredReports = mockReports.filter(
-        report => report.year === selectedYear
-      );
+      const filteredReports = mockReports.filter((report) => {
+        const reportYear = new Date(report.yearMonth).getFullYear();
+        return reportYear === selectedYear;
+      });
       setReports(filteredReports);
     } catch (error) {
       console.error('리포트 조회 실패:', error);
     }
   };
 
-  const handleReportPress = (reportId) => {
-    router.push(`/analysis/detailAnalysis?id=${reportId}`);
+  const handleReportPress = (monthlyId) => {
+    router.push(`/analysis/detailAnalysis?monthlyId=${monthlyId}`);
   };
 
   const handleBack = () => {
@@ -42,7 +43,7 @@ export default function AnalysisPage() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={styles.headerContainer}>
         <Pressable onPress={handleBack} style={styles.backButton}>
           <Icon name="chevron-back" size={24} color="#000" />
         </Pressable>
@@ -58,9 +59,9 @@ export default function AnalysisPage() {
       <ScrollView style={styles.middle}>
         {reports.map((report) => (
           <ReportItem
-            key={report.id}
+            key={report.monthlyId}
             title={report.title}
-            onPress={() => handleReportPress(report.id)}
+            onPress={() => handleReportPress(report.monthlyId)}
           />
         ))}
       </ScrollView>
@@ -76,9 +77,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    bottom: 60,
   },
-  header: {
+  headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,

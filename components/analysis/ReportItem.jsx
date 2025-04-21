@@ -19,59 +19,47 @@ export default function ReportItem({ title, content, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  // container: {
-  //   backgroundColor: '#F9FAFB',
-  //   padding: 15,
-  //   marginVertical: 5,
-  //   marginHorizontal: 10,
-  //   borderRadius: 10,
-  //   shadowColor: '#000',
-  //   shadowOffset: {
-  //     width: 0,
-  //     height: 2,
-  //   },
-  //   shadowOpacity: 0.1,
-  //   shadowRadius: 3,
-  //   elevation: 3,
-  //   flexDirection: 'row',
-  //   alignItems: 'flex-start',
-  //   minHeight: 80,
-  // },
   container: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 25, // 수직패딩으로 카드 높이 확보보
     marginHorizontal: 10,
     marginBottom: 20,
+    //minHeight: 100, // 카드 높이 추가
+    justifyContent: 'center', // 세로 중앙 정렬
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 2,
-  },
-  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+  },
+  titleRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    //marginBottom: 12, // 여백 좀 더 줘서 안정감
   },
   separator: {
     width: 1,
-    height: '100%',
+    height: 24,
     backgroundColor: '#69BAFF',
-    marginHorizontal: 16,
+    marginHorizontal: 12,
   },
   contentContainer: {
     flex: 1,
+    justifyContent: 'center', // 내용 세로 가운데 정렬
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#5B75B1',
-    marginBottom: 8,
   },
   content: {
     fontSize: 16,
     color: '#6C7A8A',
-    lineHeight: 20,
+    lineHeight: 22,
   },
 }); 

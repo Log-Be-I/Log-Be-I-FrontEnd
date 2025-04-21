@@ -10,8 +10,7 @@ export default function AnalysisLayout() {
 
   return (
 
-    <SafeAreaView style={styles.safeArea}>
-    <Header />
+  <SafeAreaView style={styles.safeArea}>
     <View style={styles.content}>
       <Slot />
     </View>
@@ -21,14 +20,14 @@ export default function AnalysisLayout() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#fff",
-      },
-      safeArea: {
-        flex: 1,
-      },
-      content: {
-        flex: 1,
-      },
+  container: {
+      flex: 1,
+      backgroundColor: "#fff",
+    },
+    safeArea: {
+      flex: 1,
+    },
+    content: {
+      flex: 1,
+    },
 })
