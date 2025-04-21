@@ -44,7 +44,7 @@ export default function AnalysisPage() {
 
   return (
     <View style={styles.container}>
-        <Header />
+        {/* <Header /> */}
       <View style={styles.headerContainer}>
         <Pressable onPress={handleBack} style={styles.backButton}>
           <Icon name="chevron-back" size={24} color="#000" />

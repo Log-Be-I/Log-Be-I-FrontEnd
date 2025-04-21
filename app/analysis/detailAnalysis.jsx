@@ -139,10 +139,10 @@ export default function DetailAnalysisPage() {
 
   return (
     <View style={styles.container}>
-      <HeaderForDetail 
+      {/* <HeaderForDetail 
       handleProtectedAction={(e) => handleProtectedAction(e)}
       setModalVisible={(e) => setModalVisible(e)}
-      />
+      /> */}
         <View style={styles.top}>
           <Pressable onPress={() => handleProtectedAction(handleBack)} style={styles.backButton}>
             <Icon name="chevron-back" size={24} color="#000" />
