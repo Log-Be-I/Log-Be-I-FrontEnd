@@ -260,6 +260,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    marginBottom: 8,
   },
   backButton: {
     padding: 10,
@@ -268,7 +271,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 21,
     fontWeight: '600',
-    color: '#5B75B1',
+    color: '#82ACF1',
     flex: 1,
     right: 0,
   },
@@ -279,11 +282,11 @@ const styles = StyleSheet.create({
   button: {
     minWidth: 100,
   },
-  border: {
-    height: 1,
-    backgroundColor: '#69BAFF',
-    marginBottom: 16,
-  },
+  // border: {
+  //   height: 1,
+  //   backgroundColor: '#69BAFF',
+  //   marginBottom: 16,
+  // },
   content: {
     flex: 1,
   },

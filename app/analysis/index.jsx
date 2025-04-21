@@ -94,10 +94,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: '600',
     marginRight: 44, // backButton width + padding to center title
-    color: '#5B75B1',
+    color: '#82ACF1',
   },
   middle: {
     flex: 1,
