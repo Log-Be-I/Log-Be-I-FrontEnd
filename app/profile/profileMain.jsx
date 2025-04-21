@@ -8,6 +8,7 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUserStore } from "../../zustand/useUserStore";
 import TextComponent from "../../components/onBoard/text";
@@ -21,8 +22,10 @@ import BirthIcon from "../../assets/images/birthDay.svg";
 import MyProfile from "../../assets/sidebar/sidebarProfile/myProfile.svg";
 import BirthInput from "../../components/common/BirthInput";
 import { patchMemberInfo } from "../../api/member/memberApi";
+import Icon from "react-native-vector-icons/Ionicons";
 
 export default function MemberInfo() {
+  const router = useRouter();
   const {
     memberId,
     token,
@@ -68,9 +71,17 @@ export default function MemberInfo() {
     }
   };
 
+  const handleBack = () => {
+    console.log("back");
+    router.back();
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.topBackground} />
+        <Pressable onPress={handleBack} style={styles.backButton}>
+          <Icon name="chevron-back" size={24} color="#000" />
+        </Pressable>
       <View style={styles.bottomBackground} />
       {isEditMode && (
         <View style={styles.header}>
@@ -180,6 +191,13 @@ const styles = StyleSheet.create({
         right: 0,
         height: "30%",
         backgroundColor: "rgba(105, 186, 255, 0.3)",
+        zIndex: 0,
+    },
+    backButton: {
+        position: "absolute",
+        top: 100,
+        left: 16,
+        zIndex: 10,
     },
     bottomBackground: {
         position: "absolute",
