@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet, Pressable } from "react-native";
+import { Pressable, Text, StyleSheet } from "react-native";
 import useAuthStore from "../../zustand/stores/authStore";
 import { useRouter } from "expo-router";
 
@@ -9,24 +9,39 @@ const GoogleLoginButton = ({ promptAsync }) => {
 
   const handlePress = async () => {
     try {
-      console.log("Google 로그인 시도");
+      console.log("🚀 Initiating Google login flow");
+
+      // Google OAuth 프로세스 시작
       const result = await promptAsync();
-      console.log("Google 로그인 결과:", result);
+      console.log("✅ Google OAuth result:", result);
 
       if (result?.type === "success") {
-        console.log("Google 로그인 성공, 토큰 저장 시도");
-        const loginSuccess = await googleLogin(result);
-        console.log("토큰 저장 완료:", loginSuccess);
+        const { code } = result.params;
+        console.log("📦 Received authorization code:", code);
 
-        if (loginSuccess) {
-          console.log("메인 화면으로 이동");
+        // 백엔드 인증 처리
+        const loginResult = await googleLogin(code);
+        console.log("📥 Login result:", loginResult);
+
+        if (loginResult.isRegistered) {
+          console.log("🏠 Navigating to main screen");
           router.replace("/(tabs)");
+        } else {
+          console.log(
+            "📝 Navigating to signup screen with data:",
+            loginResult.signUpData
+          );
+          router.push({
+            pathname: "/(onBoard)/signUp",
+            params: loginResult.signUpData,
+          });
         }
       } else {
-        console.log("Google 로그인 실패:", result?.type);
+        console.log("❌ Google OAuth failed:", result?.type);
       }
     } catch (error) {
-      console.error("Google 로그인 에러:", error);
+      console.error("❌ Login error:", error);
+      console.error("Error details:", error.message);
     }
   };
 

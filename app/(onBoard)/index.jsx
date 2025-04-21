@@ -10,7 +10,8 @@ import GoogleLoginButton from "../../components/onBoard/GoogleLoginButton";
 import * as Google from "expo-auth-session/providers/google";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
-import React from "react";
+import React, { useEffect } from "react";
+import ErrorBoundary from "../../components/common/ErrorBoundary";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -18,37 +19,47 @@ export default function Login() {
   const router = useRouter();
   const { isLoading, error, setToken, setUser } = useAuthStore();
 
-  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
-  console.log("✅ redirectUri", redirectUri);
-
-  // Google 로그인 설정
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    // redirectUri: "https://auth.expo.io/@taekho/Log-Be-I-FrontEnd",
-    useProxy: true,
-    scopes: ["email", "profile"],
-  });
-
-  // 디버깅을 위한 로그 추가
-  console.log("Google Auth Request Config:", {
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    redirectUri: request?.redirectUri,
-  });
-
-  // response 모니터링 추가
-  React.useEffect(() => {
-    if (response?.type === "success") {
-      console.log("Auth Success Response:", response);
-    } else if (response?.type === "error") {
-      console.log("Auth Error Response:", response);
+  const [request, response, promptAsync] = Google.useAuthRequest(
+    {
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+      responseType: "code",
+      scopes: ["email", "profile", "openid"],
+      usePKCE: false,
+      redirectUri: AuthSession.makeRedirectUri({ useProxy: false }),
+      extraParams: {
+        prompt: "consent",
+        access_type: "offline",
+      },
+      skipCodeExchange: true,
+    },
+    {
+      useProxy: false,
     }
-  }, [response]);
+  );
 
-  // 테스트용 로그인
+  // // ✅ 자동 요청 실패 무시하고 화면 오류 방지
+  // useEffect(() => {
+  //   const handler = (event) => {
+  //     if (
+  //       event?.reason?.message?.includes("client_secret is missing") ||
+  //       event?.reason?.toString().includes("client_secret is missing")
+  //     ) {
+  //       event.preventDefault();
+  //       console.log("🚫 무시된 자동 token 요청 에러:", event.reason);
+  //     }
+  //   };
+
+  //   window.addEventListener("unhandledrejection", handler);
+  //   window.addEventListener("error", handler);
+
+  //   return () => {
+  //     window.removeEventListener("unhandledrejection", handler);
+  //     window.removeEventListener("error", handler);
+  //   };
+  // }, []);
+
   const handleLogin2 = () => {
-    // 테스트용 토큰과 사용자 정보 설정
     setToken("test-token");
     setUser({
       id: "test-user-id",
@@ -56,7 +67,6 @@ export default function Login() {
       name: "Test User",
       image: null,
     });
-    // 메인 화면으로 이동
     router.replace("/(tabs)");
   };
 
@@ -65,6 +75,7 @@ export default function Login() {
   };
 
   return (
+    // <ErrorBoundary>
     <SafeAreaView style={styles.container}>
       <BackgroundSVG style={styles.background} />
       <View style={styles.contentContainer}>
@@ -113,18 +124,13 @@ export default function Login() {
         </View>
       </View>
     </SafeAreaView>
+    // {/* </ErrorBoundary> */}
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  errorText: {
-    color: "red",
-    marginTop: 10,
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  errorText: { color: "red", marginTop: 10 },
   background: {
     position: "absolute",
     top: 0,
@@ -133,47 +139,23 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: -1,
   },
-  contentContainer: {
-    flex: 1,
-    padding: 24,
-    justifyContent: "space-between",
-  },
-  logo: {
-    alignSelf: "center",
-    marginTop: 60,
-  },
-  loginContainer: {
-    width: "100%",
-    paddingHorizontal: 16,
-    marginTop: -100,
-  },
+  contentContainer: { flex: 1, padding: 24, justifyContent: "space-between" },
+  logo: { alignSelf: "center", marginTop: 60 },
+  loginContainer: { width: "100%", paddingHorizontal: 16, marginTop: -100 },
   titleWrapper: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 24,
-    width: "100%",
   },
-  titleContainer: {
-    alignItems: "flex-start",
-  },
-  underline: {
-    width: 40,
-    height: 2,
-    backgroundColor: "#1170DF",
-    marginTop: 4,
-  },
-  buttonContainer: {
-    marginTop: 20,
-  },
+  titleContainer: { alignItems: "flex-start" },
+  underline: { width: 40, height: 2, backgroundColor: "#1170DF", marginTop: 4 },
+  buttonContainer: { marginTop: 20 },
   googleButton: {
     backgroundColor: "#fff",
     borderRadius: 8,
     width: "100%",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
@@ -185,14 +167,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-  footer: {
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  footerText: {
-    marginBottom: 2,
-  },
+  footer: { alignItems: "center", marginBottom: 16 },
+  footerText: { marginBottom: 2 },
 });
-
-// StyleSheet는 SafeAreaView와 무관하다.
-// SafeAreaView는 UI 컴포넌트 배치를 위한 영역이고, Style Sheet는 스타일을 적용하기 위한 영역이다.

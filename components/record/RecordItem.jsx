@@ -1,17 +1,19 @@
+import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { CATEGORIES, CATEGORY_ICONS } from "../../constants/CategoryData";
 
 export default function RecordItem({
-  id,
-  category,
-  categoryInfo,
-  time,
-  content,
-  writeTime,
+  record,
+  onSelect,
   isSelectMode,
   isSelected,
-  onSelect,
 }) {
+  const categoryInfo = CATEGORIES.find(
+    (cat) => cat.category_id === record.category_id
+  );
+  const iconInfo = CATEGORY_ICONS[categoryInfo?.name];
+
   return (
     <Pressable
       style={[styles.container, isSelected && styles.selectedContainer]}
@@ -19,21 +21,21 @@ export default function RecordItem({
     >
       <View style={styles.leftSection}>
         <MaterialCommunityIcons
-          name={categoryInfo.name}
+          name={iconInfo?.name}
           size={24}
-          color={categoryInfo.color}
+          color={iconInfo?.color}
         />
       </View>
       <View style={styles.timeSection}>
-        <Text style={styles.timeText}>{time}</Text>
+        <Text style={styles.timeText}>{record.record_time}</Text>
       </View>
       <View style={styles.contentSection}>
         <Text style={styles.contentText} numberOfLines={2}>
-          {content}
+          {record.content}
         </Text>
       </View>
       <View style={styles.rightSection}>
-        <Text style={styles.writeTimeText}>{writeTime}</Text>
+        <Text style={styles.writeTimeText}>{record.record_date}</Text>
       </View>
       {isSelectMode && (
         <View style={[styles.checkbox, isSelected && styles.checked]}>

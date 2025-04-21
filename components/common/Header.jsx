@@ -16,41 +16,40 @@ export default function Header() {
   };
 
   return (
-    <>
-      <View style={styles.headerContainer}>
-        <View style={styles.logoContainer}>
-          <LogBeIText width={88} height={45} />
-        </View>
-
-        {/* 오른쪽 메뉴 아이콘 (누르면 onMenuPress 실행) */}
-        <Pressable onPress={openSidebar} style={styles.menuIconContainer}>
-          <MenuIcon width={26} height={21} />
-        </Pressable>
+    <View style={styles.headerContainer}>
+      <View style={styles.logoContainer}>
+        <LogBeIText width={88} height={45} />
       </View>
 
+      {/* 오른쪽 메뉴 아이콘 (누르면 onMenuPress 실행) */}
+      <Pressable onPress={openSidebar} style={styles.menuIconContainer}>
+        <MenuIcon width={26} height={21} />
+      </Pressable>
+
       <SidebarSlideOverlay visible={isSidebarOpen} onClose={closeSidebar} />
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
-    paddingHorizontal: 20, // 좌우 여백
-    paddingTop: 60, // 위 여백
-    //paddingBottom: 6, // 아래 여백
-    flexDirection: "row", // 가로로 정렬
-    justifyContent: "space-between", // 좌/우 끝으로 정렬
-    alignItems: "center", // 세로 중앙 정렬
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F4FA",
   },
   logoContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
+    flex: 1,
     alignItems: "center",
   },
   menuIconContainer: {
     position: "absolute",
     right: 20,
+    zIndex: 2,
   },
 });

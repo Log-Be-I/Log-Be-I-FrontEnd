@@ -133,81 +133,59 @@ export default function RecordDetailModal({
             },
           ]}
         >
-          <View style={styles.header}>
+          <View style={styles.contentWrapper}>
             <Pressable
               style={styles.dateContainer}
               onPress={() => isEditing && setShowCalendar(true)}
             >
               <MaterialCommunityIcons
                 name="calendar"
-                size={24}
+                size={20}
                 color={isEditing ? "#69BAFF" : "#666666"}
               />
               <Text style={styles.dateText}>{formatDate(date)}</Text>
             </Pressable>
-            <TimePickerInput
-              value={time}
-              onChange={setTime}
-              isEditing={isEditing}
-            />
-          </View>
 
-          <Modal
-            visible={showCalendar}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setShowCalendar(false)}
-          >
-            <View style={styles.calendarModalOverlay}>
-              <View style={styles.calendarModalContent}>
-                <View style={styles.calendarHeader}>
-                  <Text style={styles.calendarTitle}>날짜 선택</Text>
-                  <Pressable
-                    style={styles.closeButton}
-                    onPress={() => setShowCalendar(false)}
-                  >
-                    <MaterialCommunityIcons
-                      name="close"
-                      size={24}
-                      color="#666666"
-                    />
-                  </Pressable>
-                </View>
-                <RecordEditDateRange
-                  date={date}
-                  onDateChange={(newDate) => {
-                    setDate(new Date(newDate));
-                    setShowCalendar(false);
-                  }}
+            <View style={styles.timeContainer}>
+              <View style={styles.timeLine} />
+              <View style={styles.timeInputContainer}>
+                <TimePickerInput
+                  value={time}
+                  onChange={setTime}
+                  isEditing={isEditing}
+                  style={styles.timeInput}
                 />
               </View>
+              <View style={styles.timeLine} />
             </View>
-          </Modal>
 
-          <View style={styles.categoryContainer}>
-            <CategoryDropdown
-              value={category}
-              onChange={setCategory}
-              isEditing={isEditing}
-            />
-          </View>
+            <View style={styles.categoryContainer}>
+              <CategoryDropdown
+                value={category}
+                onChange={setCategory}
+                isEditing={isEditing}
+              />
+            </View>
 
-          <View style={styles.contentContainer}>
-            <TextInput
-              style={[
-                styles.contentInput,
-                isEditing ? styles.contentInputEditing : null,
-                error ? styles.contentInputError : null,
-              ]}
-              multiline
-              value={content}
-              onChangeText={handleContentChange}
-              editable={isEditing}
-              placeholder={isEditing ? "내용을 입력하세요" : ""}
-              placeholderTextColor="#999999"
-            />
-            {error && <Text style={styles.errorText}>{error}</Text>}
-            {isEditing && <Text style={styles.charCount}>{charCount}/500</Text>}
+            <View style={styles.contentInputContainer}>
+              <TextInput
+                style={[
+                  styles.contentInput,
+                  isEditing ? styles.contentInputEditing : null,
+                  error ? styles.contentInputError : null,
+                ]}
+                multiline
+                value={content}
+                onChangeText={handleContentChange}
+                editable={isEditing}
+                placeholder={isEditing ? "내용을 입력하세요" : ""}
+                placeholderTextColor="#999999"
+              />
+              {error && <Text style={styles.errorText}>{error}</Text>}
+              {isEditing && (
+                <Text style={styles.charCount}>{charCount}/500</Text>
+              )}
+            </View>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -245,6 +223,38 @@ export default function RecordDetailModal({
             </Pressable>
           </View>
         </Animated.View>
+
+        <Modal
+          visible={showCalendar}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowCalendar(false)}
+        >
+          <View style={styles.calendarModalOverlay}>
+            <View style={styles.calendarModalContent}>
+              <View style={styles.calendarHeader}>
+                <Text style={styles.calendarTitle}>날짜 선택</Text>
+                <Pressable
+                  style={styles.closeButton}
+                  onPress={() => setShowCalendar(false)}
+                >
+                  <MaterialCommunityIcons
+                    name="close"
+                    size={24}
+                    color="#666666"
+                  />
+                </Pressable>
+              </View>
+              <RecordEditDateRange
+                date={date}
+                onDateChange={(newDate) => {
+                  setDate(new Date(newDate));
+                  setShowCalendar(false);
+                }}
+              />
+            </View>
+          </View>
+        </Modal>
       </View>
     </Modal>
   );
@@ -253,71 +263,68 @@ export default function RecordDetailModal({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
     backgroundColor: "white",
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 30,
     width: "90%",
     maxWidth: 400,
+    overflow: "hidden",
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+  contentWrapper: {
+    padding: 24,
   },
   dateContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    marginBottom: 4,
   },
   dateText: {
     fontSize: 16,
     fontWeight: "500",
     color: "#333333",
   },
-  calendarModalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  calendarModalContent: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 20,
-    width: "90%",
-    maxWidth: 400,
-  },
-  calendarHeader: {
+  timeContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 4,
+    paddingVertical: 8,
   },
-  calendarTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333333",
+  timeLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#69BAFF",
   },
-  closeButton: {
-    padding: 4,
+  timeInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 20,
+  },
+  timeInput: {
+    marginHorizontal: 20,
   },
   categoryContainer: {
     marginBottom: 16,
+    alignSelf: "flex-start",
   },
-  contentContainer: {
-    marginBottom: 16,
+  contentInputContainer: {
+    minHeight: 120,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 8,
+    borderWidth: 0.5,
+    borderColor: "#69BAFF",
   },
   contentInput: {
     minHeight: 120,
-    backgroundColor: "#F5F5F5",
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
     fontSize: 14,
     color: "#333333",
     textAlignVertical: "top",
@@ -325,7 +332,7 @@ const styles = StyleSheet.create({
   contentInputEditing: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E5E5E5",
+    borderColor: "#69BAFF",
   },
   contentInputError: {
     borderColor: "#FF4444",
@@ -343,13 +350,15 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
     gap: 12,
   },
   button: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: "center",
   },
   editButton: {
@@ -379,5 +388,32 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: "#FFFFFF",
+  },
+  calendarModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  calendarModalContent: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    width: "90%",
+    maxWidth: 400,
+  },
+  calendarHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  calendarTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333333",
+  },
+  closeButton: {
+    padding: 4,
   },
 });
