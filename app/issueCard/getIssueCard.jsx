@@ -184,7 +184,7 @@ export default function GetIssueCard() {
       <View style={styles.editButtonContainer}>
       <Button
             text="Edit"
-            size="medium"
+            size="large"
             textStyle={{color: "#69BAFF"}}
             onPress={handleEdit}
             style={styles.editButton}
@@ -268,8 +268,8 @@ const styles = StyleSheet.create({
   },
   editButtonContainer: {
     position: 'absolute',
-    bottom: 20,
-    right: 20,
+    bottom: 60,
+    right: 30,
     zIndex: 10,
   },
   editButton: {
