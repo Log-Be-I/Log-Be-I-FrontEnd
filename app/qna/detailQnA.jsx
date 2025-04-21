@@ -293,9 +293,10 @@ const styles = StyleSheet.create({
     headerTitle: {
       flex: 1,
       textAlign: 'center',
-      fontSize: 18,
+      fontSize: 25,
       fontWeight: '600',
       marginRight: 44,
+      color: '#82ACF1',
     },
     content: {
       flex: 1,
@@ -303,8 +304,8 @@ const styles = StyleSheet.create({
     },
     questionHeader: {
       flexDirection: 'row',
+      justifyContent: 'flex-end',
       alignItems: 'center',
-      left: 150,
       gap: 16,
     },
     questionTitle: {

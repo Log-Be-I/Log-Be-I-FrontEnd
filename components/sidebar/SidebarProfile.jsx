@@ -9,7 +9,7 @@ export default function SidebarProfile() {
   const router = useRouter();
 
   const handleProfilePress = () => {
-    router.push("/profile/memberInfo");
+    router.push("/profile/profileMain");
   };
 
   return (

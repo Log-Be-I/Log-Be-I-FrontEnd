@@ -1,21 +1,35 @@
 import { Text, View, StyleSheet, Pressable } from "react-native";
 import { useState, useEffect } from "react";
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
-    const [groupIndex, setGroupIndex] = useState(0); // 0번째 그룹부터 시작
-  
     const pagesPerGroup = 5;
     const totalGroups = Math.ceil(totalPages / pagesPerGroup);
+    //currentPage에 따라 그룹 인덱스를 재설정정
+    const [groupIndex, setGroupIndex] = useState(Math.floor((currentPage - 1) / pagesPerGroup));
+
+    useEffect(() => {
+      setGroupIndex(Math.floor((currentPage - 1) / pagesPerGroup));
+  }, [currentPage]);
+
     const startPage = groupIndex * pagesPerGroup + 1;
     const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
   
     const handlePrevGroup = () => {
-      if (groupIndex > 0) setGroupIndex(groupIndex - 1);
+      if (groupIndex > 0) {
+        const newGroupIndex = groupIndex - 1;
+        setGroupIndex(newGroupIndex);
+        const newPage = newGroupIndex * pagesPerGroup + 1;
+        onPageChange(newPage); // 첫 페이지로 이동
+      }
     };
   
     const handleNextGroup = () => {
-      if (groupIndex < totalGroups - 1) setGroupIndex(groupIndex + 1);
+      if (groupIndex < totalGroups - 1) {
+        const newGroupIndex = groupIndex + 1;
+        setGroupIndex(newGroupIndex);
+        const newPage = newGroupIndex * pagesPerGroup + 1;
+        onPageChange(newPage); // 첫 페이지로 이동
+      }
     };
   
     const pageButtons = [];
@@ -23,12 +37,12 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
       pageButtons.push(
         <Pressable key={i} onPress={() => onPageChange(i)}>
           {i === currentPage ? (
-            <LinearGradient
-              colors={['#82ACF1', '#1373E0']}
+            <View
+              colors={'#82ACF1'}
               style={styles.pageButtonActive}
             >
               <Text style={styles.pageTextActive}>{i}</Text>
-            </LinearGradient>
+            </View>
           ) : (
             <View style={styles.pageButton}>
               <Text style={styles.pageText}>{i}</Text>

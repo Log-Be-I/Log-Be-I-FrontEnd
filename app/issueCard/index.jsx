@@ -32,14 +32,20 @@ export default function IssueCardPage() {
     ],
     [
       { title: '여행/음식', icon: '✈️' },
-      { title: '지기계발', icon: '📚' },
+      { title: '자기계발', icon: '📚' },
     ],
   ];
 
   useEffect(() => {
     if (editKeywords) {
       const parsedKeywords = JSON.parse(editKeywords);
-      setSelectedInterests(parsedKeywords);
+
+      const knownTitles = interestCategories.flatMap(row => row.map(item => item.title));
+      const predefined = parsedKeywords.filter(title => knownTitles.includes(title));
+      const custom = parsedKeywords.filter(title => !knownTitles.includes(title));
+
+      setSelectedInterests(predefined);
+      setCustomInterests(custom);
     }
   }, [editKeywords]);
 
@@ -83,17 +89,16 @@ export default function IssueCardPage() {
   };
 
   const handleStart = async () => {
-    if (selectedInterests.length === 0) {
+    const allKeywords = [...selectedInterests, ...customInterests];
+
+    if (allKeywords.length === 0) {
       setShowToast(true);
       return;
     }
     
     try {
-      await postKeywords(selectedInterests);
-      router.push({
-        pathname: '/issueCard/getIssueCard',
-        params: { keywords: JSON.stringify(selectedInterests) }
-      });
+      //await postKeywords(allKeywords);
+      router.replace(`/issueCard/getIssueCard?keywords=${encodeURIComponent(JSON.stringify(allKeywords))}`);
     } catch (error) {
       console.error('키워드 등록 실패:', error);
       setShowToast(true);
@@ -112,7 +117,7 @@ export default function IssueCardPage() {
         <View style={styles.content}>
           <Text style={styles.title}>관심사를 선택해주세요.</Text>
           <Text style={styles.subtitle}>
-            매일 요약 받고 싶은 이슈 3가지를 선택하거나, 키워드를 직접 입력할 수 있어요.
+            매일 요약 받고 싶은 이슈 3가지를 선택하거나, 직접 입력할 수 있어요.
           </Text>
 
           <View style={styles.buttonGrid}>

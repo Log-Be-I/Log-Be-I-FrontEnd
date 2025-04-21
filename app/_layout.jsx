@@ -85,6 +85,11 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="schedule" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
+          <Stack.Screen name="analysis" />
+          <Stack.Screen name="issueCard" />
+          <Stack.Screen name="notice" />
+          <Stack.Screen name="profile" />
+          <Stack.Screen name="qna" />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

@@ -220,10 +220,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   calendarWrapper: {
-    width: '95%',
+    width: '92%',
     borderRadius: 12,
     backgroundColor: 'white',
-    padding: 16,
   },
   calendar: {
     borderWidth: 1,
@@ -232,7 +231,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     elevation: 4,
     padding: 5,
-    marginTop: 4,
     width: '100%',
     height: 380,
     alignSelf: 'center',

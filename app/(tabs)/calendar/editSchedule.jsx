@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#CDE6FF',  // 하늘색 윤곽선
+    borderColor: '#69BAFF',  // 하늘색 윤곽선
     borderRadius: 16,
     backgroundColor: '#FFFFFF'/*'#F9FCFF'*/,  // 연한 파란 배경 (선택사항)
     shadowColor: '#000',
@@ -213,14 +213,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  dateRangeBox: {
-    borderWidth: 1,
-    borderColor: '#CDE6FF',
-    borderRadius: 8,
-    marginTop: 16,
-    minHeight: 250,
-    backgroundColor: 'white',
-  },
+  // dateRangeBox: {
+  //   borderWidth: 1,
+  //   borderColor: '#CDE6FF',
+  //   borderRadius: 8,
+  //   marginTop: 16,
+  //   minHeight: 250,
+  //   backgroundColor: 'white',
+  // },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -249,7 +249,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#032B77',
     fontSize: 18,
-    borderColor: '#CDE6FF',
+    borderBottomWidth: 1,
+    borderColor: '#69BAFF',
     borderRadius: 8,
     marginTop: 16,
     paddingHorizontal: 16,
@@ -260,7 +261,8 @@ const styles = StyleSheet.create({
     fontWeight: 'semibold',
     color: '#032B77',
     fontSize: 18,
-    borderColor: '#CDE6FF',
+    borderBottomWidth: 1,
+    borderColor: '#69BAFF',
     borderRadius: 8,
     marginTop: 16,
     paddingHorizontal: 16,

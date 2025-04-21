@@ -176,10 +176,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: '600',
     marginRight: 44,
-    color: '#032B77',
+    color: '#82ACF1',
   },
   buttonContainer: {
     flexDirection: 'row',

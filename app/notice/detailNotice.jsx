@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import Icon from 'react-native-vector-icons/Ionicons';
 import NoticeButton from '../../components/faq/NoticeButton';
 import { mockNotices } from '../../components/faq/mockData';
+import SaveButton from '../../components/qna/SaveButton';
 
 export default function DetailNoticePage() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function DetailNoticePage() {
   }, [id]);
 
   const handleBack = () => {
-    router.push('/notice');
+    router.back();
   };
 
   if (!notice) return null;
@@ -62,6 +63,17 @@ export default function DetailNoticePage() {
             />
           </View>
         )}
+          <SaveButton 
+          onPress={handleBack} 
+          style={{
+          paddingVertical: 4,
+          paddingHorizontal: 10,
+          minWidth: 60,
+          backgroundColor: '#61B9FF',
+          alignSelf: 'center',
+        }}>
+          <Text style={styles.buttonText}>OK</Text>
+        </SaveButton>
       </ScrollView>
     </View>
   );
@@ -86,9 +98,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: '600',
     marginRight: 44,
+    color: '#82ACF1',
   },
   content: {
     flex: 1,
@@ -141,5 +154,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     borderRadius: 4,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
 });

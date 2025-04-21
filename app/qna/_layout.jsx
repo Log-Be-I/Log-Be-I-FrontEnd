@@ -1,5 +1,4 @@
 import { Stack, useRouter } from "expo-router";
-import Header from '../../components/common/Header'
 import Footer from '../../components/common/Footer'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, StyleSheet } from "react-native";
@@ -9,6 +8,26 @@ import { getMyQuestions } from '../../api/qna/qnaApi';
 export default function QnaLayout() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleTabPress = (tab) => {
+    switch (tab) {
+      case 'index':
+        router.push('/');
+        break;
+      case 'record':
+        router.push('/record');
+        break;
+      case 'calendar':
+        router.push('/calendar');
+        break;
+      case 'settings':
+        router.push('/settings');
+        break;
+      default:
+        console.log('Invalid tab');
+        break;
+    }
+  };
   
   // //나의 문의 페이지 분기
   // useEffect(() => {
@@ -34,14 +53,13 @@ export default function QnaLayout() {
 
   return (
     <SafeAreaView style={styles.container}>
-        <Header />
         <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="noQuestion" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="detailQnA" options={{ headerShown: false }} />
         </Stack>
-        <Footer />
+        <Footer onTabPress={handleTabPress} />
     </SafeAreaView>
   );
 }
