@@ -5,9 +5,11 @@ import NewsCard from '../../components/issueCard/issue/NewsCard';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Button from '../../components/common/button';
 import { getKeywords } from '../../api/issueCard/issueCardApi';
-
+import { ActivityIndicator } from 'react-native';
 export default function GetIssueCard() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [cards, setCards] = useState([]);
   const { keywords: paramKeywords } = useLocalSearchParams();
   const [keywords, setKeywords] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
@@ -20,6 +22,7 @@ export default function GetIssueCard() {
         if (paramKeywords) {
           const parsedKeywords = JSON.parse(paramKeywords);
           setKeywords(parsedKeywords);
+          setIsLoading(false); // 키워드 설정되었으면 로딩 종료료
           return;
         }
         // 없으면 API 호출
@@ -29,6 +32,8 @@ export default function GetIssueCard() {
         }
       } catch (error) {
         console.error('키워드 조회 실패:', error);
+      } finally {
+        setIsLoading(false); // 키워드가 없더라도 로딩 종료
       }
     };
 
@@ -36,10 +41,9 @@ export default function GetIssueCard() {
   }, [paramKeywords]);
 
   const handleEdit = () => {
-    const selectedKeywords = keywords[activeTab];
     router.push({
       pathname: '/issueCard',
-      params: { editKeywords: JSON.stringify(selectedKeywords) }
+      params: { editKeywords: JSON.stringify(keywords) }
     });
   };
 
@@ -111,10 +115,16 @@ export default function GetIssueCard() {
 
   return (
     <View style={styles.container}>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      ) : (
+        <>
       <View style={styles.titleContainer}>
         <View style={styles.titleBorder} />
         <View style={styles.titleRow}>
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <Pressable onPress={() => router.replace('/')} style={styles.backButton}>
             <Icon name="chevron-back" size={24} color="#000" />
           </Pressable>
           <View style={styles.titleWrapper}>
@@ -180,6 +190,8 @@ export default function GetIssueCard() {
             style={styles.editButton}
           />
       </View>
+        </>
+      )}
     </View>
   );
 }
