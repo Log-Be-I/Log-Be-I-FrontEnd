@@ -11,7 +11,7 @@ export default function NoticePage() {
   const router = useRouter();
   const [notices, setNotices] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage] = useState(4);
+  const [itemsPerPage] = useState(5);
   const totalPages = Math.ceil(notices.length / itemsPerPage);
   const startIndex = currentPage * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -42,11 +42,13 @@ export default function NoticePage() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={handleBack} style={styles.backButton}>
-          <Icon name="chevron-back" size={24} color="#000" />
-        </Pressable>
-        <Text style={styles.headerTitle}>공지사항</Text>
+      <View>
+        <View style={styles.header}>
+          <Pressable onPress={handleBack} style={styles.backButton}>
+            <Icon name="chevron-back" size={24} color="#000" />
+          </Pressable>
+          <Text style={styles.headerTitle}>공지사항</Text>
+        </View>
       </View>
 
       <View style={styles.subHeader}>
@@ -54,24 +56,26 @@ export default function NoticePage() {
         <Text style={styles.columnDate}>생성일자</Text>
       </View>
 
-      <ScrollView style={styles.noticeList}>
-        {pageNotices.map((notice) => (
-          <Pressable
-            key={notice.id}
-            style={styles.noticeItem}
-            onPress={() => handleNoticePress(notice.id)}
-          >
-            <View style={styles.noticeContent}>
-              <View style={styles.titleContainer}>
-                <NoticeButton importance={notice.importance} />
-                <Text style={styles.noticeTitle}>{notice.title}</Text>
+      <View style={{flex: 1}}>
+        <ScrollView contentContainerStyle={{paddingBottom: 100}}>
+          {pageNotices.map((notice) => (
+            <Pressable
+              key={notice.id}
+              style={styles.noticeItem}
+              onPress={() => handleNoticePress(notice.id)}
+            >
+              <View style={styles.noticeContent}>
+                <View style={styles.titleContainer}>
+                  <NoticeButton importance={notice.importance} />
+                  <Text style={styles.noticeTitle}>{notice.title}</Text>
+                </View>
+                <Text style={styles.noticeDate}>{notice.createdAt}</Text>
               </View>
-              <Text style={styles.noticeDate}>{notice.createdAt}</Text>
-            </View>
-          </Pressable>
-        ))}
-      </ScrollView>
-      <View style={{paddingBottom: 16, alignSelf: 'center'}}>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+      <View style={styles.paginationWrapper}>
         <Pagination
           currentPage={currentPage + 1}
           totalPages={totalPages}
@@ -79,6 +83,7 @@ export default function NoticePage() {
         />
       </View>
     </View>
+  </View>
   );
 }
 
@@ -101,10 +106,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: '600',
     marginRight: 44, // backButton width + padding to center title
-    color: '#0A4DAA',
+    color: '#82ACF1',
   },
   subHeader: {
     flexDirection: 'row',
@@ -126,9 +131,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#666',
     textAlign: 'center',
-  },
-  noticeList: {
-    flex: 1,
   },
   noticeItem: {
     paddingVertical: 15,
@@ -157,5 +159,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+  },
+  paginationWrapper: {
+    // paddingTop: 20,
+    // alignSelf: 'center',
+    paddingVertical: 10,
+    zIndex: 100,
+    marginBottom: 250,
   },
 });
