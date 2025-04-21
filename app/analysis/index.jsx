@@ -5,6 +5,7 @@ import YearDropdown from '../../components/analysis/YearDropdown';
 import ReportItem from '../../components/analysis/ReportItem';
 import { mockReports } from '../../components/analysis/mockData';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Header from '../../components/common/Header';
 // import { getReportsAll } from '../api/analysis/analysisApi';
 
 export default function AnalysisPage() {
@@ -43,6 +44,7 @@ export default function AnalysisPage() {
 
   return (
     <View style={styles.container}>
+        <Header />
       <View style={styles.headerContainer}>
         <Pressable onPress={handleBack} style={styles.backButton}>
           <Icon name="chevron-back" size={24} color="#000" />

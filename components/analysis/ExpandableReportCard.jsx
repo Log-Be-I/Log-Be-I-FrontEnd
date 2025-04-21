@@ -23,28 +23,33 @@ export default function ExpandableReportCard({
   return (
     <Pressable 
     style={[styles.card,
-        isSelectMode && isSelected && styles.selected, // 선택된 상태면 스타일 추가가 
+        isSelected && styles.selected, // 선택된 상태면 스타일 추가가 
     ]} 
     onPress={handleCardPress}>
       <View style={styles.header}>
       {isSelectMode && (
+        <Pressable onPress={() => onToggleSelect(!isSelected)} style={styles.checkboxArea}>
           <Icon
             name={isSelected ? "checkbox" : "square-outline"}
             size={20}
             color="#2563ED"
             style={{ marginRight: 8 }}
           />
+        </Pressable>
         )}
-        <Icon name="document-text-outline" size={20} color="#69BAFF" />
-        <Text style={styles.title}>{title}</Text>
-        {!alwaysOpen && !isSelectMode && (
-          <Icon
-            name={expanded ? "chevron-up-outline" : "chevron-down-outline"}
-            size={20}
-            color="#999"
-            style={styles.chevron}
-          />
-        )}
+         {/* 나머지 영역 누르면 펼침/접힘 */}
+        <Pressable onPress={() => !alwaysOpen && setExpanded(prev => !prev)} style={styles.expandArea}>
+            <Icon name="document-text-outline" size={20} color="#69BAFF" />
+            <Text style={styles.title}>{title}</Text>
+            {!alwaysOpen && !isSelectMode && (
+            <Icon
+                name={expanded ? "chevron-up-outline" : "chevron-down-outline"}
+                size={20}
+                color="#999"
+                style={styles.chevron}
+            />
+            )}
+        </Pressable>
       </View>
 
       {(alwaysOpen || expanded) && (
@@ -73,6 +78,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0F2FF',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkboxArea: {
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 8
+  },
+  expandArea: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },

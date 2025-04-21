@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -8,14 +8,17 @@ import { mockReports } from '../../components/analysis/mockData';
 import PlayIcon from '../../assets/analysis/playIcon.svg';
 import SelectIcon from '../../assets/analysis/selectIcon.svg';
 import StopIcon from '../../assets/analysis/stopIcon.svg';
-import Header from '../../components/common/Header';
+import Toast from '../../components/common/Toast';
+import HeaderForDetail from '../../components/analysis/HeaderForDetail';
+import SidebarSlideOverlay from '../../components/sidebar/SidebarSlideOverlay';
 // import { getReportById } from '../../api/analysis/analysisApi';
 
 export default function DetailAnalysisPage() {
   const router = useRouter();
+  const timeoutRef = useRef(null); // timeout 추적용 ref
   const { monthlyId } = useLocalSearchParams();
   const [report, setReport] = useState(null);
-  const [expandedReport, setExpandedReport] = useState({});
+  const [playAll, setPlayAll] = useState(false);
 
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedReports, setSelectedReports] = useState([]);
@@ -24,9 +27,16 @@ export default function DetailAnalysisPage() {
   const [blockedTab, setBlockedTab] = useState(false); // 탭 차단상태
   const [tabPressCount, setTabPressCount] = useState(0); // 탭 차단 카운트
 
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+
   useEffect(() => {
     if(monthlyId) fetchMonthlyReport(); // 월간 정보 + 주차 리스트 불러오기기
   }, [monthlyId]);
+
+  useEffect(() => {
+  }, [isReading]);
 
   const fetchMonthlyReport = async () => {
     // const response = await getReportAll(monthlyId);
@@ -52,6 +62,11 @@ export default function DetailAnalysisPage() {
     setIsReading(true);
     setBlockedTab('analysis'); // 현재 탭 차단 등록
     setTabPressCount(0);
+    //선택모드는 재생 시작 시 종료
+    setIsSelectMode(false);
+
+    const isPlayAll = !isSelectMode || selectedReports.length === 0;
+    setPlayAll(isPlayAll);
 
   // 읽을 content 리스트 추출
   const contentsToRead = isSelectMode
@@ -69,35 +84,46 @@ export default function DetailAnalysisPage() {
   const handleStopReading = () => {
     setIsReading(false);
     setBlockedTab(null); // 탭 차단 해제
+    setPlayAll(false); // 재생 전체 초기화
+    setSelectedReports([]); // 선택 목록도 초기화
   };
 
-  const handleTabPress = (tabName) => {
-    if (isReading) {
-      if (tabName === blockedTab) {
-        if (tabPressCount === 0) {
-          setTabPressCount(1);
-        } else {
-          setIsReading(false); // 두번째 탭에서 해재
-          setTabPressCount(0); // 카운트 초기화
-          router.push(`/${tabName}`); // 탭 이동
-          report;
-        }
-      }
-      return; // 다른 탭도 막힘
-    } else {
-      router.push(`/${tabName}`);
-    }
-  };
+  // const handleTabPress = (tabName) => {
+  //   if (isReading) {
+  //     if (tabName === blockedTab) {
+  //       if (tabPressCount === 0) {
+  //         setTabPressCount(1);
+  //       } else {
+  //         setIsReading(false); // 두번째 탭에서 해재
+  //         setTabPressCount(0); // 카운트 초기화
+  //         router.push(`/${tabName}`); // 탭 이동
+  //         report;
+  //       }
+  //     }
+  //     return; // 다른 탭도 막힘
+  //   } else {
+  //     router.push(`/${tabName}`);
+  //   }
+  // };
 
   const handleProtectedAction = (action) => {
     if (isReading) {
       if (tabPressCount === 0) {
         setTabPressCount(1);
-        return;
+        setToastMessage('다시 한 번 누르면 이동됩니다.');
+        setShowToast(true);
+
+        timeoutRef.current = setTimeout(() => {
+          setTabPressCount(0);
+        }, 1000);
       } else {
-        setIsReading(false);
+        clearTimeout(timeoutRef.current); // 이전 timeout 해제
         setTabPressCount(0);
-        action(); // 실제 동작
+        setIsReading(false);
+
+        requestAnimationFrame(() => {
+          action(); // 오버레이 사라진 다음 실행!
+        });
       }
     } else {
       action(); // 읽기 모드 아닐 때 바로 실행
@@ -113,13 +139,10 @@ export default function DetailAnalysisPage() {
 
   return (
     <View style={styles.container}>
-      {isReading && (
-        <Pressable
-          onPress={() => handleProtectedAction(() => {})}
-          style={styles.headerInterceptor}
-        />
-      )}
-      <Header />
+      <HeaderForDetail 
+      handleProtectedAction={(e) => handleProtectedAction(e)}
+      setModalVisible={(e) => setModalVisible(e)}
+      />
         <View style={styles.top}>
           <Pressable onPress={() => handleProtectedAction(handleBack)} style={styles.backButton}>
             <Icon name="chevron-back" size={24} color="#000" />
@@ -130,7 +153,7 @@ export default function DetailAnalysisPage() {
               <AnalysisButton
                 SvgIcon={StopIcon}
                 onPress={handleStopReading}
-                iconSize={60}
+                iconSize={100}
               />
             ) : (
               <>
@@ -159,8 +182,10 @@ export default function DetailAnalysisPage() {
             content={report.content}
             alwaysOpen={true} //월간 보고서
             isSelectMode={isSelectMode} // 선택모드 일때만 체크박스 보여주기
-            isSelected={selectedReports.includes(report.monthlyId)} // 이 카드가 선택되었는지 여부
+            isSelected={playAll || selectedReports.includes(report.monthlyId)} // 이 카드가 선택되었는지 여부
             onToggleSelect={(isSelectedNow) => {
+              if(isReading) return;
+
               setSelectedReports((prev) => 
                 isSelectedNow
                   ? [...prev, report.monthlyId] // 선택 상태일 경우 추가
@@ -174,8 +199,10 @@ export default function DetailAnalysisPage() {
               title={item.title}
               content={item.content}
               isSelectMode={isSelectMode} // 선택모드 일때만 체크박스 보여주기
-              isSelected={selectedReports.includes(item.reportId)} // 이 카드가 선택되었는지 여부
+              isSelected={playAll || selectedReports.includes(item.reportId)} // 이 카드가 선택되었는지 여부
               onToggleSelect={(isSelectedNow) => {
+                if(isReading) return;
+
                 setSelectedReports((prev) => 
                     isSelectedNow
                     ? [...prev, item.reportId] // 선택 상태일 경우 추가
@@ -201,7 +228,15 @@ export default function DetailAnalysisPage() {
             <Text>{report.title}</Text>
           </View>
         </Pressable>
-
+        <Toast
+          visible={showToast}
+          message={toastMessage}
+          onHide={() => setShowToast(false)}
+          />
+        <SidebarSlideOverlay
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+        />
       </View>
   );
 }

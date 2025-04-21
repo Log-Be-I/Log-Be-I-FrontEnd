@@ -18,7 +18,7 @@ export default function AnalysisButton({
         onPress={onPress}
         disabled={disabled}
       >
-        <View style={styles.buttonInner}>
+        <View style={[styles.buttonInner, iconSize >= 90 ? styles.largeButton : styles.defaultButton]}>
           <View style={[styles.contentContainer, onlyIcon ? styles.centerOnlyIcon : styles.contentRow]}>
             {SvgIcon && (
               <SvgIcon
@@ -66,6 +66,10 @@ export default function AnalysisButton({
       justifyContent: "center",
       width: 80,
       height: 35,
+    },
+    largeButton: {
+      width: 160,
+      height: 40,
     },
     contentContainer: {
       flex: 1,
