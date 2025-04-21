@@ -15,19 +15,19 @@ export default function SidebarNavMenu() {
       <View style={styles.iconContainer}>
         <Pressable style={[styles.iconWrapper, styles.activeIcon]}>
           <RecordIcon width={24} height={24} />
+          <Text style={styles.iconLabel}>기록관리</Text>
           {/* 현재 선택된 메뉴를 가리키는 흰색 포인터 */}
           <View style={styles.pointer} />
         </Pressable>
         
         <Pressable style={styles.iconWrapper}>
           <WebRTCIcon width={24} height={24} />
+          <Text style={styles.iconLabel}>Live 공간</Text>
         </Pressable>
         
         <Pressable style={styles.iconWrapper} onPress={() => router.push('/notice/')}>
           <NoticeIcon width={24} height={24} />
-          <View style={styles.noticeCount}>
-            <Text style={styles.noticeCountText}>공지사항</Text>
-          </View>
+          <Text style={styles.iconLabel}>공지사항</Text>
         </Pressable>
       </View>
     </View>
@@ -55,6 +55,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 8,
   },
+  iconLabel: {
+    marginTop: 10,
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    width: 60,
+  },
   pointer: {
     width: 10,
     height: 10,
@@ -65,14 +73,4 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }], // 45도 회전하여 다이아몬드 모양 생성
     borderRadius: 2,
   },
-  noticeCount: {
-    position: 'absolute',
-    top: 40,
-    
-  },
-  noticeCountText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  }
 });
