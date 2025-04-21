@@ -32,13 +32,19 @@ export default function RecordList({
   selectedRecords,
   onRecordSelect,
   onUpdateRecord,
+  initialCategory = null,
 }) {
   const [selectedItems, setSelectedItems] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentDate, setCurrentDate] = useState(null);
   const scrollY = useRef(new Animated.Value(0)).current;
+
+  // 리렌더 대비용 (URL 직접 입력 시 대응)
+  useEffect(() => {
+    setSelectedCategory(initialCategory);
+  }, [initialCategory]);
 
   // 날짜별로 데이터 그룹화
   const groupedData = records.reduce((acc, record) => {
