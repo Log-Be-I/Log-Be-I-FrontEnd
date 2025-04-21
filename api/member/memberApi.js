@@ -21,17 +21,21 @@ export const postMember = async ({email, name, nickname, birth, region}) => {
 };
 
 //회원 정보 수정 (Patch)
-export const patchMemberInfo = async (memberId, { nickname, profile, region }, token) => {
-    const res = await axiosInstance.patch(
-        `/members/${memberId}`,
-        { nickname, profile, region },
-        { 
-            headers: { 
-                Authorization: `Bearer ${token}` 
-            } 
-        }
+export const patchMemberInfo = async (
+    memberId, 
+    { nickname, profile, region },
+    token) => {
+        try {
+            const res = await axiosInstance.patch(
+                `/members/${memberId}`,
+                { nickname, profile, region },
+                { headers: { Authorization: `Bearer ${token}` } }
     );
     return res.data;
+} catch (error) {
+    console.error('회원 정보 수정 오류', error);
+    throw error;
+}
 };
 
 // 로그아웃

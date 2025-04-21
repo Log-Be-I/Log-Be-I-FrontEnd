@@ -1,0 +1,278 @@
+// 통합된 MemberInfo 화면 - editMode 기반
+import React, { useState } from "react";
+import {
+  View,
+  StyleSheet,
+  Text,
+  Pressable,
+  ScrollView,
+  TextInput,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useUserStore } from "../../zustand/useUserStore";
+import TextComponent from "../../components/onBoard/text";
+import { RegionDropdown } from "../../components/common/RegionDropdown";
+import ProfileIcon from "../../assets/sidebar/sidebarProfile/aegiRogiProfile.svg";
+import PencilIcon from "../../assets/sidebar/sidebarProfile/pencil.svg";
+import CameraIcon from "../../assets/sidebar/sidebarProfile/cameraIcon.svg";
+import EmailIcon from "../../assets/sidebar/sidebarProfile/caseIcon.svg";
+import LocationIcon from "../../assets/sidebar/sidebarProfile/locationIcon.svg";
+import BirthIcon from "../../assets/images/birthDay.svg";
+import MyProfile from "../../assets/sidebar/sidebarProfile/myProfile.svg";
+import BirthInput from "../../components/common/BirthInput";
+import { patchMemberInfo } from "../../api/member/memberApi";
+
+export default function MemberInfo() {
+  const {
+    memberId,
+    token,
+    nickname,
+    email,
+    name,
+    birth,
+    region,
+    setNickname,
+    setRegion,
+  } = useUserStore();
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState(nickname);
+  const [birthInput, setBirthInput] = useState(birth);
+  const [selectedCity, setSelectedCity] = useState(region?.split(" ")[0] || "");
+  const [selectedDistrict, setSelectedDistrict] = useState(
+    region?.split(" ")[1] || ""
+  );
+
+  const handleSave = async () => {
+    try {
+      const newRegion =
+        selectedCity && selectedDistrict
+          ? `${selectedCity} ${selectedDistrict}`
+          : region;
+
+      await patchMemberInfo(
+        memberId,
+        {
+          nickname: nicknameInput,
+          profile: "",
+          region: newRegion,
+        },
+        token
+      );
+
+      setNickname(nicknameInput);
+      setRegion(newRegion);
+      setIsEditMode(false);
+    } catch (error) {
+      console.error("회원 정보 수정 실패:", error);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.topBackground} />
+      <View style={styles.bottomBackground} />
+      {isEditMode && (
+        <View style={styles.header}>
+            <Pressable style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.buttonText}>Save</Text>
+            </Pressable>
+            <Pressable style={styles.cancelButton} onPress={() => setIsEditMode(false)}>
+            <Text style={[styles.buttonText, styles.cancelText]}>Cancel</Text>
+            </Pressable>
+        </View>
+        )}
+
+      <SafeAreaView style={styles.content}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <View style={styles.profileSection}>
+            <View style={styles.profileDiamond}>
+              <View style={styles.profileCircle}>
+                <ProfileIcon width={70} height={70} />
+              </View>
+            </View>
+            {isEditMode && (
+              <View style={styles.cameraIcon}>
+                <CameraIcon width={24} height={24} />
+              </View>
+            )}
+          </View>
+
+          <View style={styles.nicknameContainer}>
+            <View style={styles.nicknameSection}>
+              {isEditMode ? (
+                <TextInput
+                  style={styles.nicknameInput}
+                  value={nicknameInput}
+                  onChangeText={setNicknameInput}
+                  placeholder="애기로기"
+                />
+              ) : (
+                <Text style={styles.nickname}>애기로기{nickname}</Text>
+              )}
+              {!isEditMode && (
+                <Pressable onPress={() => setIsEditMode(true)}>
+                  <PencilIcon width={24} height={24} />
+                </Pressable>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.infoContainer}>
+            <TextComponent
+              value={email}
+              iconComponent={<EmailIcon width={20} height={20} />}
+              editable={false}
+              textColor="#032B77"
+            />
+            <TextComponent
+              value={name}
+              iconName="person"
+              editable={false}
+              textColor="#032B77"
+            />
+            {isEditMode ? (
+              <BirthInput
+                value={birthInput}
+                handleValue={(text) =>
+                  setBirthInput(text)
+                }
+                placeholder="1999-12-21"
+              />
+            ) : (
+              <TextComponent
+                value={birth}
+                iconComponent={<BirthIcon width={20} height={20} />}
+                editable={false}
+                textColor="#032B77"
+              />
+            )}
+            {isEditMode ? (
+              <RegionDropdown
+                selectedCity={selectedCity}
+                selectedDistrict={selectedDistrict}
+                setSelectedCity={setSelectedCity}
+                setSelectedDistrict={setSelectedDistrict}
+              />
+            ) : (
+              <TextComponent
+                value={region}
+                iconComponent={<LocationIcon width={20} height={20} />}
+                editable={false}
+                textColor="#032B77"
+              />
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    topBackground: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "30%",
+        backgroundColor: "rgba(105, 186, 255, 0.3)",
+    },
+    bottomBackground: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: "72%",
+        backgroundColor: "#FFFFFF",
+        borderTopLeftRadius: 30,
+    },
+    header: {
+        position: "absolute",
+        top: 100,
+        right: 16,
+        flexDirection: "row",
+        gap: 12,
+        zIndex: 10, // 다른 요소 위에 뜨도록
+      },
+    saveButton: {
+        backgroundColor: "#69BAFF",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
+    },
+    cancelButton: {
+        backgroundColor: "#FFFFFF",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: "#FF7777",
+    },
+    buttonText: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#FFFFFF",
+    },
+    cancelText: {
+        color: "#FF7777",
+    },
+    content: {
+        flex: 1,
+        zIndex: 1,
+    },
+    scrollView: {
+        flex: 1,
+        paddingTop: 60,
+    },
+    profileSection: {
+        alignItems: "center",
+        marginTop: "25%",
+    },
+    profileDiamond: {
+        width: 120,
+        height: 120,
+        backgroundColor: "transparent",
+        borderWidth: 2,
+        borderColor: "#F0F4FA",
+        transform: [{ rotate: "45deg" }],
+        borderRadius: 30,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    profileCircle: {
+        width: 110,
+        height: 110,
+        borderRadius: 70,
+        backgroundColor: "#FFFFFF",
+        borderWidth: 2,
+        borderColor: "#F0F4FA",
+        transform: [{ rotate: "-45deg" }],
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    nicknameContainer: {
+        width: "100%",
+        alignItems: "center",
+    },
+    nicknameSection: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        marginTop: 16,
+    },
+    nickname: {
+        fontSize: 20,
+        fontWeight: "600",
+        color: "#032B77",
+    },
+    infoContainer: {
+        gap: 16,
+        paddingHorizontal: 20,
+        marginTop: 20,
+        paddingBottom: 40,
+    },
+});
