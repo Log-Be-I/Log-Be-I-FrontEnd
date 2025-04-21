@@ -89,13 +89,12 @@ export default function EditSchedule() {
   };
 
   const handleDelete = async () => {
+    setModalVisible(true);
     try {
       await deleteSchedule(schedule.id);
       router.replace('/calendar/');
     } catch (error) {
       console.error('일정 삭제 실패:', error);
-      setToastMessage('일정 삭제에 실패했습니다.');
-      setShowToast(true);
     }
   };
 
@@ -158,10 +157,10 @@ export default function EditSchedule() {
                   ) : (
                     <>
                       <CalendarButton
-                        icon={<Icon name="delete" size={24} color="#FF9500" />}
-                        onPress={handleCancel}
+                        text="Delete"
+                        onPress={handleDelete}
                         style={styles.button}
-                        iconStyle={{alignItems: "center", justifyContent: "center"}}
+                        textStyle={{color: '#FF9500'}}
                       />
 
                       <CalendarButton

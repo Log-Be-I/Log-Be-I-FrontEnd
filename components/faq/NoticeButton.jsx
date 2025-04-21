@@ -5,12 +5,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function NoticeButton({ importance }) {
   if (importance) {
     return (
-      <LinearGradient
-        colors={['#82ACF1', '#1373E0']}
-        style={styles.importantButton}
-      >
+      <>
+      <View style={styles.importantButton}>
         <Text style={styles.importantText}>공지</Text>
-      </LinearGradient>
+      </View>
+      </>
     );
   }
 
@@ -28,6 +27,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#82ACF1',
   },
   normalButton: {
     paddingHorizontal: 12,

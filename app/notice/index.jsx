@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginRight: 44, // backButton width + padding to center title
+    color: '#0A4DAA',
   },
   subHeader: {
     flexDirection: 'row',
