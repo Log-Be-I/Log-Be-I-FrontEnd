@@ -174,7 +174,7 @@ export default function DetailQnA() {
           <View style={styles.titleContainer}>
             {isEditMode ? (
               <TextInput
-                style={styles.input}
+                style={[styles.input, styles.titleInput]}
                 value={editTitle}
                 onChangeText={setEditTitle}
                 placeholder="제목을 입력해주세요"
@@ -275,6 +275,9 @@ const styles = StyleSheet.create({
       flex: 1,
       backgroundColor: '#fff',
       bottom: 10,
+    },
+    titleInput: {
+      paddingLeft: 12,
     },
     header: {
       flexDirection: 'row',

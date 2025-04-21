@@ -42,14 +42,6 @@ export default function AnalysisPage() {
 
   return (
     <View style={styles.container}>
-      {/* <View style={styles.top}>
-        <YearDropdown 
-          selectedYear={selectedYear} 
-          onSelect={setSelectedYear}
-          style={styles.dropdown}
-        />
-        <Text style={styles.title}>Report</Text>
-      </View> */}
       <View style={styles.header}>
         <Pressable onPress={handleBack} style={styles.backButton}>
           <Icon name="chevron-back" size={24} color="#000" />
@@ -111,5 +103,6 @@ const styles = StyleSheet.create({
   dropdown: {
     position: 'center',
     transform: [{ translateY: -12 }],
+    width: 80,
   },
 }); 

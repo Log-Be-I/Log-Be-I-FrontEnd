@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ReportItem from '../../components/analysis/ReportItem';
-import Button from '../../components/common/button';
+import AnalysisButton from '../../components/analysis/AnalysisButton';
 import { mockReports } from '../../components/analysis/mockData';
+import PlayIcon from '../../assets/analysis/playIcon.svg';
+import SelectIcon from '../../assets/analysis/selectIcon.svg';
 // import { getReportById } from '../../api/analysis/analysisApi';
 
 export default function DetailAnalysisPage() {
@@ -37,19 +39,17 @@ export default function DetailAnalysisPage() {
       <View style={styles.top}>
         <Text style={styles.title}>{report.title}</Text>
         <View style={styles.buttonContainer}>
-          <Button
-            text="Select"
-            size="small"
-            leftIcon={<Icon name="mic-outline" size={20} color="#69BAFF" />}
-            textStyle={{ color: "#69BAFF" }}
-            style={styles.button}
+          <AnalysisButton
+            SvgIcon={PlayIcon}
+            onPress={() => {}}
+            iconSize={40}
           />
-          <Button
+          <AnalysisButton
+            onPress={() => {}}
+            iconSize={14}
             text="Select"
-            size="small"
-            leftIcon={<Icon name="play-outline" size={20} color="#69BAFF" />}
-            textStyle={{ color: "#69BAFF" }}
-            style={styles.button}
+            SvgIcon={SelectIcon}
+            textStyle={{ color: "#2563ED" }}
           />
         </View>
       </View>
