@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Switch, Keyboard } from 'react-native';
+import { View, StyleSheet, Text, Switch, Keyboard, Modal, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Calendar } from 'react-native-calendars';
 import DayInput from './DayInput';
@@ -14,7 +14,7 @@ export default function DateRangeSelector({
  }) {
   const [startedDate, setStartedDate] = useState(new Date(startDate));
   const [endedDate, setEndedDate] = useState(new Date(endDate));
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [markedDates, setMarkedDates] = useState({});
   const [dateType, setDateType] = useState(null); // 'start' or 'end'
   const [isAllDay, setIsAllDay] = useState(false);
@@ -83,13 +83,13 @@ export default function DateRangeSelector({
     }
     // 날짜가 변경되면 하루종일 토글을 false로 설정
     setIsAllDay(false);
-    setShowCalendar(false);
-    if (onChange) onChange(); // 변경 발생 알림
+    setShowCalendarModal(false);
+    if (onChange) onChange(); // 변경 발생 알림 
   };
 
   const handleStartDatePress = () => {
     setDateType('start');
-    setShowCalendar(true);
+    setShowCalendarModal(true);
     updateMarkedDates(startedDate, endedDate);
     if (onCalendarOpen) onCalendarOpen(); // 부모로 콜백 전달
     Keyboard.dismiss();
@@ -97,7 +97,7 @@ export default function DateRangeSelector({
 
   const handleEndDatePress = () => {
     setDateType('end');
-    setShowCalendar(true);
+    setShowCalendarModal(true);
     updateMarkedDates(startedDate, endedDate);
     if (onCalendarOpen) onCalendarOpen(); // 부모로 콜백 전달
     Keyboard.dismiss();
@@ -130,7 +130,7 @@ export default function DateRangeSelector({
             if (onChange) onChange();
           }}
           onPressDate={handleStartDatePress}
-          onTimePress={() => setShowCalendar(false)}
+          onTimePress={() => setShowCalendarModal(false)}
         />
         <Icon name="arrow-forward" size={20} color="#666" style={styles.arrow} />
         <DayInput
@@ -142,39 +142,54 @@ export default function DateRangeSelector({
           }}
           minimumDate={startedDate}
           onPressDate={handleEndDatePress}
-          onTimePress={() => setShowCalendar(false)}
+          onTimePress={() => setShowCalendarModal(false)}
         />
       </View>
 
-      {showCalendar && (
-        <View style={styles.calendarContainer}>
-          <Calendar
-            current={dateType === 'start' ? startedDate.toISOString() : endedDate.toISOString()}
-            minDate={dateType === 'end' ? startedDate.toISOString().split('T')[0] : undefined}
-            onDayPress={handleDateSelect}
-            markedDates={markedDates}
-            style={styles.calendar}
-            monthFormat={'yyyy년 MM월'}
-          />
-        </View>
+      {showCalendarModal && (
+        <Modal
+          visible={showCalendarModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowCalendarModal(false)}
+        >
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setShowCalendarModal(false)}
+          >
+            <Pressable style={styles.calendarWrapper} onPress={() => {}}>
+              <Calendar
+                current={dateType === 'start' ? startedDate.toISOString() : endedDate.toISOString()}
+                minDate={dateType === 'end' ? startedDate.toISOString().split('T')[0] : undefined}
+                onDayPress={handleDateSelect}
+                markedDates={markedDates}
+                style={styles.calendar}
+                theme={{
+                calendarBackground: 'white',
+                selectedDayBackgroundColor: '#69BAFF',
+                todayTextColor: '#2563ED',
+              }}
+              monthFormat={'yyyy년 MM월'}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
       )}
     </View>
   );
-}
+  }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
     padding: 16,
-    marginTop: 20,
   },
   allDayContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingHorizontal: 0,
-    //marginTop: 4,
   },
   allDayLeft: {
     flexDirection: 'row',
@@ -187,6 +202,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   dateContainer: {
+    marginTop: 12,
     marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -197,8 +213,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginTop: 32,
   },
-  calendarContainer: {
-    marginBottom: 16,
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  calendarWrapper: {
+    width: '95%',
+    borderRadius: 12,
+    backgroundColor: 'white',
+    padding: 16,
   },
   calendar: {
     borderWidth: 1,
@@ -208,5 +233,8 @@ const styles = StyleSheet.create({
     elevation: 4,
     padding: 5,
     marginTop: 4,
+    width: '100%',
+    height: 380,
+    alignSelf: 'center',
   },
 }); 

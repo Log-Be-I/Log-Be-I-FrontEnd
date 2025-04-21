@@ -104,91 +104,90 @@ export default function EditSchedule() {
   };
 
   return (
-    <KeyboardAvoidingView behavior="height" style={styles.container}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.inner}>
-          <View style={styles.buttonContainer}>
-            {isEditing ? (
-              <View style={styles.editButtonContainer}>
-                  <CalendarButton
-                    text="Cancel"
-                    onPress={handleCancelEdit}
-                    style={[styles.button, styles.cancelButton]}
-                    textStyle={{color: '#FF9500'}}
-                  />
-                  <CalendarButton
-                    text="Edit"
-                    onPress={handleEdit}
-                    style={[styles.button, styles.cancelButton]}
-                    textStyle={{color: '#69BAFF'}}
-                  />
-              </View>
-            ) : (
-              <View style={styles.deleteButtonContainer}>
-                <TouchableOpacity onPress={() => setModalVisible(true)}>
-                  <Icon name="delete" size={24} color="#FF9500" />
-                </TouchableOpacity>
-
-                <CalendarButton
-                  text="OK"
-                  onPress={handleCancel}
-                  style={styles.button}
-                  textStyle={{color: '#69BAFF'}}
-                  size="large"
+    <View style={styles.container}>
+      <KeyboardAvoidingView behavior="height" style={styles.flex}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <ScrollView
+          ref={scrollViewRef}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent} 
+          style={styles.scrollContent}
+          >
+            <View style={styles.inputBoxWrapper}>
+              {isEditing ? (
+                <TextInput
+                  style={styles.input}
+                  value={title}
+                  onChangeText={setTitle}
+                  placeholder="일정"
                 />
-                <Toast
-                  visible={showToast}
-                  message={toastMessage}
-                  onHide={() => setShowToast(false)}
-                  />
+              ) : (
+                <Text style={styles.title} onPress={() => setIsEditing(true)}>
+                  {title}
+                </Text>
+              )}
+
+              <View style={styles.dateRangeBox}>
+                <DateRangeSelector
+                  startDate={startTime}
+                  endDate={endTime}
+                  onDateRangeChange={handleDateRangeChange}
+                  disabled={!isEditing} //false 여야 시간도 선택 가능
+                  onChange={() => setIsEditing(true)}
+                  onCalendarOpen={handleCalendarOpen}
+                />
               </View>
-            )}
-          </View>
+            </View>
 
-          {isEditing ? (
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="일정"
-            />
-          ) : (
-            <Text style={styles.title} onPress={() => setIsEditing(true)}>
-              {title}
-            </Text>
-          )}
+                <View style={styles.buttonContainer}>
+                  {isEditing ? (
+                    <>
+                        <CalendarButton
+                          text="Cancel"
+                          onPress={handleCancelEdit}
+                          style={[styles.button, styles.cancelButton]}
+                          textStyle={{color: '#FF9500'}}
+                        />
+                        <CalendarButton
+                          text="Edit"
+                          onPress={handleEdit}
+                          style={[styles.button, styles.cancelButton]}
+                          textStyle={{color: '#69BAFF'}}
+                        />
+                    </>
+                  ) : (
+                    <>
+                      <CalendarButton
+                        icon={<Icon name="delete" size={24} color="#FF9500" />}
+                        onPress={handleCancel}
+                        style={styles.button}
+                        iconStyle={{alignItems: "center", justifyContent: "center"}}
+                      />
 
-          <View style={styles.scrollWrapper}>
-            <ScrollView
-              ref={scrollViewRef}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-              // keyboardShouldPersistTaps='handled'
-            >
-              <DateRangeSelector
-                startDate={startTime}
-                endDate={endTime}
-                onDateRangeChange={handleDateRangeChange}
-                disabled={!isEditing} //false 여야 시간도 선택 가능
-                onChange={() => setIsEditing(true)}
-                onCalendarOpen={handleCalendarOpen}
-              />
-            </ScrollView>
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
+                      <CalendarButton
+                        text="OK"
+                        onPress={handleCancel}
+                        style={styles.button}
+                        textStyle={{color: '#69BAFF'}}
+                      />
+                      </>
+                  )}
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
 
-      <CancelModal
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        onDelete={handleDelete}
-      />
-      <Toast
-        visible={showToast}
-        message={toastMessage}
-        onHide={() => setShowToast(false)}
+        <CancelModal
+          visible={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          onDelete={handleDelete}
         />
-    </KeyboardAvoidingView>
+        <Toast
+          visible={showToast}
+          message={toastMessage}
+          onHide={() => setShowToast(false)}
+          />
+      </KeyboardAvoidingView> 
+    </View>
   );
 }
 
@@ -197,28 +196,41 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  inner: {
+  flex: {
     flex: 1,
+  },
+  inputBoxWrapper: {
+    width: '90%',
+    marginTop: 56,
+    marginHorizontal: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#CDE6FF',  // 하늘색 윤곽선
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF'/*'#F9FCFF'*/,  // 연한 파란 배경 (선택사항)
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  dateRangeBox: {
+    borderWidth: 1,
+    borderColor: '#CDE6FF',
+    borderRadius: 8,
+    marginTop: 16,
+    minHeight: 250,
+    backgroundColor: 'white',
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginTop: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 40,
     backgroundColor: 'white',
     width: '100%',
-    gap: 24,
-    paddingVertical: 5,
-    paddingHorizontal: 16,
-  },
-  deleteButtonContainer: {    
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginTop: 10,
-    backgroundColor: 'white',
-    width: '100%',
-    gap: 24,
+    gap: 50,
     paddingVertical: 5,
     paddingHorizontal: 16,
   },
@@ -234,25 +246,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   title: {
-    fontSize: 18,
+    backgroundColor: 'white',
     fontWeight: 'bold',
     color: '#032B77',
-    borderBottomWidth: 1,
-    borderColor: '#E5E5E5',
-    paddingVertical: 8,
-    marginHorizontal: 24,
-    top: 10,
+    fontSize: 18,
+    borderColor: '#CDE6FF',
+    borderRadius: 8,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
   input: {
-    fontSize: 18,
+    backgroundColor: 'white',
     fontWeight: 'semibold',
     color: '#032B77',
-    borderBottomWidth: 1,
-    borderColor: '#E5E5E5',
+    fontSize: 18,
+    borderColor: '#CDE6FF',
+    borderRadius: 8,
+    marginTop: 16,
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    marginHorizontal: 24,
-    top: 10,
-    lineHeight: 24,
   },
   scrollWrapper: {
     flex: 1,

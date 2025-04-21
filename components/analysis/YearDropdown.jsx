@@ -53,9 +53,10 @@ export default function YearDropdown({ selectedYear, onSelect }) {
 
 const styles = StyleSheet.create({
   container: {
-    width: '30%',
-    left: 10,
+    width: '25%',
+    left: 15,
     marginTop: 10,
+    marginBottom: 10,
   },
   button: {
     flexDirection: 'row',
