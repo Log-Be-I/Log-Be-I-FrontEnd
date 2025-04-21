@@ -15,7 +15,14 @@ export default function NoticePage() {
   const totalPages = Math.ceil(notices.length / itemsPerPage);
   const startIndex = currentPage * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
+
+  // 정렬된 공지사항 리스트를 state에 저장장
+  useEffect(() => {
+    setNotices(sortedNotices);
+  }, []);
+// 페이지에서 보여줄 공지들들
   const pageNotices = notices.slice(startIndex, endIndex);
+  
 
   const handleBack = () => {
     router.back();
@@ -48,7 +55,7 @@ export default function NoticePage() {
       </View>
 
       <ScrollView style={styles.noticeList}>
-        {sortedNotices.map((notice) => (
+        {pageNotices.map((notice) => (
           <Pressable
             key={notice.id}
             style={styles.noticeItem}
@@ -64,6 +71,13 @@ export default function NoticePage() {
           </Pressable>
         ))}
       </ScrollView>
+      <View style={{paddingBottom: 16, alignSelf: 'center'}}>
+        <Pagination
+          currentPage={currentPage + 1}
+          totalPages={totalPages}
+          onPageChange={(page) => setCurrentPage(page - 1)}
+        />
+      </View>
     </View>
   );
 }
