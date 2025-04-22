@@ -11,7 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateRangeSelector from '../../../components/calendar/DateRangeSelector';
 import CalendarButton from '../../../components/calendar/CalendarButton';
-import { createSchedule } from '../../../api/schedule/scheduleApi';
+import { createTextSchedule } from '../../../api/schedule/scheduleApi';
 import Toast from '../../../components/common/Toast';
 
 export default function AddSchedule({ onClose, onAdd }) {
@@ -74,10 +74,10 @@ export default function AddSchedule({ onClose, onAdd }) {
     }
 
     try {
-      await createSchedule({ 
+      await createTextSchedule({ 
         title, 
-        startTime: startDate, 
-        endTime: endDate
+        startDateTime: startDate, 
+        endDateTime: endDate
       });
 
       setTimeout(() => {
