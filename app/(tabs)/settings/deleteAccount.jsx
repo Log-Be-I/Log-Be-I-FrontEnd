@@ -6,10 +6,12 @@ import {
   Pressable,
   TextInput,
   Modal,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useMemberStore } from "../../../zustand/stores/member";
 
 const REASONS = [
   "원하는 서비스가 아니에요.",
@@ -25,45 +27,49 @@ export default function DeleteAccount() {
   const [selectedReason, setSelectedReason] = useState("");
   const [otherReason, setOtherReason] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const { clearMember } = useMemberStore();
 
   const handleConfirm = () => {
     setShowModal(true);
   };
 
+  const handleDelete = async () => {
+    try {
+      await clearMember();
+      router.replace("/");
+    } catch (error) {
+      console.error("회원 탈퇴 중 오류 발생:", error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#333" />
-        </Pressable>
-      </View>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
+          <Text style={styles.title}>회원 탈퇴</Text>
+          <Text style={styles.subtitle}>
+            탈퇴하시는 이유를 알려주시면 서비스 개선에 도움이 됩니다.
+          </Text>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>탈퇴 하시는 이유를 알려주세요.</Text>
-        <View style={styles.divider} />
-
-        <View style={styles.reasonsContainer}>
-          {REASONS.map((reason) => (
-            <Pressable
-              key={reason}
-              style={styles.reasonItem}
-              onPress={() => setSelectedReason(reason)}
-            >
-              <View style={styles.radioContainer}>
-                <View
-                  style={[
-                    styles.radioOuter,
-                    selectedReason === reason && styles.radioOuterSelected,
-                  ]}
-                >
+          <View style={styles.reasonsContainer}>
+            {REASONS.map((reason, index) => (
+              <Pressable
+                key={index}
+                style={[
+                  styles.reasonItem,
+                  selectedReason === reason && styles.selectedReason,
+                ]}
+                onPress={() => setSelectedReason(reason)}
+              >
+                <View style={styles.radioButton}>
                   {selectedReason === reason && (
-                    <View style={styles.radioInner} />
+                    <View style={styles.radioButtonInner} />
                   )}
                 </View>
                 <Text style={styles.reasonText}>{reason}</Text>
-              </View>
-            </Pressable>
-          ))}
+              </Pressable>
+            ))}
+          </View>
 
           {selectedReason === "기타" && (
             <TextInput
@@ -77,23 +83,27 @@ export default function DeleteAccount() {
             />
           )}
         </View>
-      </View>
+      </ScrollView>
 
-      <View style={styles.footer}>
-        <Pressable style={styles.confirmButton} onPress={handleConfirm}>
-          <Text style={styles.confirmButtonText}>확인</Text>
+      <View style={styles.buttonContainer}>
+        <Pressable
+          style={[
+            styles.confirmButton,
+            !selectedReason && styles.disabledButton,
+          ]}
+          onPress={handleConfirm}
+          disabled={!selectedReason}
+        >
+          <Text style={styles.buttonText}>확인</Text>
         </Pressable>
       </View>
 
       <Modal
-        visible={showModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowModal(false)}
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={handleDelete}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>{/* 모달 내용은 추후 구현 */}</View>
-        </View>
+        <Text>정말로 탈퇴하시겠습니까?</Text>
       </Modal>
     </SafeAreaView>
   );
@@ -102,101 +112,86 @@ export default function DeleteAccount() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#fff",
   },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backButton: {
-    padding: 8,
+  scrollView: {
+    flex: 1,
   },
   content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    padding: 20,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#4A6FFF",
-    marginBottom: 16,
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#E5E5E5",
-    marginBottom: 24,
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 30,
   },
   reasonsContainer: {
-    gap: 16,
+    marginBottom: 20,
   },
   reasonItem: {
     flexDirection: "row",
     alignItems: "center",
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
   },
-  radioContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+  selectedReason: {
+    backgroundColor: "#f5f5f5",
   },
-  radioOuter: {
+  radioButton: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "#CCCCCC",
+    borderWidth: 1,
+    borderColor: "#69BAFF",
+    marginRight: 10,
     justifyContent: "center",
     alignItems: "center",
   },
-  radioOuterSelected: {
-    borderColor: "#4A6FFF",
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#4A6FFF",
+  radioButtonInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#69BAFF",
   },
   reasonText: {
     fontSize: 16,
-    color: "#333333",
+  },
+  otherReasonContainer: {
+    marginTop: 10,
+    marginLeft: 30,
   },
   otherReasonInput: {
     borderWidth: 1,
-    borderColor: "#E5E5E5",
+    borderColor: "#ddd",
     borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
-    marginLeft: 32,
-    backgroundColor: "#FAFAFA",
+    padding: 10,
+    minHeight: 100,
+    textAlignVertical: "top",
   },
-  footer: {
+  buttonContainer: {
     padding: 20,
-    alignItems: "flex-end",
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
   },
   confirmButton: {
-    backgroundColor: "#4A6FFF",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    backgroundColor: "#69BAFF",
+    padding: 15,
     borderRadius: 8,
-  },
-  confirmButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
     alignItems: "center",
   },
-  modalContent: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 20,
-    width: "80%",
+  disabledButton: {
+    backgroundColor: "#ccc",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

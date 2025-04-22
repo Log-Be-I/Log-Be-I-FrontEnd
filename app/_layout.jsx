@@ -1,9 +1,9 @@
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "react-native-reanimated";
 import { ThemeProvider as CustomThemeProvider } from "../context/ThemeContext";
 import { ActivityIndicator, View } from "react-native";
@@ -21,65 +21,34 @@ export default function RootLayout() {
     "Pretendard-SemiBold": require("../assets/fonts/Pretendard-SemiBold.otf"),
   });
 
-  const router = useRouter();
-  const segments = useSegments();
-  const [isReady, setIsReady] = useState(false);
-
   // 앱 초기화 및 상태 복원
   useEffect(() => {
-    async function prepare() {
-      try {
-        if (loaded) {
-          await SplashScreen.hideAsync();
+    if (loaded) {
+      SplashScreen.hideAsync();
 
-          GoogleSignin.configure({
-            forceCodeForRefreshToken: true,
-            webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-            offlineAccess: true,
-          });
-          setIsReady(true);
-        }
-      } catch (e) {
-        console.warn("Initialization error:", e);
-      }
+      GoogleSignin.configure({
+        forceCodeForRefreshToken: true,
+        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+        offlineAccess: true,
+      });
     }
-
-    prepare();
   }, [loaded]);
 
-  // 라우팅 처리
-  // useEffect(() => {
-  //   if (!isReady) return;
-
-  //   const inAuthGroup = segments[0] === "(onBoard)";
-  //   console.log("Navigation State:", {
-  //     hasToken: !!token,
-  //     inAuthGroup,
-  //     currentPath: segments.join("/"),
-  //   });
-
-  //   if (!token && !inAuthGroup) {
-  //     router.replace("/(onBoard)");
-  //   } else if (token && inAuthGroup) {
-  //     router.replace("/(tabs)");
-  //   }
-  // }, [isReady, token, segments]);
-
-  // 로딩 화면
-  if (!isReady || !loaded) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#fff",
-        }}
-      >
-        <ActivityIndicator size="large" color="#1170DF" />
-      </View>
-    );
-  }
+  // // 로딩 화면
+  // if (!loaded) {
+  //   return (
+  //     <View
+  //       style={{
+  //         flex: 1,
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         backgroundColor: "#fff",
+  //       }}
+  //     >
+  //       <ActivityIndicator size="large" color="#1170DF" />
+  //     </View>
+  //   );
+  // }
 
   return (
     <CustomThemeProvider>

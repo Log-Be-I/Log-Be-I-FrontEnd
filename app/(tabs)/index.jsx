@@ -22,6 +22,14 @@ export default function HomeScreen() {
 
   console.log(member);
 
+  const handleDeleteAccount = async () => {
+    try {
+      router.push("/settings/deleteAccount");
+    } catch (error) {
+      console.error("계정 삭제 에러:", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* <Pressable onPress={handleLogout} style={styles.logoutButton}>
@@ -29,6 +37,11 @@ export default function HomeScreen() {
           로그아웃
         </Text>
       </Pressable> */}
+      <Pressable onPress={handleDeleteAccount}>
+        <Text variant="medium" size={16} color="#666">
+          탈퇴하기
+        </Text>
+      </Pressable>
       <Weather />
       <MainScheduleList />
     </View>

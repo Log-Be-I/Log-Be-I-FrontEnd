@@ -32,7 +32,7 @@ const defineConfig = () => ({
     package: "com.taekho.logbei",
   },
   web: {
-    favicon: "./assets/favicon.png",
+    favicon: "./assets/app_icon.png",
   },
   plugins: [
     ["expo-router"],
