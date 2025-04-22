@@ -3,12 +3,12 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import QnaCard from './QnaCard';
 import IconComponent from './IconComponent';
 
-export default function QnaCardWrapper({ title, createAt, status, onPress }) {
+export default function QnaCardWrapper({ title, createdAt, questionAnswerStatus, onPress }) {
   return (
     <Pressable onPress={onPress}>
       <View style={styles.wrapper}>
-        <QnaCard title={title} createAt={createAt} />
-        <IconComponent status={status} />
+        <QnaCard title={title} createdAt={createdAt} />
+        <IconComponent questionAnswerStatus={questionAnswerStatus} />
       </View>
     </Pressable>
   );

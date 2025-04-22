@@ -3,8 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import AnswerIcon from '../../assets/qna/answerIcon.svg';
 import GirogiIcon from '../../assets/qna/answerGirogi.svg';
 
-export default function IconComponent({ status }) {
-  if (status !== 'QUESTION_ANSWERED') return null;
+export default function IconComponent({ questionAnswerStatus }) {
+  if (questionAnswerStatus !== 'DONE_ANSWER') return null;
 
   return (
     <View style={styles.iconContainer}>
