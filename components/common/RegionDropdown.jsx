@@ -4,15 +4,18 @@ import { useState } from "react";
 import LocationIcon from "../../assets/sidebar/sidebarProfile/locationIcon.svg";
 import { CityData } from "../../constants/CityData";
 
-export const RegionDropdown = () => {
-  const [selectedCity, setSelectedCity] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
+export const RegionDropdown = ( {
+  selectedCity,
+  selectedDistrict,
+  setSelectedCity,
+  setSelectedDistrict
+}) => {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showDistrictDropdown, setShowDistrictDropdown] = useState(false);
 
   const handleCitySelect = (city) => {
-    setSelectedCity(city);
-    setSelectedDistrict("");
+    setSelectedCity(city); // 부모 state 업데이트
+    setSelectedDistrict(""); // 구 초기화
     setShowCityDropdown(false);
   };
 
@@ -154,10 +157,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F0F4FA",
     marginTop: 4,
-    maxHeight: 200,
+    maxHeight: 150,
+    zIndex: 100,
   },
   dropdownScroll: {
-    maxHeight: 300,
+    paddingVertical: 4,
   },
   item: {
     height: 48,

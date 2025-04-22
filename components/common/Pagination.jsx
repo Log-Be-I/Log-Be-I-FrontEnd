@@ -61,7 +61,14 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
         >
           <Text style={groupIndex === 0 ? styles.disabledText : styles.pageText}>‹</Text>
         </Pressable>
-        {pageButtons}
+
+        {/* 페이지 버튼은 항상 표시 */}
+        {pageButtons.length > 0 ? pageButtons : (
+          <View style={styles.pageButtonActive}>
+            <Text style={styles.pageTextActive}>1</Text>
+          </View>
+        )}
+        
         <Pressable 
         onPress={handleNextGroup} 
         disabled={groupIndex >= totalGroups - 1} 
