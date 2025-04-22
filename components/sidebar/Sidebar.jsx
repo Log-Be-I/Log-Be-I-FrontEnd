@@ -1,20 +1,23 @@
 // components/sidebar/Sidebar.jsx
 import { View, StyleSheet, Text, Pressable, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import SidebarHeader from "./SidebarHeader";
 import SidebarProfile from "./SidebarProfile";
 import SidebarNavMenu from "./SidebarNavMenu";
 import SidebarSection from "./SidebarSection";
 import LogoutIcon from "../../assets/sidebar/logoutIcon.svg";
-import useAuthStore from "../../zustand/stores/authStore";
+import { useMemberStore } from "../../zustand/stores/member";
 
 export default function Sidebar({ onClose }) {
   const router = useRouter();
-  const { logout } = useAuthStore();
+
+  const { clearMember } = useMemberStore();
 
   const handleLogout = async () => {
     try {
-      await logout();
+      clearMember();
+      await AsyncStorage.clear();
       router.replace("/");
     } catch (error) {
       console.error("로그아웃 에러:", error);
@@ -47,28 +50,61 @@ export default function Sidebar({ onClose }) {
             <SidebarSection
               title="My Record"
               items={[
-                { id: "daily", label: "나의 일상", icon: "📔", route: '/daily' },
-                { id: "spending", label: "나의 소비", icon: "💰", route: '/consume' },
-                { id: "todo", label: "나의 할 일", icon: "📝", route: '/todo' },
-                { id: "health", label: "나의 건강", icon: "🩺", route: '/health' },
-                { id: "etc", label: "그 외 등등", icon: "📦", route: '/etc' },
+                {
+                  id: "daily",
+                  label: "나의 일상",
+                  icon: "📔",
+                  route: "/daily",
+                },
+                {
+                  id: "spending",
+                  label: "나의 소비",
+                  icon: "💰",
+                  route: "/consume",
+                },
+                { id: "todo", label: "나의 할 일", icon: "📝", route: "/todo" },
+                {
+                  id: "health",
+                  label: "나의 건강",
+                  icon: "🩺",
+                  route: "/health",
+                },
+                { id: "etc", label: "그 외 등등", icon: "📦", route: "/etc" },
               ]}
               onItemPress={(route) => router.push(route)}
             />
 
             <SidebarSection
               title="My Report"
-              items={[{ id: "analysis", label: "나의 일상 분석", icon: "📊", route: '/analysis' }]}
+              items={[
+                {
+                  id: "analysis",
+                  label: "나의 일상 분석",
+                  icon: "📊",
+                  route: "/analysis",
+                },
+              ]}
               onItemPress={(route) => router.push(route)}
             />
 
             <SidebarSection
               title="My Activity"
               items={[
-                { id: "issue", label: "오늘의 이슈", icon: "🔍", route: '/issueCard' },
-                { id: "qna", label: "나의 QnA", icon: "💭", route: '/qna' },
-                { id: "faq", label: "자주 하는 질문", icon: "❓", route: '/faq' }]}
-                onItemPress={(route) => router.push(route)}
+                {
+                  id: "issue",
+                  label: "오늘의 이슈",
+                  icon: "🔍",
+                  route: "/issueCard",
+                },
+                { id: "qna", label: "나의 QnA", icon: "💭", route: "/qna" },
+                {
+                  id: "faq",
+                  label: "자주 하는 질문",
+                  icon: "❓",
+                  route: "/faq",
+                },
+              ]}
+              onItemPress={(route) => router.push(route)}
             />
           </ScrollView>
 
@@ -89,6 +125,7 @@ export default function Sidebar({ onClose }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    zIndex: 1000,
     height: "100%",
     backgroundColor: "#fff",
     display: "flex",

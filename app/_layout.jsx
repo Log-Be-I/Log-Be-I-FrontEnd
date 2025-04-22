@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { ThemeProvider as CustomThemeProvider } from "../context/ThemeContext";
 import { ActivityIndicator, View } from "react-native";
-import useAuthStore from "../zustand/stores/authStore";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -23,16 +23,20 @@ export default function RootLayout() {
 
   const router = useRouter();
   const segments = useSegments();
-  const { token, isHydrated } = useAuthStore();
   const [isReady, setIsReady] = useState(false);
 
   // 앱 초기화 및 상태 복원
   useEffect(() => {
     async function prepare() {
       try {
-        if (loaded && isHydrated) {
-          console.log("App State:", { loaded, isHydrated, hasToken: !!token });
+        if (loaded) {
           await SplashScreen.hideAsync();
+
+          GoogleSignin.configure({
+            forceCodeForRefreshToken: true,
+            webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+            offlineAccess: true,
+          });
           setIsReady(true);
         }
       } catch (e) {
@@ -41,28 +45,28 @@ export default function RootLayout() {
     }
 
     prepare();
-  }, [loaded, isHydrated]);
+  }, [loaded]);
 
   // 라우팅 처리
-  useEffect(() => {
-    if (!isReady) return;
+  // useEffect(() => {
+  //   if (!isReady) return;
 
-    const inAuthGroup = segments[0] === "(onBoard)";
-    console.log("Navigation State:", {
-      hasToken: !!token,
-      inAuthGroup,
-      currentPath: segments.join("/"),
-    });
+  //   const inAuthGroup = segments[0] === "(onBoard)";
+  //   console.log("Navigation State:", {
+  //     hasToken: !!token,
+  //     inAuthGroup,
+  //     currentPath: segments.join("/"),
+  //   });
 
-    if (!token && !inAuthGroup) {
-      router.replace("/(onBoard)");
-    } else if (token && inAuthGroup) {
-      router.replace("/(tabs)");
-    }
-  }, [isReady, token, segments]);
+  //   if (!token && !inAuthGroup) {
+  //     router.replace("/(onBoard)");
+  //   } else if (token && inAuthGroup) {
+  //     router.replace("/(tabs)");
+  //   }
+  // }, [isReady, token, segments]);
 
   // 로딩 화면
-  if (!isReady || !loaded || !isHydrated) {
+  if (!isReady || !loaded) {
     return (
       <View
         style={{

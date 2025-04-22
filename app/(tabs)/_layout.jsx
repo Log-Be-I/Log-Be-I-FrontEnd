@@ -46,32 +46,34 @@ export default function TabLayout() {
 
   return (
     <View style={styles.container}>
-      {isSidebarOpen && (
-        <Animated.View
-          style={[
-            styles.sidebarContainer,
-            {
-              transform: [
-                {
-                  translateX: slideAnim.interpolate({
-                    inputRange: [-100, 0],
-                    outputRange: ["-100%", "0%"],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <Sidebar onClose={() => setIsSidebarOpen(false)} />
-        </Animated.View>
-      )}
-
       <SafeAreaView style={styles.safeArea}>
-        <Header />
-        <View style={styles.content}>
-          <Slot />
+        {isSidebarOpen && (
+          <Animated.View
+            style={[
+              styles.sidebarContainer,
+              {
+                transform: [
+                  {
+                    translateX: slideAnim.interpolate({
+                      inputRange: [-100, 0],
+                      outputRange: ["-100%", "0%"],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <Sidebar onClose={() => setIsSidebarOpen(false)} />
+          </Animated.View>
+        )}
+
+        <View style={styles.mainContent}>
+          <Header onMenuPress={() => setIsSidebarOpen(true)} />
+          <View style={styles.content}>
+            <Slot />
+          </View>
+          <Footer currentTab={currentTab} onTabPress={handleTabPress} />
         </View>
-        <Footer currentTab={currentTab} onTabPress={handleTabPress} />
       </SafeAreaView>
     </View>
   );
@@ -85,6 +87,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  mainContent: {
+    flex: 1,
+  },
   content: {
     flex: 1,
   },
@@ -95,5 +100,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: "100%",
     zIndex: 1000,
+    backgroundColor: "#fff",
   },
 });
