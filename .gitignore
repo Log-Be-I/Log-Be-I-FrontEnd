@@ -38,3 +38,7 @@ yarn-error.*
 
 #cursor
 .cursorrules
+
+#build
+android/
+ios/

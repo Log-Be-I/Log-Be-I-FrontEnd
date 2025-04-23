@@ -39,6 +39,8 @@ export default function Login() {
         code: result.data.serverAuthCode,
       });
 
+      console.log("response: ", response);
+
       console.log("response.data: ", response.data);
 
       if (response.data.status === "login") {
