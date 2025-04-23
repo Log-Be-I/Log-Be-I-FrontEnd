@@ -1,13 +1,15 @@
-import { View, Text, Pressable, StyleSheet, FlatList } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import CustomSelectBox from '../../components/qna/CustomSelectBox';
 import QnaCardWrapper from '../../components/qna/QnaCardWrapper';
 import Pagination from '../../components/common/Pagination';
 import SaveButton from '../../components/qna/SaveButton';
-// import { getMyQuestion } from '../../api/qna/qnaApi';
-import { qnaData } from '../../dummyData/qnaData';
+import NoMyQuestion from '../../components/qna/NoMyQuestion';
+import { getMyQuestions } from '../../api/qna/qnaApi';
+import { format } from 'date-fns';
 
 export default function QnaPage() {
   const router = useRouter();
@@ -16,11 +18,18 @@ export default function QnaPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [groupIndex, setGroupIndex] = useState(0);
-  const itemsPerPage = 5;
+  const itemsPerPage = 4;
   const { keywords } = useLocalSearchParams();
   const [titleKeyword, setTitleKeyword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const { updatedId, updatedTitle, updatedContent } = useLocalSearchParams();
+  
+  useFocusEffect(
+    useCallback(() => {
+      fetchQuestions();
+    }, [selected, currentPage])
+  );
 
   useEffect(() => {
     if (keywords) {
@@ -47,46 +56,52 @@ export default function QnaPage() {
     setGroupIndex(newGroupIndex);
   }, [currentPage]);
 
-  useEffect(() => {
-    fetchQuestions();
-  }, [selected, currentPage]);
-
   const fetchQuestions = async () => {
-    // API 호출 대신 더미 데이터 사용
-    const sortedData = [...qnaData].sort((a, b) => {
-      const dateA = new Date(a.createAt);
-      const dateB = new Date(b.createAt);
-      return selected === 'latest' ? dateB - dateA : dateA - dateB;
-    });
+    setIsLoading(true);
+    try { 
+      const response = await getMyQuestions({ page: currentPage, size: itemsPerPage });
 
-    // 키워드가 있으면 해당 제목을 가진 질문을 맨 앞으로 정렬
-    const prioritized = sortedData;
-    if (titleKeyword) {
-      prioritized = sortedData.sort((a, b) => {
-        const isA = a.title.includes(titleKeyword);
-        const isB = b.title.includes(titleKeyword);
-        if (isA && !isB) return -1;
-        if (!isA && isB) return 1;
-        return 0;
+      // 삭제되지 않은 질문만 필터링
+      const activeQuestions = response.data.filter(
+        (item) => item.questionStatus !== 'QUESTION_DELETED'
+      );
+      
+      // 필터링 된 데이터 기준으로 정렬렬
+      const sortedData = [...activeQuestions].sort((a, b) => {
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
+        return selected === 'latest' ? dateB - dateA : dateA - dateB;
       });
+
+      // 키워드가 있으면 해당 제목을 가진 질문을 맨 앞으로 정렬
+      if (titleKeyword) {
+        sortedData.sort((a, b) => {
+          const isA = a.title.includes(titleKeyword);
+          const isB = b.title.includes(titleKeyword);
+          if (isA && !isB) return -1;
+          if (!isA && isB) return 1;
+          return 0;
+        });
+      }
+      // 페이지 수 재계산
+      const recalculatedTotalPages = Math.ceil(sortedData.length / itemsPerPage);
+      // 현재 페이지가 초과되면 보정
+      if(currentPage > recalculatedTotalPages) {
+        setCurrentPage(recalculatedTotalPages || 1); // 최소 1페이지 유지지
+      }
+      // 현재 페이지에 맞는 데이터 슬라이싱
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginationData = sortedData.slice(startIndex, endIndex);
+      // 상태 반영
+      setQuestions(paginationData);
+      setTotalPages(recalculatedTotalPages);
+
+    } catch (error) {
+      console.error('질문 조회 중 오류 발생:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedData = sortedData.slice(startIndex, endIndex);
-
-    setQuestions(paginatedData);
-    setTotalPages(Math.ceil(qnaData.length / itemsPerPage));
-
-    // API 호출 코드 (주석 처리)
-    // try {
-    //   const sortBy = selected === 'latest' ? 'desc' : 'asc';
-    //   const response = await getMyQuestion(currentPage, 10, sortBy);
-    //   setQuestions(response.data);
-    //   setTotalPages(Math.ceil(response.total / 10));
-    // } catch (error) {
-    //   console.error('질문 조회 중 오류 발생:', error);
-    // }
   };
 
   const handleBack = () => {
@@ -118,44 +133,48 @@ export default function QnaPage() {
         </SaveButton>
       </View>
 
-      <FlatList
-        style={{ overflow: 'visible' }}
-        data={questions}
-        renderItem={({ item }) => (
-          <QnaCardWrapper
-            title={item.title}
-            createAt={item.createAt}
-            status={item.question_status}
-            onPress={() => router.push({
-              pathname: `/qna/detailQnA`,
-              params: {
-                id: item.id,
-                title: item.title,
-                content: item.content,
-                createAt: item.createAt,
-                status: item.question_status,
-                questionImage: item.question_image,
-              }
-            })}
+      <View style={{ flex: 1 }}>
+        {!isLoading && questions.length === 0 ? (
+          <NoMyQuestion />
+        ) : (
+          <>
+          {questions.map((item) => {
+            const formattedDate = format(new Date(item.createdAt), 'yyyy-MM-dd');
+            return (
+            <QnaCardWrapper
+              key={item.id}
+              title={item.title}
+              createdAt={formattedDate}
+              questionAnswerStatus={item.questionAnswerStatus}
+              onPress={() => {
+                router.push({
+                  pathname: `/qna/detailQnA`,
+                  params: {
+                    id: item.questionId,
+                    title: item.title,
+                    content: item.content,
+                    createdAt: item.createdAt,
+                    questionAnswerStatus: item.question_answer_status,
+                    questionImage: item.question_image,
+                  }
+            })}}
           />
-        )}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContainer}
-        ListFooterComponent={
-        <View>
-          <View style={{ height: 8 }} />
-          <View style={styles.paginationContainer}>
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </View>
-        </View>}
-      />
-    </View>
+        );
+      })}
+      <View style={styles.paginationContainer}>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => setCurrentPage(page)}
+        />      
+      </View>
+    </>
+  )}
+  </View>
+  </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -206,9 +225,13 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   paginationContainer: {
-    paddingVertical: 16,
+    position: 'absolute',
+    bottom: 180,
+    width: '100%',
+    backgroundColor: 'white',
+    zIndex: 10,
+    paddingVertical: 10,
     alignItems: 'center',
-    justifyContent: 'center',
   },
 });
 

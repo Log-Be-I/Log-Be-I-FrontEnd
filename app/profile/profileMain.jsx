@@ -21,50 +21,50 @@ import LocationIcon from "../../assets/sidebar/sidebarProfile/locationIcon.svg";
 import BirthIcon from "../../assets/images/birthDay.svg";
 import MyProfile from "../../assets/sidebar/sidebarProfile/myProfile.svg";
 import BirthInput from "../../components/common/BirthInput";
-import { patchMemberInfo } from "../../api/member/memberApi";
+import { updateMember } from "../../api/member/memberApi";
 import Icon from "react-native-vector-icons/Ionicons";
+import useAuthStore from "../../zustand/stores/authStore";
 
 export default function MemberInfo() {
   const router = useRouter();
-  const {
-    memberId,
-    token,
-    nickname,
-    email,
-    name,
-    birth,
-    region,
-    setNickname,
-    setRegion,
-  } = useUserStore();
+  const  user  = useAuthStore((state) => state.user);
+  const  setUser  = useAuthStore((state) => state.setUser);
 
   const [isEditMode, setIsEditMode] = useState(false);
-  const [nicknameInput, setNicknameInput] = useState(nickname);
-  const [birthInput, setBirthInput] = useState(birth);
-  const [selectedCity, setSelectedCity] = useState(region?.split(" ")[0] || "");
+  const [nicknameInput, setNicknameInput] = useState(user.nickname);
+  const [birthInput, setBirthInput] = useState(user.birth);
+  const [selectedCity, setSelectedCity] = useState(user.region?.split(" ")[0] || "");
   const [selectedDistrict, setSelectedDistrict] = useState(
-    region?.split(" ")[1] || ""
+    user.region?.split(" ")[1] || ""
   );
 
   const handleSave = async () => {
     try {
-      const newRegion =
-        selectedCity && selectedDistrict
+      const newRegion = 
+        selectedCity !== "" && selectedDistrict !== ""
           ? `${selectedCity} ${selectedDistrict}`
-          : region;
+          : user.region;
 
-      await patchMemberInfo(
-        memberId,
+      console.log("✅ 최종 지역 값:", newRegion);
+      
+      await updateMember(
+        user.memberId,
         {
           nickname: nicknameInput,
           profile: "",
           region: newRegion,
+          birth: birthInput,
         },
-        token
+        user.token
       );
-
-      setNickname(nicknameInput);
-      setRegion(newRegion);
+      // 상태 업데이트
+      setUser({
+        ...user,
+        nickname: nicknameInput,
+        region: newRegion,
+        birth: birthInput,
+      });
+      console.log(user);
       setIsEditMode(false);
     } catch (error) {
       console.error("회원 정보 수정 실패:", error);
@@ -72,7 +72,6 @@ export default function MemberInfo() {
   };
 
   const handleBack = () => {
-    console.log("back");
     router.back();
   };
 
@@ -95,7 +94,10 @@ export default function MemberInfo() {
         )}
 
       <SafeAreaView style={styles.content}>
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={{ paddingBottom: 200 }}
+        showsVerticalScrollIndicator={false}>
           <View style={styles.profileSection}>
             <View style={styles.profileDiamond}>
               <View style={styles.profileCircle}>
@@ -119,7 +121,7 @@ export default function MemberInfo() {
                   placeholder="애기로기"
                 />
               ) : (
-                <Text style={styles.nickname}>애기로기{nickname}</Text>
+                <Text style={styles.nickname}>{user.nickname}</Text>
               )}
               {!isEditMode && (
                 <Pressable onPress={() => setIsEditMode(true)}>
@@ -131,13 +133,13 @@ export default function MemberInfo() {
 
           <View style={styles.infoContainer}>
             <TextComponent
-              value={email}
+              value={user.email}
               iconComponent={<EmailIcon width={20} height={20} />}
               editable={false}
               textColor="#032B77"
             />
             <TextComponent
-              value={name}
+              value={user.name}
               iconName="person"
               editable={false}
               textColor="#032B77"
@@ -145,14 +147,14 @@ export default function MemberInfo() {
             {isEditMode ? (
               <BirthInput
                 value={birthInput}
-                handleValue={(text) =>
+                setValue={(text) =>
                   setBirthInput(text)
                 }
-                placeholder="1999-12-21"
+                placeholder={user.birth}
               />
             ) : (
               <TextComponent
-                value={birth}
+                value={user.birth}
                 iconComponent={<BirthIcon width={20} height={20} />}
                 editable={false}
                 textColor="#032B77"
@@ -167,7 +169,7 @@ export default function MemberInfo() {
               />
             ) : (
               <TextComponent
-                value={region}
+                value={user.region}
                 iconComponent={<LocationIcon width={20} height={20} />}
                 editable={false}
                 textColor="#032B77"

@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native'; 
 
-export default function QnaCard({ title, createAt }) {
+export default function QnaCard({ title, createdAt }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.date}>{createAt}</Text>
+      <Text style={styles.date}>{createdAt}</Text>
       <Text style={styles.title}>{title}</Text>
     </View>
   );

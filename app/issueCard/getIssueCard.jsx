@@ -6,6 +6,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Button from '../../components/common/button';
 import { getKeywords } from '../../api/issueCard/issueCardApi';
 import { ActivityIndicator } from 'react-native';
+import useAuthStore from '../../zustand/stores/authStore';
+
 export default function GetIssueCard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -14,6 +16,7 @@ export default function GetIssueCard() {
   const [keywords, setKeywords] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const memberId = useAuthStore((state) => state.memberId);
 
   useEffect(() => {
     const fetchKeywords = async () => {
@@ -26,7 +29,7 @@ export default function GetIssueCard() {
           return;
         }
         // 없으면 API 호출
-        const response = await getKeywords();
+        const response = await getKeywords(memberId);
         if (response && response.length > 0) {
           setKeywords(response.map(item => item['keyword-name']));
         }
@@ -39,11 +42,28 @@ export default function GetIssueCard() {
 
     fetchKeywords();
   }, [paramKeywords]);
+ // 키워드 변경 시 뉴스 가져오기
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const response = await axios.get(`/news?keyword=${keywords[activeTab].name}`);
+        setCards(response.data);
+      } catch (error) {
+        console.error('뉴스 가져오기 실패:', error);
+      }
+    };
+  
+    if (keywords[activeTab]) {
+      fetchNews();
+    }
+  }, [activeTab, keywords]);
+  
+
 
   const handleEdit = () => {
     router.push({
       pathname: '/issueCard',
-      params: { editKeywords: JSON.stringify(keywords) }
+      params: { editKeywords: JSON.stringify(keywords) } // 기존키워드 넘기기기
     });
   };
 
@@ -59,58 +79,6 @@ export default function GetIssueCard() {
       duration: 300,
       useNativeDriver: true,
     }).start();
-  };
-
-  // Mock news data for each keyword
-  const mockNewsData = {
-    'IT/기술': [
-      {
-        title: '새로운 AI 기술 발표',
-        content: '구글은 오늘 새로운 AI 모델을 발표했습니다. 이 모델은 기존 모델보다 30% 더 효율적이며, 특히 자연어 처리 분야에서 획기적인 성능 향상을 보여주고 있습니다.',
-      },
-      {
-        title: '삼성전자 신제품 출시',
-        content: '삼성전자가 새로운 스마트폰을 출시했습니다. 혁신적인 폴더블 디스플레이와 향상된 카메라 성능이 특징입니다.',
-      },
-      {
-        title: '메타버스 시장 성장',
-        content: '글로벌 메타버스 시장이 급성장하고 있습니다. 주요 기업들의 투자가 이어지고 있으며, 새로운 비즈니스 모델이 등장하고 있습니다.',
-      },
-    ],
-    '경제/금융': [
-      {
-        title: '주식시장 강세',
-        content: '글로벌 경제 지표 호조에 힘입어 국내 주식시장이 강세를 보이고 있습니다. 특히 IT와 반도체 업종이 상승을 주도하고 있습니다.',
-      },
-      {
-        title: '금리 동결 결정',
-        content: '한국은행이 기준금리를 현행 수준에서 동결하기로 결정했습니다. 물가안정과 경제성장을 고려한 결정이라고 밝혔습니다.',
-      },
-      {
-        title: '원화 강세',
-        content: '글로벌 달러 약세 영향으로 원화 가치가 상승하고 있습니다. 수출기업들의 실적에 미치는 영향이 주목됩니다.',
-      },
-    ],
-    '건강/웰빙': [
-      {
-        title: '새로운 치료제 개발',
-        content: '국내 제약회사가 혁신적인 항암제를 개발했습니다. 임상시험에서 높은 효과를 보여 기대를 모으고 있습니다.',
-      },
-      {
-        title: '건강보험 정책 변경',
-        content: '정부가 새로운 건강보험 정책을 발표했습니다. 의료 서비스 접근성 향상과 의료비 부담 경감이 주요 내용입니다.',
-      },
-    ],
-    '스포츠': [
-      {
-        title: '월드컵 예선 승리',
-        content: '한국 축구 대표팀이 2026 월드컵 예선에서 승리를 거뒀습니다. 이로써 본선 진출 가능성이 한층 높아졌습니다.',
-      },
-      {
-        title: '프로야구 개막',
-        content: '2024 KBO 리그가 개막했습니다. 각 구단은 우승을 향한 새로운 도전을 시작했습니다.',
-      },
-    ],
   };
 
   return (
@@ -146,7 +114,7 @@ export default function GetIssueCard() {
               ]}
               onPress={() => handleTabPress(index)}
             >
-              <Text style={styles.tabText}>{keyword}</Text>
+              <Text style={styles.tabText}>{keyword.name}</Text>
               {activeTab === index && <View style={styles.activeIndicator} />}
             </Pressable>
           ))}
@@ -168,18 +136,19 @@ export default function GetIssueCard() {
         ]}
       >
         <ScrollView>
-        {/*{dummyNews.map((news, index) => ( */}
-          {keywords[activeTab] && mockNewsData[keywords[activeTab]]?.map((news, index) => (
+          {cards.map((news, index) => (
             <NewsCard
               key={index}
               title={news.title}
-              content={news.content}
+              content={news.summary}
               onPress={() => {
                 // 뉴스 상세 페이지로 이동
+                router.push(news.link);
               }}
             />
           ))}
         </ScrollView>
+        
       </Animated.View>
       <View style={styles.editButtonContainer}>
       <Button

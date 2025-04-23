@@ -40,12 +40,15 @@ export default function IssueCardPage() {
     if (editKeywords) {
       const parsedKeywords = JSON.parse(editKeywords);
 
-      const knownTitles = interestCategories.flatMap(row => row.map(item => item.title));
-      const predefined = parsedKeywords.filter(title => knownTitles.includes(title));
-      const custom = parsedKeywords.filter(title => !knownTitles.includes(title));
+      // const knownTitles = interestCategories.flatMap(row => row.map(item => item.title));
+      // const predefined = parsedKeywords.filter(title => knownTitles.includes(title));
+      // const custom = parsedKeywords.filter(title => !knownTitles.includes(title));
 
-      setSelectedInterests(predefined);
-      setCustomInterests(custom);
+      setSelectedInterests(parsedKeywords); // 기존 선택
+      //setCustomInterests([]);
+    } else {
+      setSelectedInterests([]); // 신규 진입 시 초기화화
+      //setCustomInterests([]);
     }
   }, [editKeywords]);
 
@@ -89,7 +92,7 @@ export default function IssueCardPage() {
   };
 
   const handleStart = async () => {
-    const allKeywords = [...selectedInterests, ...customInterests];
+    const allKeywords = [...selectedInterests, ...customInterests].map(keyword => ({ name: keyword }));
 
     if (allKeywords.length === 0) {
       setShowToast(true);
@@ -97,7 +100,7 @@ export default function IssueCardPage() {
     }
     
     try {
-      //await postKeywords(allKeywords);
+      await postKeywords(allKeywords);
       router.replace(`/issueCard/getIssueCard?keywords=${encodeURIComponent(JSON.stringify(allKeywords))}`);
     } catch (error) {
       console.error('키워드 등록 실패:', error);

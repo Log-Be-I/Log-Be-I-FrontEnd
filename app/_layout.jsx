@@ -20,6 +20,13 @@ export default function RootLayout() {
     "Pretendard-Medium": require("../assets/fonts/Pretendard-Medium.otf"),
     "Pretendard-SemiBold": require("../assets/fonts/Pretendard-SemiBold.otf"),
   });
+// 로그인이 구현되면 삭제하자!!!!! 임의의 토큰을 설정하였다.
+  useEffect(() => {
+    useAuthStore.setState({ token: 
+      "test-token",
+      memberId: "1L"
+    })
+  }, [])
 
   const router = useRouter();
   const segments = useSegments();

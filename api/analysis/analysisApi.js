@@ -1,8 +1,8 @@
-import axiosInstance from './axiosInstance'; // 기존 설정 import
+import { axiosWithToken } from '../axios/axios'; // 기존 설정 import
 
 export const getReportsAll = async (token, year) => {
   try {
-    const response = await axiosInstance.get('/reports', {
+    const response = await axiosWithToken.get('/reports', {
       params: { year },
       headers: {
         Authorization: `Bearer ${token}`,
@@ -21,7 +21,7 @@ export const getReportsAll = async (token, year) => {
 // 분석 상세 조회 API
 export const getReportById = async (token, reportId) => {
     try {
-      const response = await axiosInstance.get(`/reports/${reportId}`, {
+      const response = await axiosWithToken.get(`/reports/${reportId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

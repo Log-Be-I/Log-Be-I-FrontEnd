@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-nati
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Icon from 'react-native-vector-icons/Ionicons';
 import NoticeButton from '../../components/faq/NoticeButton';
-import { mockNotices } from '../../components/faq/mockData';
+import { getNoticeById } from '../../api/notice/noticeApi';
 import SaveButton from '../../components/qna/SaveButton';
 
 export default function DetailNoticePage() {
@@ -12,9 +12,17 @@ export default function DetailNoticePage() {
   const [notice, setNotice] = useState(null);
 
   useEffect(() => {
-    // Mock data에서 해당 id의 공지사항 찾기
-    const foundNotice = mockNotices.find(notice => notice.id === Number(id));
-    setNotice(foundNotice);
+    const fetchNoticeDetail = async () => {
+      try {
+        const response = await getNoticeById(id);
+        setNotice(response.data);
+      } catch (error) {
+        console.error('공지사항 상세 조회 실패:', error);
+      }
+    };
+    if (id) {
+      fetchNoticeDetail();
+    }
   }, [id]);
 
   const handleBack = () => {
@@ -34,7 +42,7 @@ export default function DetailNoticePage() {
 
       <ScrollView style={styles.content}>
         <View style={styles.noticeHeader}>
-          <NoticeButton importance={notice.importance} />
+          <NoticeButton isPinned={notice.isPinned} />
           <Text style={styles.noticeTitle}>{notice.title}</Text>
         </View>
 
@@ -63,7 +71,8 @@ export default function DetailNoticePage() {
             />
           </View>
         )}
-          <SaveButton 
+      </ScrollView>
+      <SaveButton 
           onPress={handleBack} 
           style={{
           paddingVertical: 4,
@@ -71,10 +80,10 @@ export default function DetailNoticePage() {
           minWidth: 60,
           backgroundColor: '#61B9FF',
           alignSelf: 'center',
+          marginBottom: 160,
         }}>
           <Text style={styles.buttonText}>OK</Text>
         </SaveButton>
-      </ScrollView>
     </View>
   );
 }
@@ -110,7 +119,7 @@ const styles = StyleSheet.create({
   noticeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 20,
     marginBottom: 20,
   },
   noticeTitle: {
