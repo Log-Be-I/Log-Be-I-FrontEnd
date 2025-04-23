@@ -46,8 +46,7 @@ export default function Login() {
         console.log("로그인 성공");
 
         await Promise.all([
-          AsyncStorage.setItem("accessToken", response.result.accessToken),
-          AsyncStorage.setItem("refreshToken", response.result.refreshToken),
+          AsyncStorage.setItem("accessToken", response.data.token),
         ]);
         router.replace("/(tabs)");
       } else {

@@ -1,12 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Animated, Pressable } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import NewsCard from '../../components/issueCard/issue/NewsCard';
-import Icon from 'react-native-vector-icons/Ionicons';
-import Button from '../../components/common/button';
-import { getKeywords } from '../../api/issueCard/issueCardApi';
-import { ActivityIndicator } from 'react-native';
-import useAuthStore from '../../zustand/stores/authStore';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Animated,
+  Pressable,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import NewsCard from "../../components/issueCard/issue/NewsCard";
+import Icon from "react-native-vector-icons/Ionicons";
+import Button from "../../components/common/button";
+import { getKeywords } from "../../api/issueCard/issueCardApi";
+import { ActivityIndicator } from "react-native";
+import { useMemberStore } from "../../zustand/stores/member";
 
 export default function GetIssueCard() {
   const router = useRouter();
@@ -16,7 +23,6 @@ export default function GetIssueCard() {
   const [keywords, setKeywords] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const memberId = useAuthStore((state) => state.memberId);
 
   useEffect(() => {
     const fetchKeywords = async () => {
@@ -29,12 +35,12 @@ export default function GetIssueCard() {
           return;
         }
         // 없으면 API 호출
-        const response = await getKeywords(memberId);
+        const response = await getKeywords();
         if (response && response.length > 0) {
-          setKeywords(response.map(item => item['keyword-name']));
+          setKeywords(response.map((item) => item["keyword-name"]));
         }
       } catch (error) {
-        console.error('키워드 조회 실패:', error);
+        console.error("키워드 조회 실패:", error);
       } finally {
         setIsLoading(false); // 키워드가 없더라도 로딩 종료
       }
@@ -42,28 +48,28 @@ export default function GetIssueCard() {
 
     fetchKeywords();
   }, [paramKeywords]);
- // 키워드 변경 시 뉴스 가져오기
+  // 키워드 변경 시 뉴스 가져오기
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const response = await axios.get(`/news?keyword=${keywords[activeTab].name}`);
+        const response = await axios.get(
+          `/news?keyword=${keywords[activeTab].name}`
+        );
         setCards(response.data);
       } catch (error) {
-        console.error('뉴스 가져오기 실패:', error);
+        console.error("뉴스 가져오기 실패:", error);
       }
     };
-  
+
     if (keywords[activeTab]) {
       fetchNews();
     }
   }, [activeTab, keywords]);
-  
-
 
   const handleEdit = () => {
     router.push({
-      pathname: '/issueCard',
-      params: { editKeywords: JSON.stringify(keywords) } // 기존키워드 넘기기기
+      pathname: "/issueCard",
+      params: { editKeywords: JSON.stringify(keywords) }, // 기존키워드 넘기기기
     });
   };
 
@@ -89,76 +95,81 @@ export default function GetIssueCard() {
         </View>
       ) : (
         <>
-      <View style={styles.titleContainer}>
-        <View style={styles.titleBorder} />
-        <View style={styles.titleRow}>
-          <Pressable onPress={() => router.replace('/')} style={styles.backButton}>
-            <Icon name="chevron-back" size={24} color="#000" />
-          </Pressable>
-          <View style={styles.titleWrapper}>
-            <Text style={styles.title}>Daily <Text style={styles.titleHighlight}>I</Text>ssue</Text>
+          <View style={styles.titleContainer}>
+            <View style={styles.titleBorder} />
+            <View style={styles.titleRow}>
+              <Pressable
+                onPress={() => router.replace("/")}
+                style={styles.backButton}
+              >
+                <Icon name="chevron-back" size={24} color="#000" />
+              </Pressable>
+              <View style={styles.titleWrapper}>
+                <Text style={styles.title}>
+                  Daily <Text style={styles.titleHighlight}>I</Text>ssue
+                </Text>
+              </View>
+            </View>
+            <View style={styles.titleBorder} />
           </View>
-        </View>
-        <View style={styles.titleBorder} />
-      </View>
 
-      <View style={styles.tabContainer}>
-        <View style={styles.tabBorder} />
-        <View style={styles.tabs}>
-          {keywords.map((keyword, index) => (
-            <Pressable
-              key={index}
-              style={[
-                styles.tab,
-                activeTab === index && styles.activeTab
-              ]}
-              onPress={() => handleTabPress(index)}
-            >
-              <Text style={styles.tabText}>{keyword.name}</Text>
-              {activeTab === index && <View style={styles.activeIndicator} />}
-            </Pressable>
-          ))}
-        </View>
-        <View style={styles.tabBorder} />
-      </View>
+          <View style={styles.tabContainer}>
+            <View style={styles.tabBorder} />
+            <View style={styles.tabs}>
+              {keywords.map((keyword, index) => (
+                <Pressable
+                  key={index}
+                  style={[styles.tab, activeTab === index && styles.activeTab]}
+                  onPress={() => handleTabPress(index)}
+                >
+                  <Text style={styles.tabText}>{keyword.name}</Text>
+                  {activeTab === index && (
+                    <View style={styles.activeIndicator} />
+                  )}
+                </Pressable>
+              ))}
+            </View>
+            <View style={styles.tabBorder} />
+          </View>
 
-      <Animated.View
-        style={[
-          styles.content,
-          {
-            transform: [{
-              translateX: slideAnim.interpolate({
-                inputRange: [-100, 0, 100],
-                outputRange: ['-100%', '0%', '100%']
-              })
-            }]
-          }
-        ]}
-      >
-        <ScrollView>
-          {cards.map((news, index) => (
-            <NewsCard
-              key={index}
-              title={news.title}
-              content={news.summary}
-              onPress={() => {
-                // 뉴스 상세 페이지로 이동
-                router.push(news.link);
-              }}
+          <Animated.View
+            style={[
+              styles.content,
+              {
+                transform: [
+                  {
+                    translateX: slideAnim.interpolate({
+                      inputRange: [-100, 0, 100],
+                      outputRange: ["-100%", "0%", "100%"],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <ScrollView>
+              {cards.map((news, index) => (
+                <NewsCard
+                  key={index}
+                  title={news.title}
+                  content={news.summary}
+                  onPress={() => {
+                    // 뉴스 상세 페이지로 이동
+                    router.push(news.link);
+                  }}
+                />
+              ))}
+            </ScrollView>
+          </Animated.View>
+          <View style={styles.editButtonContainer}>
+            <Button
+              text="Edit"
+              size="large"
+              textStyle={{ color: "#69BAFF" }}
+              onPress={handleEdit}
+              style={styles.editButton}
             />
-          ))}
-        </ScrollView>
-        
-      </Animated.View>
-      <View style={styles.editButtonContainer}>
-      <Button
-            text="Edit"
-            size="large"
-            textStyle={{color: "#69BAFF"}}
-            onPress={handleEdit}
-            style={styles.editButton}
-          />
-      </View>
+          </View>
         </>
       )}
     </View>
@@ -168,7 +179,7 @@ export default function GetIssueCard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingTop: 20,
     paddingBottom: 20,
   },
@@ -176,67 +187,67 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
     paddingHorizontal: 20,
   },
   titleBorder: {
     height: 1,
-    width: '100%',
-    backgroundColor: '#3650FA',
+    width: "100%",
+    backgroundColor: "#3650FA",
   },
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     left: 20,
     paddingVertical: 8,
     zIndex: 10,
   },
   titleWrapper: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginVertical: 10,
   },
   titleHighlight: {
-    color: '#1170DF',
+    color: "#1170DF",
   },
   tabContainer: {
     marginBottom: 20,
   },
   tabBorder: {
     height: 1,
-    width: '100%',
-    backgroundColor: '#3650FA',
+    width: "100%",
+    backgroundColor: "#3650FA",
   },
   tabs: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingTop: 10,
   },
   tab: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    position: 'relative',
+    position: "relative",
   },
   tabText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   activeIndicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: '#1E3A8A',
+    backgroundColor: "#1E3A8A",
   },
   editButtonContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 60,
     right: 30,
     zIndex: 10,

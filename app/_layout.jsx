@@ -20,13 +20,6 @@ export default function RootLayout() {
     "Pretendard-Medium": require("../assets/fonts/Pretendard-Medium.otf"),
     "Pretendard-SemiBold": require("../assets/fonts/Pretendard-SemiBold.otf"),
   });
-// 로그인이 구현되면 삭제하자!!!!! 임의의 토큰을 설정하였다.
-  useEffect(() => {
-    useAuthStore.setState({ token: 
-      "test-token",
-      memberId: "1L"
-    })
-  }, [])
 
   // 앱 초기화 및 상태 복원
   useEffect(() => {
@@ -40,22 +33,6 @@ export default function RootLayout() {
       });
     }
   }, [loaded]);
-
-  // // 로딩 화면
-  // if (!loaded) {
-  //   return (
-  //     <View
-  //       style={{
-  //         flex: 1,
-  //         justifyContent: "center",
-  //         alignItems: "center",
-  //         backgroundColor: "#fff",
-  //       }}
-  //     >
-  //       <ActivityIndicator size="large" color="#1170DF" />
-  //     </View>
-  //   );
-  // }
 
   return (
     <CustomThemeProvider>
