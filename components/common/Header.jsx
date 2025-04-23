@@ -1,20 +1,8 @@
-import { useState } from "react";
 import { View, Pressable, StyleSheet } from "react-native";
 import LogBeIText from "../../assets/images/logBeIText.svg"; // 로고 SVG
 import MenuIcon from "../../assets/images/menuIconHeader.svg"; // 메뉴 SVG
-import SidebarSlideOverlay from "../sidebar/SidebarSlideOverlay";
 
-export default function Header() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const openSidebar = () => {
-    setIsSidebarOpen(true);
-  };
-
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
-  };
-
+export default function Header({ onMenuPress }) {
   return (
     <View style={styles.headerContainer}>
       <View style={styles.logoContainer}>
@@ -22,11 +10,9 @@ export default function Header() {
       </View>
 
       {/* 오른쪽 메뉴 아이콘 (누르면 onMenuPress 실행) */}
-      <Pressable onPress={openSidebar} style={styles.menuIconContainer}>
+      <Pressable onPress={onMenuPress} style={styles.menuIconContainer}>
         <MenuIcon width={26} height={21} />
       </Pressable>
-
-      <SidebarSlideOverlay visible={isSidebarOpen} onClose={closeSidebar} />
     </View>
   );
 }

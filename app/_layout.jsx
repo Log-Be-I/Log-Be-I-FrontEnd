@@ -1,13 +1,13 @@
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "react-native-reanimated";
 import { ThemeProvider as CustomThemeProvider } from "../context/ThemeContext";
 import { ActivityIndicator, View } from "react-native";
-import useAuthStore from "../zustand/stores/authStore";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -20,69 +20,19 @@ export default function RootLayout() {
     "Pretendard-Medium": require("../assets/fonts/Pretendard-Medium.otf"),
     "Pretendard-SemiBold": require("../assets/fonts/Pretendard-SemiBold.otf"),
   });
-// 로그인이 구현되면 삭제하자!!!!! 임의의 토큰을 설정하였다.
-  useEffect(() => {
-    useAuthStore.setState({ token: 
-      "test-token",
-      memberId: "1L"
-    })
-  }, [])
-
-  const router = useRouter();
-  const segments = useSegments();
-  const { token, isHydrated } = useAuthStore();
-  const [isReady, setIsReady] = useState(false);
 
   // 앱 초기화 및 상태 복원
   useEffect(() => {
-    async function prepare() {
-      try {
-        if (loaded && isHydrated) {
-          console.log("App State:", { loaded, isHydrated, hasToken: !!token });
-          await SplashScreen.hideAsync();
-          setIsReady(true);
-        }
-      } catch (e) {
-        console.warn("Initialization error:", e);
-      }
+    if (loaded) {
+      SplashScreen.hideAsync();
+
+      GoogleSignin.configure({
+        forceCodeForRefreshToken: true,
+        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+        offlineAccess: true,
+      });
     }
-
-    prepare();
-  }, [loaded, isHydrated]);
-
-  // 라우팅 처리
-  useEffect(() => {
-    if (!isReady) return;
-
-    const inAuthGroup = segments[0] === "(onBoard)";
-    console.log("Navigation State:", {
-      hasToken: !!token,
-      inAuthGroup,
-      currentPath: segments.join("/"),
-    });
-
-    if (!token && !inAuthGroup) {
-      router.replace("/(onBoard)");
-    } else if (token && inAuthGroup) {
-      router.replace("/(tabs)");
-    }
-  }, [isReady, token, segments]);
-
-  // 로딩 화면
-  if (!isReady || !loaded || !isHydrated) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#fff",
-        }}
-      >
-        <ActivityIndicator size="large" color="#1170DF" />
-      </View>
-    );
-  }
+  }, [loaded]);
 
   return (
     <CustomThemeProvider>

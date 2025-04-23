@@ -1,71 +1,86 @@
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Text from "../../components/common/Text";
-import GoogleSignin from "../../assets/images/googleLogo.svg";
+import GoogleSigninImage from "../../assets/images/googleLogo.svg";
 import LogBeIText from "../../assets/images/logBeIText.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
-import useAuthStore from "../../zustand/stores/authStore";
-import GoogleLoginButton from "../../components/onBoard/GoogleLoginButton";
-import * as Google from "expo-auth-session/providers/google";
-import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
-import React, { useEffect } from "react";
-import ErrorBoundary from "../../components/common/ErrorBoundary";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { axiosWithoutToken } from "../../api/axios/axios";
+import { useMemberStore, useSignUpStore } from "../../zustand/stores/member";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const router = useRouter();
-  const { isLoading, error, setToken, setUser } = useAuthStore();
 
-  const [request, response, promptAsync] = Google.useAuthRequest(
-    {
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-      androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-      responseType: "code",
-      scopes: ["email", "profile", "openid"],
-      usePKCE: false,
-      redirectUri: AuthSession.makeRedirectUri({ useProxy: false }),
-      extraParams: {
-        prompt: "consent",
-        access_type: "offline",
-      },
-      skipCodeExchange: true,
-    },
-    {
-      useProxy: false,
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const { setMember } = useMemberStore();
+  const { setSignUpState } = useSignUpStore();
+
+  const googleLogin = async () => {
+    console.log("클릭");
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await GoogleSignin.hasPlayServices();
+      const result = await GoogleSignin.signIn();
+
+      console.log("result: ", result);
+      console.log("ServerAuthCode: ", result.data.serverAuthCode);
+
+      const response = await axiosWithoutToken.post("/api/auth/google/code", {
+        code: result.data.serverAuthCode,
+      });
+
+      console.log("response: ", response);
+
+      console.log("response.data: ", response.data);
+
+      if (response.data.status === "login") {
+        setMember(response.data.user);
+        console.log("로그인 성공");
+
+        await Promise.all([
+          AsyncStorage.setItem("accessToken", response.data.token),
+        ]);
+        router.replace("/(tabs)");
+      } else {
+        console.log("회원가입으로 이동합니다.");
+        setSignUpState({
+          name: response.data.user.name,
+          email: response.data.user.email,
+        });
+        router.push("/(onBoard)/signUp");
+      }
+    } catch (error) {
+      console.error("로그인 에러:", error);
+      setError(error.message || "로그인 중 오류가 발생했습니다.");
+      Alert.alert("로그인 실패", "로그인 처리 중 문제가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
     }
-  );
+  };
 
-  // // ✅ 자동 요청 실패 무시하고 화면 오류 방지
-  // useEffect(() => {
-  //   const handler = (event) => {
-  //     if (
-  //       event?.reason?.message?.includes("client_secret is missing") ||
-  //       event?.reason?.toString().includes("client_secret is missing")
-  //     ) {
-  //       event.preventDefault();
-  //       console.log("🚫 무시된 자동 token 요청 에러:", event.reason);
-  //     }
-  //   };
-
-  //   window.addEventListener("unhandledrejection", handler);
-  //   window.addEventListener("error", handler);
-
-  //   return () => {
-  //     window.removeEventListener("unhandledrejection", handler);
-  //     window.removeEventListener("error", handler);
-  //   };
-  // }, []);
-
-  const handleLogin2 = () => {
-    setToken("test-token");
-    setUser({
-      id: "test-user-id",
-      email: "test@example.com",
-      name: "Test User",
-      image: null,
+  const handleLogin2 = async () => {
+    await AsyncStorage.setItem("accessToken", "test-token");
+    setMember({
+      memberId: 0,
+      name: "",
+      nickname: "",
+      email: "",
+      region: "",
+      birth: "",
+      profile: "assets/sitting-nalco.png",
+      notification: false,
+      memberStatus: "",
+      lastLoginAt: "",
     });
     router.replace("/(tabs)");
   };
@@ -97,15 +112,23 @@ export default function Login() {
             </View>
           </View>
           <View style={styles.buttonContainer}>
-            <Pressable style={styles.googleButton} onPress={handleLogin2}>
+            <Pressable
+              style={[styles.googleButton, isLoading && styles.disabledButton]}
+              onPress={googleLogin}
+              disabled={isLoading}
+            >
               <View style={styles.googleContent}>
-                <GoogleSignin width={20} height={20} />
+                <GoogleSigninImage width={20} height={20} />
                 <Text variant="medium" size={14} color="#666">
                   {isLoading ? "로그인 중..." : "Sign In with Google"}
                 </Text>
               </View>
             </Pressable>
-            <GoogleLoginButton promptAsync={promptAsync} />
+            <Pressable onPress={handleLogin2}>
+              <Text variant="medium" size={14} color="#666">
+                로그인 스킵
+              </Text>
+            </Pressable>
           </View>
           {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
@@ -169,4 +192,7 @@ const styles = StyleSheet.create({
   },
   footer: { alignItems: "center", marginBottom: 16 },
   footerText: { marginBottom: 2 },
+  disabledButton: {
+    opacity: 0.7,
+  },
 });

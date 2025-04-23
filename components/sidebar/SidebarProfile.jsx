@@ -3,11 +3,11 @@ import { useRouter } from "expo-router";
 import ProfileIcon from "../../assets/sidebar/sidebarProfile/aegiRogiProfile.svg";
 import MyProfile from "../../assets/sidebar/sidebarProfile/myProfile.svg";
 import { useTestUser } from "../../zustand/stores/testUser";
-import useAuthStore from "../../zustand/stores/authStore";
 import { useEffect } from "react";
+import { useMemberStore } from "../../zustand/stores/member";
 
 export default function SidebarProfile() {
-  const user = useAuthStore((state) => state.user);
+  const { member } = useMemberStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function SidebarProfile() {
 
             <View style={styles.profileInfo}>
               <View style={styles.usernameRow}>
-                <Text style={styles.username}>{user.nickname}</Text>
+                <Text style={styles.username}>{member.nickname}</Text>
               </View>
             </View>
 

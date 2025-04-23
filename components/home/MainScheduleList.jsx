@@ -130,6 +130,7 @@ export default function MainScheduleList() {
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        ListFooterComponent={() => <View style={{ height: 80 }} />}
       />
     </View>
   );

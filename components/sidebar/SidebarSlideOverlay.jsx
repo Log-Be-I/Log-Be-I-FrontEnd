@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Easing,
 } from "react-native"; // 기본 UI 컴포넌트 + 애니메이션
-import { useEffect, useRef } from "react"; // 상태 및 애니메이션에 사용할 훅
+import { useEffect, useRef, useState } from "react"; // 상태 및 애니메이션에 사용할 훅
 import Sidebar from "./Sidebar"; // 우리가 만든 사이드바 본체
 
 // 디바이스 전체 화면 크기 가져오기
@@ -17,29 +17,35 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 export default function SidebarSlideOverlay({ visible, onClose }) {
   // 애니메이션 시작 위치를 화면 오른쪽 밖으로 설정
   const slideAnim = useRef(new Animated.Value(SCREEN_WIDTH)).current;
+  const [isRendered, setIsRendered] = useState(false);
 
   // visible이 true/false로 바뀔 때마다 애니메이션 실행
   useEffect(() => {
     if (visible) {
+      setIsRendered(true);
+      // 열릴 때 애니메이션
       Animated.timing(slideAnim, {
-        // 🔽 열릴 때: 오른쪽 → 왼쪽 슬라이드 인
-        toValue: 0, // 화면 왼쪽 0 위치까지 이동
-        duration: 300, // 400ms 동안
-        easing: Easing.out(Easing.ease), // 부드러운 감속 느낌
-        useNativeDriver: false, // layout 관련 애니메이션은 false
+        toValue: 0,
+        duration: 400, // 열리는 시간을 400ms로 조정
+        easing: Easing.out(Easing.cubic), // 부드러운 감속 효과
+        useNativeDriver: true,
       }).start();
     } else {
-      // 🔼 닫힐 때: 왼쪽 → 오른쪽 슬라이드 아웃
+      // 닫힐 때 애니메이션
       Animated.timing(slideAnim, {
-        toValue: SCREEN_WIDTH, // 다시 오른쪽 바깥으로 이동
-        duration: 800,
-        useNativeDriver: false,
-      }).start();
+        toValue: SCREEN_WIDTH, // 오른쪽으로 슬라이드
+        duration: 300, // 닫히는 시간을 300ms로 조정
+        easing: Easing.in(Easing.cubic), // 부드러운 가속 효과
+        useNativeDriver: true,
+      }).start(() => {
+        // 애니메이션이 완료된 후에 컴포넌트를 제거
+        setIsRendered(false);
+      });
     }
   }, [visible]); // visible 상태가 바뀔 때마다 실행됨
 
-  // 완전히 닫혀 있으면 아예 렌더링 안함
-  if (!visible) return null;
+  // visible이 false이고 isRendered도 false일 때는 아무것도 렌더링하지 않음
+  if (!visible && !isRendered) return null;
 
   return (
     <View style={styles.overlay}>
@@ -50,7 +56,9 @@ export default function SidebarSlideOverlay({ visible, onClose }) {
       <Animated.View
         style={[
           styles.sidebarWrapper,
-          { transform: [{ translateX: slideAnim }] },
+          {
+            transform: [{ translateX: slideAnim }],
+          },
         ]}
       >
         <Sidebar onClose={onClose} />
