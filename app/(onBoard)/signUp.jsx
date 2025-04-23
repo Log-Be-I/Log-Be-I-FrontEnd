@@ -7,14 +7,16 @@ import LogBeIText from "../../assets/images/logBeIText.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
 import BirthInput from "../../components/common/BirthInput";
 import { RegionDropdown } from "../../components/common/RegionDropdown";
-import { useSignUpStore } from "../../zustand/stores/member";
+import { useMemberStore, useSignUpStore } from "../../zustand/stores/member";
+import { axiosWithoutToken } from "../../api/axios/axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SignUp = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-
   const { signUpState, setSignUpState } = useSignUpStore();
+  const { setMember } = useMemberStore();
 
   const handleSignUp = async () => {
     setIsLoading(true);
@@ -32,7 +34,7 @@ const SignUp = () => {
       }
 
       // 닉네임 유효성 검사 (한글과 영어 소문자만, 2-8자)
-      const nicknameRegex = /^[가-힣a-z]{2,8}$/;
+      const nicknameRegex = /^[가-힣a-zA-Z]{2,8}$/;
       if (!nicknameRegex.test(signUpState.nickname)) {
         console.error(
           "❌ 닉네임은 2 ~ 8자의 한글 또는 영어 소문자만 가능합니다."
@@ -47,13 +49,46 @@ const SignUp = () => {
         return;
       }
 
-      const signUpResult = await axiosWithToken.post(
-        "/api/auth/signup",
+      console.log("signUpState: ", signUpState);
+
+      const signUpResult = await axiosWithoutToken.post(
+        "/members",
         signUpState
       );
 
-      if (signUpResult.success) {
+      console.log("signUpResult.headers: ", signUpResult.headers);
+      console.log(
+        "signUpResult.headers.authorization: ",
+        signUpResult.headers.authorization
+      );
+
+      console.log("signUpResult.data: ", signUpResult.data);
+
+      if (signUpResult.status === 201) {
         console.log("✅ Sign up successful, navigating to main screen");
+        setMember({
+          memberId: signUpResult.data.memberId,
+          name: signUpResult.data.name,
+          nickname: signUpResult.data.nickname,
+          email: signUpResult.data.email,
+          region: signUpResult.data.region,
+          birth: signUpResult.data.birth,
+          profile: signUpResult.data.profile,
+          notification: signUpResult.data.notification,
+          memberStatus: signUpResult.data.memberStatus,
+          lastLoginAt: signUpResult.data.lastLoginAt,
+        });
+
+        await Promise.all([
+          AsyncStorage.setItem(
+            "accessToken",
+            signUpResult.headers.authorization
+          ),
+          // AsyncStorage.setItem(
+          //   "refreshToken",
+          //   signUpResult.headers["set-cookie"]
+          // ),
+        ]);
         router.replace("/(tabs)");
       } else {
         console.error("❌ Sign up failed:", signUpResult.error);

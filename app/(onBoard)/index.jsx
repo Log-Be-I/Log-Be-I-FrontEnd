@@ -1,4 +1,4 @@
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Text from "../../components/common/Text";
@@ -26,6 +26,8 @@ export default function Login() {
   const googleLogin = async () => {
     console.log("클릭");
     setIsLoading(true);
+    setError(null);
+
     try {
       await GoogleSignin.hasPlayServices();
       const result = await GoogleSignin.signIn();
@@ -37,26 +39,29 @@ export default function Login() {
         code: result.data.serverAuthCode,
       });
 
-      console.log("response: ", response);
+      console.log("response.data: ", response.data);
 
       if (response.data.status === "login") {
         setMember(response.data.user);
+        console.log("로그인 성공");
 
         await Promise.all([
           AsyncStorage.setItem("accessToken", response.result.accessToken),
           AsyncStorage.setItem("refreshToken", response.result.refreshToken),
         ]);
+        router.replace("/(tabs)");
       } else {
+        console.log("회원가입으로 이동합니다.");
         setSignUpState({
           name: response.data.user.name,
           email: response.data.user.email,
         });
+        router.push("/(onBoard)/signUp");
       }
-
-      router.replace("/(tabs)");
     } catch (error) {
-      console.log(error);
-      Alert.alert("로그인에 실패했습니다.", error.message);
+      console.error("로그인 에러:", error);
+      setError(error.message || "로그인 중 오류가 발생했습니다.");
+      Alert.alert("로그인 실패", "로그인 처리 중 문제가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -107,8 +112,9 @@ export default function Login() {
           </View>
           <View style={styles.buttonContainer}>
             <Pressable
-              style={styles.googleButton}
-              onPress={() => googleLogin()}
+              style={[styles.googleButton, isLoading && styles.disabledButton]}
+              onPress={googleLogin}
+              disabled={isLoading}
             >
               <View style={styles.googleContent}>
                 <GoogleSigninImage width={20} height={20} />
@@ -185,4 +191,7 @@ const styles = StyleSheet.create({
   },
   footer: { alignItems: "center", marginBottom: 16 },
   footerText: { marginBottom: 2 },
+  disabledButton: {
+    opacity: 0.7,
+  },
 });
