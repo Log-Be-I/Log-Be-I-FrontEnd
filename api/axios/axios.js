@@ -12,7 +12,7 @@ export const axiosWithoutToken = axios.create({
 
 // 토큰이 필요한 axios 인스턴스
 export const axiosWithToken = axios.create({
-  baseURL: 'http://172.30.1.86:8080',
+  baseURL: 'http://172.30.1.1:8080',
   headers: {
     "Content-Type": "application/json",
   },

@@ -9,9 +9,10 @@ export const postKeywords = async (data) => {
   }
 };
 
-export const getKeywords = async (memberId) => {
+export const getKeywords = async () => {
   try {
-    const response = await axiosWithToken.get(`/keywords/${memberId}`);
+    const response = await axiosWithToken.get(`/keywords`);
+    console.log("✅ 키워드 조회 성공:", response.data);
     return response.data;
   } catch (error) {
     throw error;
