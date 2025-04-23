@@ -67,16 +67,16 @@ const SignUp = () => {
       if (signUpResult.status === 201) {
         console.log("✅ Sign up successful, navigating to main screen");
         setMember({
-          memberId: signUpResult.data.memberId,
-          name: signUpResult.data.name,
-          nickname: signUpResult.data.nickname,
-          email: signUpResult.data.email,
-          region: signUpResult.data.region,
-          birth: signUpResult.data.birth,
-          profile: signUpResult.data.profile,
-          notification: signUpResult.data.notification,
-          memberStatus: signUpResult.data.memberStatus,
-          lastLoginAt: signUpResult.data.lastLoginAt,
+          memberId: signUpResult.data.data.memberId,
+          name: signUpResult.data.data.name,
+          nickname: signUpResult.data.data.nickname,
+          email: signUpResult.data.data.email,
+          region: signUpResult.data.data.region,
+          birth: signUpResult.data.data.birth,
+          profile: signUpResult.data.data.profile,
+          notification: signUpResult.data.data.notification,
+          memberStatus: signUpResult.data.data.memberStatus,
+          lastLoginAt: signUpResult.data.data.lastLoginAt,
         });
 
         await Promise.all([
