@@ -11,7 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateRangeSelector from '../../../components/calendar/DateRangeSelector';
 import CalendarButton from '../../../components/calendar/CalendarButton';
-import { createSchedule } from '../../../api/schedule/scheduleApi';
+import { createTextSchedule } from '../../../api/schedule/scheduleApi';
 import Toast from '../../../components/common/Toast';
 
 export default function AddSchedule({ onClose, onAdd }) {
@@ -55,7 +55,7 @@ export default function AddSchedule({ onClose, onAdd }) {
   useEffect(() => {
     if (scrollViewRef.current) {
       // 달력이 열릴때 자동 스크롤
-      scrollViewRef.current?.scrollTo({ y: 85, animated: true });
+      scrollViewRef.current?.scrollTo({ y: 90, animated: true });
     }
   }, [calendarOpenCount]);
 
@@ -74,10 +74,10 @@ export default function AddSchedule({ onClose, onAdd }) {
     }
 
     try {
-      await createSchedule({ 
+      await createTextSchedule({ 
         title, 
-        startTime: startDate, 
-        endTime: endDate
+        startDateTime: startDate, 
+        endDateTime: endDate
       });
 
       setTimeout(() => {
@@ -96,61 +96,64 @@ export default function AddSchedule({ onClose, onAdd }) {
   };
 
   return (
-    <KeyboardAvoidingView behavior="height" style={styles.container}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.inner}>
-        <View style={styles.buttonContainer}>
-          <CalendarButton
-            text="Cancel"
-            onPress={handleCancel}
-            textStyle={{color: '#FF9500'}}
-          />
-          <CalendarButton
-            text="Add"
-            onPress={handleAdd}
-            textStyle={{color: isAddDisabled ? '#ccc' : '#69BAFF'}}
-            disabled={isAddDisabled}
-          />
-      </View>
-          <TextInput
-            ref={titleInputRef}
-            style={styles.titleInput}
-            placeholder="예: 팀 회의, 공부 계획, 병원 예약"
-            value={title}
-            onChangeText={setTitle}
-            multiline={true}
-            maxLength={50}
-            numberOfLines={3}
-            textAlignVertical='top'
-            returnKeyType="done"
-            onSubmitEditing={() => Keyboard.dismiss()}
-          />
-
-          <View style={styles.scrollWrapper}>
-            <ScrollView
-              ref={scrollViewRef}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-              // keyboardShouldPersistTaps='handled'
-            >
-              <DateRangeSelector
-                startDate={startDate}
-                endDate={endDate}
-                onDateRangeChange={handleDateRangeChange}
-                disabled={isAllDay}
-                onCalendarOpen={handleCalendarOpen}
+    <View style={styles.container}>
+      <KeyboardAvoidingView behavior="height" style={styles.flex}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <ScrollView 
+            ref={scrollViewRef}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.inputBoxWrapper}>
+              <TextInput
+                ref={titleInputRef}
+                style={styles.titleInput}
+                placeholder="예: 팀 회의, 공부 계획, 병원 예약"
+                value={title}
+                onChangeText={setTitle}
+                multiline={true}
+                maxLength={50}
+                numberOfLines={3}
+                textAlignVertical='top'
+                returnKeyType="done"
+                onSubmitEditing={() => Keyboard.dismiss()}
               />
-            </ScrollView>
-          </View>
-        </View>
+                <View style={styles.dateRangeBox}>
+                  <DateRangeSelector
+                    startDate={startDate}
+                    endDate={endDate}
+                    onDateRangeChange={handleDateRangeChange}
+                    disabled={isAllDay}
+                    onCalendarOpen={handleCalendarOpen}
+                  />
+                </View>
+              </View>
+              <View style={styles.buttonContainer}>
+                <CalendarButton
+                  text="Cancel"
+                  onPress={handleCancel}
+                  textStyle={{color: '#FF9500'}}
+                />
+                <CalendarButton
+                  text="Add"
+                  onPress={handleAdd}
+                  textStyle={{color: isAddDisabled ? '#ccc' : '#69BAFF'}}
+                  disabled={isAddDisabled}
+                />
+            </View>
+          </ScrollView>
       </TouchableWithoutFeedback>
 
-      <Toast
-      visible={showToast}
-      message={toastMessage}
-      onHide={() => setShowToast(false)}
-      />
-    </KeyboardAvoidingView>
+
+
+        <Toast
+        visible={showToast}
+        message={toastMessage}
+        onHide={() => setShowToast(false)}
+        />
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -159,8 +162,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  inner: {
+  flex: {
     flex: 1,
+  },
+  inputBoxWrapper: {
+    width: '90%',
+    marginTop: 56,
+    marginHorizontal: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#69BAFF',  // 하늘색 윤곽선
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF'/*'#F9FCFF'*/,  // 연한 파란 배경 (선택사항)
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   titleInput: {
     backgroundColor: 'white',
@@ -168,16 +186,20 @@ const styles = StyleSheet.create({
     color: '#032B77',
     fontSize: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-    paddingVertical: 8,
-    marginHorizontal: 24,
-    top: 10,
+    borderColor: '#69BAFF',
+    borderRadius: 8,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-  scrollWrapper: {
-    flex: 1,
-    marginTop: 10,
-    backgroundColor: 'white',
-  },
+  // dateRangeBox: {
+  //   borderWidth: 1,
+  //   borderColor: '#CDE6FF',
+  //   borderRadius: 8,
+  //   marginTop: 16,
+  //   minHeight: 250,
+  //   backgroundColor: 'white',
+  // },
   scrollContent: {
     paddingBottom: 100,
     paddingTop: 0,
@@ -185,12 +207,13 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'flex-start',
-    marginTop: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 40,
     backgroundColor: 'white',
     width: '100%',
-    gap: 24,
+    gap: 50,
     paddingVertical: 5,
     paddingHorizontal: 16,
   },

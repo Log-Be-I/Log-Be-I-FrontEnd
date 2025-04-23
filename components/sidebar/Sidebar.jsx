@@ -54,24 +54,37 @@ export default function Sidebar({ onClose }) {
                   id: "daily",
                   label: "나의 일상",
                   icon: "📔",
-                  route: "/daily",
+                  route: "/record?category=1",
                 },
                 {
                   id: "spending",
                   label: "나의 소비",
                   icon: "💰",
-                  route: "/consume",
+                  route: "/record?category=2",
                 },
-                { id: "todo", label: "나의 할 일", icon: "📝", route: "/todo" },
+                {
+                  id: "todo",
+                  label: "나의 할 일",
+                  icon: "📝",
+                  route: "/record?category=3",
+                },
                 {
                   id: "health",
                   label: "나의 건강",
                   icon: "🩺",
-                  route: "/health",
+                  route: "/record?category=4",
                 },
-                { id: "etc", label: "그 외 등등", icon: "📦", route: "/etc" },
+                {
+                  id: "etc",
+                  label: "그 외 등등",
+                  icon: "📦",
+                  route: "/record?category=5",
+                },
               ]}
-              onItemPress={(route) => router.push(route)}
+              onItemPress={(route) => {
+                router.push(route);
+                onClose(); // 사이드바 닫기
+              }}
             />
 
             <SidebarSection

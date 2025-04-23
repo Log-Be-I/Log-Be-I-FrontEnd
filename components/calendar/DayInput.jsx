@@ -26,37 +26,39 @@ export default function DayInput({
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputContainer}>
-        <TouchableOpacity 
-            style={styles.dateButton}
-            onPress={onPressDate}
-        >
-            <Text style={styles.dateText}>
-            {format(date, 'M월 d일 (E)', { locale: ko })}
-            </Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-            style={styles.timeButton}
-            onPress={() => setShowTimePicker(true)}
-        >
-            <Text style={styles.timeText}>
-            {format(date, 'a h:mm', { locale: ko })}
-            </Text>
-        </TouchableOpacity>
+        <View style = {styles.labelUnderline} />
+          <View style={styles.inputContainer}>
+            <TouchableOpacity 
+               style={styles.dateButton}
+               onPress={onPressDate}
+            >
+              <Text style={styles.dateText}>
+              {format(date, 'M월 d일 (E)', { locale: ko })}
+              </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+              style={styles.timeButton}
+              onPress={() => setShowTimePicker(true)}
+          >
+              <Text style={styles.timeText}>
+              {format(date, 'a h:mm', { locale: ko })}
+              </Text>
+          </TouchableOpacity>
+          <View style = {styles.labelUnderline} />
+        </View>
+
+
+        {showTimePicker && (
+          <DateTimePicker
+            value={date}
+            mode="time"
+            is24Hour={false}
+            display="spinner"
+            onChange={handleTimeChange}
+            minuteInterval={10}
+          />
+        )}
       </View>
-
-
-      {showTimePicker && (
-        <DateTimePicker
-          value={date}
-          mode="time"
-          is24Hour={false}
-          display="spinner"
-          onChange={handleTimeChange}
-          minuteInterval={10}
-        />
-      )}
-    </View>
   );
 }
 
@@ -73,6 +75,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginBottom: 8,
+  },
+  labelUnderline: {
+    height: 1,
+    backgroundColor: '#CDE6FF',
+    marginTop: 4,
+   marginBottom: 12,
+    alignSelf: 'stretch', // 전체 너비로
   },
   dateButton: {
     paddingVertical: 8,

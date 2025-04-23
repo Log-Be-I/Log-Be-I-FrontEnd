@@ -7,8 +7,11 @@ import RecordButton from "../../../components/common/RecordButton";
 import { RECORDS } from "../../../constants/RecordDummyData";
 import { CATEGORIES, CATEGORY_ICONS } from "../../../constants/CategoryData";
 import RecordAddModal from "../../../components/record/RecordAddModal";
+import { useLocalSearchParams } from "expo-router";
 
 export default function RecordScreen() {
+  const { category } = useLocalSearchParams();
+  const selectedCategoryFromQuery = category ? Number(category) : null;
   const [selectedDateRange, setSelectedDateRange] = useState({
     startDate: new Date(),
     endDate: new Date(),
@@ -112,6 +115,7 @@ export default function RecordScreen() {
           );
         }}
         onUpdateRecord={handleUpdateRecord}
+        initialCategory={selectedCategoryFromQuery}
       />
       <RecordAddModal
         visible={showAddModal}

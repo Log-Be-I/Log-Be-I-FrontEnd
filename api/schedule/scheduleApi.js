@@ -1,8 +1,13 @@
-import axiosInstance from '../../api/axiosInstance';
+import { axiosWithToken } from '../axios/axios';
 
 export const getAllSchedules = async (year, month) => {
   try {
-    const response = await axiosInstance.get(`/schedules?year=${year}&month=${month}`);
+    const response = await axiosWithToken.get(`/schedules`, {
+      params: {
+        year,
+        month,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('일정 조회 실패:', error);
@@ -10,13 +15,10 @@ export const getAllSchedules = async (year, month) => {
   }
 };
 
-export const createSchedule = async (scheduleData) => {
+export const createTextSchedule = async (data) => {
   try {
-    const response = await axiosInstance.post('/text-schedules', {
-      title: scheduleData.title,
-      startDateTime: scheduleData.startDate.toISOString(),
-      endDateTime: scheduleData.endDate.toISOString(),
-    });
+    const response = await axiosWithToken.post('/text-schedules', data);
+
     return response.data;
   } catch (error) {
     console.error('일정 생성 실패:', error);
@@ -24,13 +26,9 @@ export const createSchedule = async (scheduleData) => {
   }
 };
 
-export const updateSchedule = async (scheduleId, scheduleData) => {
+export const updateSchedule = async (scheduleId, data) => {
   try {
-    const response = await axiosInstance.patch(`/schedules/${scheduleId}`, {
-      title: scheduleData.title,
-      startDateTime: scheduleData.startTime.toISOString(),
-      endDateTime: scheduleData.endTime.toISOString()
-    });
+    const response = await axiosWithToken.patch(`/schedules/${scheduleId}`, data);
     return response.data;
   } catch (error) {
     console.error('일정 수정 중 오류 발생:', error);
@@ -40,15 +38,30 @@ export const updateSchedule = async (scheduleId, scheduleData) => {
 
 export const deleteSchedule = async (scheduleId) => {
   try {
-    const response = await axiosInstance.delete(`/schedules/${scheduleId}`);
+    const response = await axiosWithToken.delete(`/schedules/${scheduleId}`);
 
     if (!response.ok) {
       throw new Error('일정 삭제에 실패했습니다.');
     }
 
-    return response.json(); 
+    return response.data; 
   } catch (error) {
     console.error('일정 삭제 중 오류 발생:', error);
     throw error;
   }
+};
+
+// 일정 조회
+export const getScheduleDetail = async (scheduleId) => {
+  const response = await axiosWithToken.get(`/schedules/${scheduleId}`);
+
+  return response.data;
+};
+
+
+// 오디오 등록
+export const createAudioSchedule = async (data) => {
+  const response = await axiosWithToken.post(`/audio-schedules`, data);
+
+  return response.data;
 };

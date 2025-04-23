@@ -5,8 +5,8 @@ import NoAnswer from '../../components/qna/NoAnswer';
 import Button from '../../components/common/button';
 import { getQuestionDetail } from '../../api/qna/qnaApi';
 import { deleteMyQuestion } from '../../api/qna/qnaApi';
+import { updateMyQuestion } from '../../api/qna/qnaApi';
 import Answer from '../../components/qna/Answer';
-import { qnaData } from '../../dummyData/qnaData';
 import SaveButton from '../../components/qna/SaveButton';
 import { useState, useEffect } from 'react';
 import Toast from '../../components/common/Toast';
@@ -27,28 +27,20 @@ export default function DetailQnA() {
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    const fetchMockDetail = () => {
-      // 💡 숫자형 변환 주의
-      const detail = qnaData.find((item) => item.id === Number(id));
-      setQuestionDetail(detail);
-    };
-
-    fetchMockDetail();
-  }, []);
-
   // API 호출 주석처리
-  // useEffect(() => {
-  //   const fetchQuestionDetail = async () => {
-  //     try {
-  //       const response = await getQuestionDetail(id);
-  //       setQuestionDetail(response.data);
-  //     } catch (error) {
-  //       console.error('문의 상세 조회 실패:', error);
-  //     }
-  //   };
-  //   fetchQuestionDetail();
-  // }, []);
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchQuestionDetail = async () => {
+      try {
+        const response = await getQuestionDetail(Number(id));
+        setQuestionDetail(response.data);
+      } catch (error) {
+        console.error('문의 상세 조회 실패:', error);
+      }
+    };
+    fetchQuestionDetail();
+  }, [id]);
 
   //  Edit 버튼을 누르기 전에도 이미 editContent의 길이를 알 수 있고,
   // isEditMode일 때 charCount도 자연스럽게 보여진다.
@@ -67,6 +59,13 @@ export default function DetailQnA() {
   };
 
   const handleSaveEdit = async () => {
+    // 변경 여부 확인
+    if(editTitle.trim() === questionDetail.title.trim() && editContent.trim() === questionDetail.content.trim()) {
+      setShowToastMessage('수정된 내용이 없습니다.');
+      setShowToast(true);
+      return;
+    }
+
     try {
       await updateMyQuestion(id, {
         title: editTitle,
@@ -117,6 +116,7 @@ export default function DetailQnA() {
   // 실제 삭제 실행 함수 
   const handleDeleteConfirm = async () => {
     try {
+      console.log("📌 삭제 실행 중:", id);
       await deleteMyQuestion(id);
 
       setModalVisible(false);
@@ -138,7 +138,7 @@ export default function DetailQnA() {
     return <Text>Loading...</Text>;
   } // 로딩 중 또는 빈화면 처리
 
-  const { title, content, createAt, question_status, questionImage, answer } = questionDetail;
+  const { title, content, createAt, questionAnswerStatus, questionImage, answer } = questionDetail;
 
   return (
     <View style={styles.container}>
@@ -151,7 +151,7 @@ export default function DetailQnA() {
 
       <ScrollView style={styles.content}>
         <View style={styles.questionHeader}>
-          {question_status !== "QUESTION_ANSWERED" && !isEditMode && (
+          {questionAnswerStatus !== "DONE_ANSWER" && !isEditMode && (
             <>
               <Button 
               text="Edit" 
@@ -174,7 +174,7 @@ export default function DetailQnA() {
           <View style={styles.titleContainer}>
             {isEditMode ? (
               <TextInput
-                style={styles.input}
+                style={[styles.input, styles.titleInput]}
                 value={editTitle}
                 onChangeText={setEditTitle}
                 placeholder="제목을 입력해주세요"
@@ -222,7 +222,7 @@ export default function DetailQnA() {
         )} */}
 
         {!isEditMode && ( 
-        question_status === "QUESTION_ANSWERED" && answer 
+        questionAnswerStatus === "DONE_ANSWER" && answer 
         ? <Answer answer={answer}/> 
         : <NoAnswer /> 
         )}
@@ -244,13 +244,17 @@ export default function DetailQnA() {
         {isEditMode && (
           <SaveButton 
           onPress={handleSaveEdit} 
+          disabled={editTitle.trim() === questionDetail.title.trim() && editContent.trim() === questionDetail.content.trim()}
           style={{
             paddingVertical: 4,
             paddingHorizontal: 10,
             minWidth: 60,
-            backgroundColor: '#61B9FF',
+            backgroundColor: (
+            editTitle.trim() === questionDetail.title.trim() && 
+            editContent.trim() === questionDetail.content.trim()) ? '#E5E7EB' : '#61B9FF',
             alignSelf: 'center',
-          }}>
+          }}
+          >
           <Text style={styles.buttonText}>Edit</Text>
           </SaveButton>
         )}
@@ -276,6 +280,9 @@ const styles = StyleSheet.create({
       backgroundColor: '#fff',
       bottom: 10,
     },
+    titleInput: {
+      paddingLeft: 12,
+    },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -290,9 +297,10 @@ const styles = StyleSheet.create({
     headerTitle: {
       flex: 1,
       textAlign: 'center',
-      fontSize: 18,
+      fontSize: 25,
       fontWeight: '600',
       marginRight: 44,
+      color: '#82ACF1',
     },
     content: {
       flex: 1,
@@ -300,8 +308,8 @@ const styles = StyleSheet.create({
     },
     questionHeader: {
       flexDirection: 'row',
+      justifyContent: 'flex-end',
       alignItems: 'center',
-      left: 150,
       gap: 16,
     },
     questionTitle: {

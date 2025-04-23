@@ -1,9 +1,14 @@
 import { Pressable, Text, StyleSheet, View } from 'react-native';
 
-export default function SaveButton({ onPress, children, style }) {
+export default function SaveButton({ onPress, children, style, disabled}) {
   return (
-    <View style={[styles.shadowWrapper, style]}>
-      <Pressable onPress={onPress} style={[styles.button, style]}>
+    <View style={[
+      styles.shadowWrapper, 
+      disabled ? styles.shadowWrapperDisabled : null,
+      style]}>
+      <Pressable 
+      onPress={onPress} 
+      style={[styles.button, disabled && styles.disabledButton]}>
         {children}
       </Pressable>
     </View>
@@ -20,6 +25,11 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10, // Android용 그림자
   },
+  shadowWrapperDisabled: {
+    backgroundColor: '#E5E7EB',
+    shadowColor: 'transparent', // 그림자 제거
+    elevation: 0,
+  },
   button: {
     backgroundColor: '#61B9FF',
     paddingVertical: 6,
@@ -32,5 +42,8 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'regular',
     fontSize: 16,
+  },
+  disabledButton: {
+    backgroundColor: '#E5E7EB',
   },
 });

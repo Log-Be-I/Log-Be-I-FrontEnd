@@ -20,7 +20,10 @@ const ScheduleItem = ({ title, startDateTime, endDateTime, isHoliday}) => {
           style={styles.checkIcon}
         />
         <View style={styles.textContent}>
-          <Text variant="bold" size={16} color="#0A4DAA">
+          <Text 
+          variant="bold" 
+          size={16} 
+          color={isHoliday ? "#F28B82" : "#0A4DAA"}> {/* 휴일일 경우 빨간색 */}
             {title}
           </Text>
         </View>
@@ -28,24 +31,24 @@ const ScheduleItem = ({ title, startDateTime, endDateTime, isHoliday}) => {
       {/* 시간 표시 */}
       <View style={styles.timeToWrapper}>
         <View style={styles.startDayWrapper}>
-          <Text variant="regular" size={14} color="#1170DF">
+          <Text variant="regular" size={14} color={isHoliday ? "#F28B82" : "#1170DF"}>
           {scheduledStartDay}
           </Text>
-          <Text variant="regular" size={14} color="#1170DF">
+          <Text variant="regular" size={14} color={isHoliday ? "#F28B82" : "#1170DF"}>
             {scheduledStartTime}
           </Text>
         </View>
         <View style={styles.timeToTextWrapper}>
-          <Text variant="regular" size={14} color="#666">
+          <Text variant="regular" size={14} color={isHoliday ? "#666" : "#666"}>
             {" "}
             To{" "}
           </Text>
         </View>
         <View style={styles.endDayWrapper}>
-          <Text variant="regular" size={14} color="#1170DF">
+          <Text variant="regular" size={14} color={isHoliday ? "#F28B82" : "#1170DF"}>
             {scheduledEndDay}
           </Text>
-          <Text variant="regular" size={14} color="#1170DF">
+          <Text variant="regular" size={14} color={isHoliday ? "#F28B82" : "#1170DF"}>
             {scheduledEndTime}
           </Text>
         </View>
@@ -168,9 +171,13 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#F5F9FF",
     borderRadius: 12,
+    borderColor: "#0A4DAA",
+    borderWidth: 1,
   },
   holidayItem: {
     backgroundColor: "#FFF0F0",
+    borderColor: "#F28B82",
+    borderWidth: 1,
   },
   leftContent: {
     flexDirection: "row",

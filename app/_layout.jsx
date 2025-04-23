@@ -20,6 +20,13 @@ export default function RootLayout() {
     "Pretendard-Medium": require("../assets/fonts/Pretendard-Medium.otf"),
     "Pretendard-SemiBold": require("../assets/fonts/Pretendard-SemiBold.otf"),
   });
+// 로그인이 구현되면 삭제하자!!!!! 임의의 토큰을 설정하였다.
+  useEffect(() => {
+    useAuthStore.setState({ token: 
+      "test-token",
+      memberId: "1L"
+    })
+  }, [])
 
   // 앱 초기화 및 상태 복원
   useEffect(() => {
@@ -58,6 +65,11 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="schedule" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
+          <Stack.Screen name="analysis" />
+          <Stack.Screen name="issueCard" />
+          <Stack.Screen name="notice" />
+          <Stack.Screen name="profile" />
+          <Stack.Screen name="qna" />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

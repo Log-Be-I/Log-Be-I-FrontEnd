@@ -6,17 +6,21 @@ import SaveButton from '../../components/qna/SaveButton';
 import FileButton from '../../components/qna/fileButton';
 import { postMyQuestion } from '../../api/qna/qnaApi';
 import Toast from '../../components/common/Toast';
+import useAuthStore from '../../zustand/stores/authStore';
 
 export default function RegisterQnaPage() {
   const router = useRouter();
+  const token = useAuthStore((state) => state.token);
+  const memberId = useAuthStore((state) => state.memberId);
   const [titleValue, setTitleValue] = useState('');
   const [contentValue, setContentValue] = useState('');
   const [charCount, setCharCount] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [questionImage, setQuestionImage] = useState(null);
 
   const handleBack = () => {
-    router.back();
+    router.replace('/qna/');
   };
 
   const handleContentChange = (text) => {
@@ -27,8 +31,20 @@ export default function RegisterQnaPage() {
   };
 
   const handlePostQuestion = async() => {
+    if(!titleValue.trim()) {
+      setToastMessage('제목을 입력해주세요.');
+      setShowToast(true);
+      return;
+    }
+
+    if(!contentValue.trim()) {
+      setToastMessage('내용을 입력해주세요.');
+      setShowToast(true);
+      return;
+    }
+
     try {
-        await postMyQuestion(token, memberId, titleValue, contentValue, questionImage);
+        await postMyQuestion(titleValue, contentValue, questionImage);
         setToastMessage('문의가 등록되었습니다.');
         setShowToast(true);
         setTimeout(() => {
@@ -96,7 +112,9 @@ export default function RegisterQnaPage() {
             </FileButton>
         </View>
         <View style={styles.saveButtonContainer}>
-            <SaveButton style={styles.icon} onPress={handlePostQuestion}>
+            <SaveButton 
+            disabled={(!titleValue.trim() || !contentValue.trim())}
+            onPress={handlePostQuestion}>
                 <Text style={styles.buttonText}>Save</Text>
             </SaveButton>
         </View>
@@ -130,9 +148,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: '600',
     marginRight: 44,
+    color: '#82ACF1',
   },
   content: {
     flex: 1,
@@ -204,3 +223,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   }
 });
+
+// 이미지 업로드 기능 추가
+// import * as ImagePicker from 'expo-image-picker';
+// <FileButton onPress={handleSelectImage}>
+// const handleSelectImage = async () => {
+//   const result = await ImagePicker.launchImageLibraryAsync({
+//     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+//     allowsEditing: true,
+//     aspect: [4, 3],
+//     quality: 1,
+//   });
+
+//   if (!result.canceled) {
+//     setQuestionImage(result.assets[0].uri);
+//   }
+// };

@@ -1,15 +1,21 @@
 import { View, StyleSheet, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import { useUserStore } from "../../zustand/useUserStore";
 import ProfileIcon from "../../assets/sidebar/sidebarProfile/aegiRogiProfile.svg";
 import MyProfile from "../../assets/sidebar/sidebarProfile/myProfile.svg";
+import { useTestUser } from "../../zustand/stores/testUser";
+import useAuthStore from "../../zustand/stores/authStore";
+import { useEffect } from "react";
 
 export default function SidebarProfile() {
-  const { nickname } = useUserStore();
+  const user = useAuthStore((state) => state.user);
   const router = useRouter();
 
+  useEffect(() => {
+    useTestUser();
+  }, []);
+
   const handleProfilePress = () => {
-    router.push("/profile/memberInfo");
+    router.push("/profile/profileMain");
   };
 
   return (
@@ -25,7 +31,7 @@ export default function SidebarProfile() {
 
             <View style={styles.profileInfo}>
               <View style={styles.usernameRow}>
-                <Text style={styles.username}>{nickname}</Text>
+                <Text style={styles.username}>{user.nickname}</Text>
               </View>
             </View>
 
