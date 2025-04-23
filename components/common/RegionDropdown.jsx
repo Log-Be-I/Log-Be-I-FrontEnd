@@ -4,11 +4,11 @@ import { useState } from "react";
 import LocationIcon from "../../assets/sidebar/sidebarProfile/locationIcon.svg";
 import { CityData } from "../../constants/CityData";
 
-export const RegionDropdown = ( {
+export const RegionDropdown = ({
   selectedCity,
   selectedDistrict,
   setSelectedCity,
-  setSelectedDistrict
+  setSelectedDistrict,
 }) => {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showDistrictDropdown, setShowDistrictDropdown] = useState(false);
@@ -22,6 +22,8 @@ export const RegionDropdown = ( {
   const handleDistrictSelect = (district) => {
     setSelectedDistrict(district);
     setShowDistrictDropdown(false);
+
+    handleValue(`${selectedCity} ${district}`);
   };
 
   const DropdownItem = ({

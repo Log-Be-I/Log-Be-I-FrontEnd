@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Stack, useRouter } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
-import { getKeywords } from '../../api/issueCard/issueCardApi';
-import useAuthStore from '../../zustand/stores/authStore';
+import React, { useEffect, useState } from "react";
+import { Stack, useRouter } from "expo-router";
+import { View, ActivityIndicator } from "react-native";
+import { getKeywords } from "../../api/issueCard/issueCardApi";
 
 export default function IssueCardLayout() {
   const router = useRouter();
@@ -16,7 +15,7 @@ export default function IssueCardLayout() {
         if (response && response.data.length > 0) {
           router.replace({
             pathname: '/issueCard/getIssueCard',
-            params: { keywords: JSON.stringify(response.data) }
+            params: { keywords: JSON.stringify(response.data.map(item => item.name)) }
           }); return;
         } else {
           router.replace('/issueCard/'); 
@@ -25,6 +24,7 @@ export default function IssueCardLayout() {
       } catch (error) {
         console.error('키워드 조회 실패:', error);
         router.replace('/issueCard/'); return;
+
       } finally {
         setIsLoading(false);
       }

@@ -1,26 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Image, TextInput } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import Icon from 'react-native-vector-icons/Ionicons';
-import SaveButton from '../../components/qna/SaveButton';
-import FileButton from '../../components/qna/fileButton';
-import { postMyQuestion } from '../../api/qna/qnaApi';
-import Toast from '../../components/common/Toast';
-import useAuthStore from '../../zustand/stores/authStore';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Image,
+  TextInput,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import Icon from "react-native-vector-icons/Ionicons";
+import SaveButton from "../../components/qna/SaveButton";
+import FileButton from "../../components/qna/fileButton";
+import { postMyQuestion } from "../../api/qna/qnaApi";
+import Toast from "../../components/common/Toast";
+import { useMemberStore } from "../../zustand/stores/member";
 
 export default function RegisterQnaPage() {
   const router = useRouter();
-  const token = useAuthStore((state) => state.token);
-  const memberId = useAuthStore((state) => state.memberId);
-  const [titleValue, setTitleValue] = useState('');
-  const [contentValue, setContentValue] = useState('');
+  const { member } = useMemberStore();
+  const [titleValue, setTitleValue] = useState("");
+  const [contentValue, setContentValue] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
   const [questionImage, setQuestionImage] = useState(null);
 
   const handleBack = () => {
-    router.replace('/qna/');
+    router.replace("/qna/");
   };
 
   const handleContentChange = (text) => {
@@ -30,35 +37,35 @@ export default function RegisterQnaPage() {
     }
   };
 
-  const handlePostQuestion = async() => {
-    if(!titleValue.trim()) {
-      setToastMessage('제목을 입력해주세요.');
+  const handlePostQuestion = async () => {
+    if (!titleValue.trim()) {
+      setToastMessage("제목을 입력해주세요.");
       setShowToast(true);
       return;
     }
 
-    if(!contentValue.trim()) {
-      setToastMessage('내용을 입력해주세요.');
+    if (!contentValue.trim()) {
+      setToastMessage("내용을 입력해주세요.");
       setShowToast(true);
       return;
     }
 
     try {
-        await postMyQuestion(titleValue, contentValue, questionImage);
-        setToastMessage('문의가 등록되었습니다.');
-        setShowToast(true);
-        setTimeout(() => {
-            router.replace({
-            pathname: '/qna/',
-            params: { keywords: JSON.stringify(titleValue)}
+      await postMyQuestion(titleValue, contentValue, questionImage);
+      setToastMessage("문의가 등록되었습니다.");
+      setShowToast(true);
+      setTimeout(() => {
+        router.replace({
+          pathname: "/qna/",
+          params: { keywords: JSON.stringify(titleValue) },
         });
       }, 1000);
     } catch (error) {
-        console.error('문의 등록 실패:', error);
-        setToastMessage('문의 등록에 실패했습니다.');
-        setShowToast(true);
+      console.error("문의 등록 실패:", error);
+      setToastMessage("문의 등록에 실패했습니다.");
+      setShowToast(true);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -78,11 +85,11 @@ export default function RegisterQnaPage() {
           <Text style={styles.sectionLabel}>제목</Text>
           <View style={styles.titleContainer}>
             <TextInput
-                style={styles.input}
-                placeholder="무엇이 궁금하신가요?"
-                placeholderTextColor="#9CA3AF"
-                value={titleValue}
-                onChangeText={setTitleValue} // 값 변경시 자동 업데이트트
+              style={styles.input}
+              placeholder="무엇이 궁금하신가요?"
+              placeholderTextColor="#9CA3AF"
+              value={titleValue}
+              onChangeText={setTitleValue} // 값 변경시 자동 업데이트트
             />
             <View style={styles.underline} />
           </View>
@@ -107,16 +114,22 @@ export default function RegisterQnaPage() {
           <Text style={styles.charCount}>{charCount}/500</Text>
         </View>
         <View style={styles.fileButtonContainer}>
-            <FileButton onPress={() => {}}>
-                <Icon name='document-attach' size={24} color='#E5E7EB' style={{alignSelf: 'center'}} />
-            </FileButton>
+          <FileButton onPress={() => {}}>
+            <Icon
+              name="document-attach"
+              size={24}
+              color="#E5E7EB"
+              style={{ alignSelf: "center" }}
+            />
+          </FileButton>
         </View>
         <View style={styles.saveButtonContainer}>
-            <SaveButton 
-            disabled={(!titleValue.trim() || !contentValue.trim())}
-            onPress={handlePostQuestion}>
-                <Text style={styles.buttonText}>Save</Text>
-            </SaveButton>
+          <SaveButton
+            disabled={!titleValue.trim() || !contentValue.trim()}
+            onPress={handlePostQuestion}
+          >
+            <Text style={styles.buttonText}>Save</Text>
+          </SaveButton>
         </View>
       </ScrollView>
       <Toast
@@ -131,15 +144,15 @@ export default function RegisterQnaPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     bottom: 10,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: "#E5E7EB",
   },
   backButton: {
     padding: 10,
@@ -147,34 +160,34 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 25,
-    fontWeight: '600',
+    fontWeight: "600",
     marginRight: 44,
-    color: '#82ACF1',
+    color: "#82ACF1",
   },
   content: {
     flex: 1,
     padding: 20,
   },
   questionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 20,
   },
   questionTitle: {
     flex: 1,
     fontSize: 16,
-    color: '#1F2937',
+    color: "#1F2937",
   },
   section: {
     marginBottom: 24,
   },
   sectionLabel: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#4B5563',
+    fontWeight: "500",
+    color: "#4B5563",
     marginBottom: 8,
   },
   titleContainer: {
@@ -182,27 +195,27 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    color: '#1F2937',
+    color: "#1F2937",
   },
   underline: {
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: "#E5E7EB",
   },
   contentContainer: {
     padding: 16,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: "#E5E7EB",
     height: 110,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   contentText: {
     fontSize: 14,
-    color: '#4B5563',
+    color: "#4B5563",
     lineHeight: 20,
   },
   attachedImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: 4,
   },
@@ -216,12 +229,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   saveButtonContainer: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  }
+    color: "#FFFFFF",
+    fontWeight: "bold",
+  },
 });
 
 // 이미지 업로드 기능 추가

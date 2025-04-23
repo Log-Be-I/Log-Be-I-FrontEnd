@@ -1,14 +1,15 @@
 import React from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import useAuthStore from "../../zustand/stores/authStore";
 import Text from "../../components/common/Text";
 import Weather from "../../components/home/weather";
 import MainScheduleList from "../../components/home/MainScheduleList";
+import { useMemberStore } from "../../zustand/stores/member";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+
+  const { member } = useMemberStore();
 
   const handleLogout = async () => {
     try {
@@ -19,13 +20,26 @@ export default function HomeScreen() {
     }
   };
 
-  console.log(user);
+  console.log(member);
+
+  const handleDeleteAccount = async () => {
+    try {
+      router.push("/settings/deleteAccount");
+    } catch (error) {
+      console.error("계정 삭제 에러:", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={handleLogout} style={styles.logoutButton}>
+      {/* <Pressable onPress={handleLogout} style={styles.logoutButton}>
         <Text variant="medium" size={16} color="#666">
           로그아웃
+        </Text>
+      </Pressable> */}
+      <Pressable onPress={handleDeleteAccount}>
+        <Text variant="medium" size={16} color="#666">
+          탈퇴하기
         </Text>
       </Pressable>
       <Weather />

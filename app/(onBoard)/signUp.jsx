@@ -1,46 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TextComponent from "../../components/onBoard/text";
 import LogBeIText from "../../assets/images/logBeIText.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
-import useAuthStore from "../../zustand/stores/authStore";
 import BirthInput from "../../components/common/BirthInput";
 import { RegionDropdown } from "../../components/common/RegionDropdown";
-import { postMember } from "../../api/member/memberApi";
+import { useMemberStore, useSignUpStore } from "../../zustand/stores/member";
+import { axiosWithoutToken } from "../../api/axios/axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SignUp = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { signUp, isLoading } = useAuthStore();
-
-  // 초기 상태를 params로 설정
-  const [formData, setFormData] = useState({
-    email: params.email || "",
-    name: params.name || "",
-    nickname: "",
-    region: "서울특별시",
-    birth: "1998-12-25",
-  });
+  const [isLoading, setIsLoading] = useState(false);
+  const { signUpState, setSignUpState } = useSignUpStore();
+  const { setMember } = useMemberStore();
 
   const handleSignUp = async () => {
+    setIsLoading(true);
     try {
       // 필수 필드 검증
       if (
-        !formData.email ||
-        !formData.name ||
-        !formData.nickname ||
-        !formData.region ||
-        !formData.birth
+        !signUpState.email ||
+        !signUpState.name ||
+        !signUpState.nickname ||
+        !signUpState.region ||
+        !signUpState.birth
       ) {
         console.error("❌ 모든 필드를 입력해주세요.");
         return;
       }
 
       // 닉네임 유효성 검사 (한글과 영어 소문자만, 2-8자)
-      const nicknameRegex = /^[가-힣a-z]{2,8}$/;
-      if (!nicknameRegex.test(formData.nickname)) {
+      const nicknameRegex = /^[가-힣a-zA-Z]{2,8}$/;
+      if (!nicknameRegex.test(signUpState.nickname)) {
         console.error(
           "❌ 닉네임은 2 ~ 8자의 한글 또는 영어 소문자만 가능합니다."
         );
@@ -49,24 +44,66 @@ const SignUp = () => {
 
       // 생년월일 유효성 검사 (YYYY-MM-DD 형식)
       const birthRegex = /^\d{4}-\d{2}-\d{2}$/;
-      if (!birthRegex.test(formData.birth)) {
+      if (!birthRegex.test(signUpState.birth)) {
         console.error("❌ 생년월일은 YYYY-MM-DD 형식이어야 합니다.");
         return;
       }
 
-      const signUpResult = await signUp(formData);
-      if (signUpResult.success) {
+      console.log("signUpState: ", signUpState);
+
+      const signUpResult = await axiosWithoutToken.post(
+        "/members",
+        signUpState
+      );
+
+      console.log("signUpResult.headers: ", signUpResult.headers);
+      console.log(
+        "signUpResult.headers.authorization: ",
+        signUpResult.headers.authorization
+      );
+
+      console.log("signUpResult.data: ", signUpResult.data);
+
+      if (signUpResult.status === 201) {
         console.log("✅ Sign up successful, navigating to main screen");
+        setMember({
+          memberId: signUpResult.data.memberId,
+          name: signUpResult.data.name,
+          nickname: signUpResult.data.nickname,
+          email: signUpResult.data.email,
+          region: signUpResult.data.region,
+          birth: signUpResult.data.birth,
+          profile: signUpResult.data.profile,
+          notification: signUpResult.data.notification,
+          memberStatus: signUpResult.data.memberStatus,
+          lastLoginAt: signUpResult.data.lastLoginAt,
+        });
+
+        await Promise.all([
+          AsyncStorage.setItem(
+            "accessToken",
+            signUpResult.headers.authorization
+          ),
+          // AsyncStorage.setItem(
+          //   "refreshToken",
+          //   signUpResult.headers["set-cookie"]
+          // ),
+        ]);
         router.replace("/(tabs)");
       } else {
         console.error("❌ Sign up failed:", signUpResult.error);
       }
     } catch (error) {
       console.error("❌ Sign up error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // useEffect 제거 - 초기 상태에서 이미 params를 설정했기 때문에 필요 없음
+  useEffect(() => {
+    console.log(signUpState);
+  }, [signUpState]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -79,43 +116,33 @@ const SignUp = () => {
 
           <View style={styles.inputContainer}>
             <TextComponent
-              value={formData.email}
-              handleValue={(text) =>
-                setFormData((prev) => ({ ...prev, email: text }))
-              }
+              value={signUpState.email}
+              handleValue={(text) => setSignUpState({ email: text })}
               iconName="person"
               placeholder="이메일"
               editable={!params.email}
             />
             <TextComponent
-              value={formData.name}
-              handleValue={(text) =>
-                setFormData((prev) => ({ ...prev, name: text }))
-              }
+              value={signUpState.name}
+              handleValue={(text) => setSignUpState({ name: text })}
               iconName="mail"
               placeholder="이름"
               editable={!params.name}
             />
             <TextComponent
-              value={formData.nickname}
-              handleValue={(text) =>
-                setFormData((prev) => ({ ...prev, nickname: text }))
-              }
+              value={signUpState.nickname}
+              handleValue={(text) => setSignUpState({ nickname: text })}
               iconName="person-outline"
               placeholder="닉네임을 입력해주세요. (2-8자의 한글/영어 소문자)"
             />
             <BirthInput
-              value={formData.birth}
-              handleValue={(text) =>
-                setFormData((prev) => ({ ...prev, nickname: text }))
-              }
+              value={signUpState.birth}
+              handleValue={(text) => setSignUpState({ birth: text })}
               placeholder="1999-12-21"
             />
             <RegionDropdown
-              value={formData.region}
-              handleValue={(text) =>
-                setFormData((prev) => ({ ...prev, region: text }))
-              }
+              value={signUpState.region}
+              handleValue={(text) => setSignUpState({ region: text })}
               iconName="pin-outline"
               placeholder="서울특별시"
             />
