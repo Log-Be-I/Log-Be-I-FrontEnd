@@ -41,7 +41,8 @@ export default function GetIssueCard() {
     };
 
     fetchKeywords();
-  }, [paramKeywords]);
+  }, []); // 🔥 paramKeywords 의존성 제거 (라우터 파라미터는 변경되지 않음)
+
  // 키워드 변경 시 뉴스 가져오기
   useEffect(() => {
     const fetchNews = async () => {

@@ -40,15 +40,19 @@ export default function IssueCardPage() {
     if (editKeywords) {
       const parsedKeywords = JSON.parse(editKeywords);
 
-      // const knownTitles = interestCategories.flatMap(row => row.map(item => item.title));
-      // const predefined = parsedKeywords.filter(title => knownTitles.includes(title));
-      // const custom = parsedKeywords.filter(title => !knownTitles.includes(title));
+      const knownTitles = interestCategories.flatMap(row => row.map(item => item.title));
 
-      setSelectedInterests(parsedKeywords); // 기존 선택
-      //setCustomInterests([]);
+      const keywordNames = parsedKeywords.map(keyword => keyword.name);
+      // 선택된 카테고리 키워드
+      const predefined = keywordNames.filter(title => knownTitles.includes(title));
+      // 사용자가 입력한 커스텀 키워드
+      const custom = keywordNames.filter(title => !knownTitles.includes(title));
+
+      setSelectedInterests(predefined); // 기존 선택
+      setCustomInterests(custom);
     } else {
-      setSelectedInterests([]); // 신규 진입 시 초기화화
-      //setCustomInterests([]);
+      setSelectedInterests([]); // 신규 진입 시 초기화
+      setCustomInterests([]);
     }
   }, [editKeywords]);
 
