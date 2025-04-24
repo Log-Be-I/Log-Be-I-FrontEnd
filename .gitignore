@@ -39,6 +39,10 @@ yarn-error.*
 #cursor
 .cursorrules
 
-#build
+
+# 전체 android 폴더 무시
 android/
-ios/
+
+# 예외: google-services.json만 추적
+!android/app/
+!android/app/google-services.json

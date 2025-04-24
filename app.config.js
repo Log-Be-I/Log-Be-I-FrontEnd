@@ -8,7 +8,7 @@ const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 const googleClientSecret = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET;
 
 const defineConfig = () => ({
-  name: "Log-Be-I-FrontEnd",
+  name: "Log-Be-I",
   slug: "Log-Be-I-FrontEnd",
   owner: "taekho",
   version: "1.0.0",
@@ -26,10 +26,11 @@ const defineConfig = () => ({
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: "./assets/adaptive-icon.png",
+      foregroundImage: "./assets/app_icon.png",
       backgroundColor: "#ffffff",
     },
-    package: "com.taekho.logbei",
+    package: "com.taekho.aegirogilogbei",
+    googleServicesFile: "./android/app/google-services.json",
   },
   web: {
     favicon: "./assets/app_icon.png",
@@ -55,7 +56,7 @@ const defineConfig = () => ({
     ["@react-native-google-signin/google-signin"],
   ],
   // scheme: "logbei"
-  scheme: "com.taekho.logbei",
+  scheme: "com.taekho.aegirogilogbei",
   extra: {
     weatherApiKey: "cfd7da48004b32b5707dc9057ee32248",
     eas: {

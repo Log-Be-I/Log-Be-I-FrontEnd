@@ -51,10 +51,7 @@ const SignUp = () => {
 
       console.log("signUpState: ", signUpState);
 
-      const signUpResult = await axiosWithoutToken.post(
-        "/members",
-        signUpState
-      );
+      const signUpResult = await axiosWithoutToken.post("members", signUpState);
 
       console.log("signUpResult.headers: ", signUpResult.headers);
       console.log(

@@ -35,7 +35,7 @@ export default function Login() {
       console.log("result: ", result);
       console.log("ServerAuthCode: ", result.data.serverAuthCode);
 
-      const response = await axiosWithoutToken.post("/api/auth/google/code", {
+      const response = await axiosWithoutToken.post("api/auth/google/code", {
         code: result.data.serverAuthCode,
       });
 
