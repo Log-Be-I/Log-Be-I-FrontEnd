@@ -8,8 +8,8 @@ const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 const googleClientSecret = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET;
 
 const defineConfig = () => ({
-  name: "Log-Be-I-FrontEnd",
-  slug: "Log-Be-I-FrontEnd",
+  name: "Log-Be-I",
+  slug: "log-be-i",
   owner: "taekho",
   version: "1.0.0",
   orientation: "portrait",
@@ -26,10 +26,12 @@ const defineConfig = () => ({
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: "./assets/adaptive-icon.png",
+      foregroundImage: "./assets/app_icon.png",
       backgroundColor: "#ffffff",
     },
-    package: "com.taekho.logbei",
+    package: "com.taekho.aegirogilogbei",
+    googleServicesFile:
+      process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
   },
   web: {
     favicon: "./assets/app_icon.png",
@@ -55,18 +57,18 @@ const defineConfig = () => ({
     ["@react-native-google-signin/google-signin"],
   ],
   // scheme: "logbei"
-  scheme: "com.taekho.logbei",
+  scheme: "com.taekho.aegirogilogbei",
   extra: {
     weatherApiKey: "cfd7da48004b32b5707dc9057ee32248",
     eas: {
-      projectId: "eb44fbab-8a26-4d1f-9cab-feab7bfda629",
+      projectId: "3b9fe13c-5188-46fa-80fe-dc73ca917cc4",
     },
     router: {
       origin: false,
     },
   },
   updates: {
-    url: "https://u.expo.dev/eb44fbab-8a26-4d1f-9cab-feab7bfda629",
+    url: "https://u.expo.dev/3b9fe13c-5188-46fa-80fe-dc73ca917cc4",
   },
   runtimeVersion: "1.0.0",
 });

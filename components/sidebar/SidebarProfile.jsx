@@ -2,17 +2,12 @@ import { View, StyleSheet, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import ProfileIcon from "../../assets/sidebar/sidebarProfile/aegiRogiProfile.svg";
 import MyProfile from "../../assets/sidebar/sidebarProfile/myProfile.svg";
-import { useTestUser } from "../../zustand/stores/testUser";
 import { useEffect } from "react";
 import { useMemberStore } from "../../zustand/stores/member";
 
 export default function SidebarProfile() {
   const { member } = useMemberStore();
   const router = useRouter();
-
-  useEffect(() => {
-    useTestUser();
-  }, []);
 
   const handleProfilePress = () => {
     router.push("/profile/profileMain");
