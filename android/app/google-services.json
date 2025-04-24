@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "287076605183",
+    "project_id": "log-be-i-3a962",
+    "storage_bucket": "log-be-i-3a962.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:287076605183:android:51b4c5b2dc437e509e80ca",
+        "android_client_info": {
+          "package_name": "com.taekho.aegirogilogbei"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBozU1oW5HhRhCElzTgmlqHjqS6nx1LcZo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
