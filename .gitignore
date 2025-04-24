@@ -40,6 +40,18 @@ yarn-error.*
 .cursorrules
 
 
-android/*
+# 전체 android 폴더 무시
+android/
+
+# EAS 빌드를 위한 필수 파일들만 추적
+!android/gradlew
+!android/gradlew.bat
+!android/build.gradle
+!android/settings.gradle
+!android/gradle.properties
+!android/gradle/
+!android/gradle/wrapper/
+!android/gradle/wrapper/gradle-wrapper.properties
 !android/app/
+!android/app/build.gradle
 !android/app/google-services.json
