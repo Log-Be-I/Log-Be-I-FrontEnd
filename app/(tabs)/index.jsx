@@ -20,8 +20,6 @@ export default function HomeScreen() {
     }
   };
 
-  console.log(member);
-
   const handleDeleteAccount = async () => {
     try {
       router.push("/settings/deleteAccount");

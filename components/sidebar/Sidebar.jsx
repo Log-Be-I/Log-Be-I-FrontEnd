@@ -107,7 +107,7 @@ export default function Sidebar({ onClose }) {
                   id: "issue",
                   label: "오늘의 이슈",
                   icon: "🔍",
-                  route: "/issueCard",
+                  route: "/issueCard/loading",
                 },
                 { id: "qna", label: "나의 QnA", icon: "💭", route: "/qna" },
                 {

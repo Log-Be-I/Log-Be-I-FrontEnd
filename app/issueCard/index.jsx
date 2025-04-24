@@ -44,9 +44,9 @@ export default function IssueCardPage() {
 
       const keywordNames = parsedKeywords.map(keyword => keyword.name);
       // 선택된 카테고리 키워드
-      const predefined = keywordNames.filter(title => knownTitles.includes(title));
+      const predefined = parsedKeywords.filter(title => knownTitles.includes(title));
       // 사용자가 입력한 커스텀 키워드
-      const custom = keywordNames.filter(title => !knownTitles.includes(title));
+      const custom = parsedKeywords.filter(title => !knownTitles.includes(title));
 
       setSelectedInterests(predefined); // 기존 선택
       setCustomInterests(custom);
