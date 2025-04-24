@@ -40,9 +40,6 @@ yarn-error.*
 .cursorrules
 
 
-# # 전체 android 폴더 무시
-# android/
-
-# 예외: google-services.json만 추적
+android/*
 !android/app/
 !android/app/google-services.json
