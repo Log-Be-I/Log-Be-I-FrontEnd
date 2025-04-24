@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { WEATHER_API_KEY } from "@env";
+import { EXPO_PUBLIC_WEATHER_API_KEY } from "@env";
 import axios from "axios";
 import HourlyWeather from "../../components/weather/HourlyWeather";
 import WeeklyForecast from "../../components/weather/WeeklyForecast";
@@ -67,10 +67,11 @@ const WeatherDetail = () => {
 
   useEffect(() => {
     const fetchAllWeatherData = async () => {
+      const WEATHERAPI_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY;
       try {
         // 현재 날씨와 시간별 날씨
         const weeklyWeather = await axios.get(
-          `https://api.openweathermap.org/data/2.5/forecast?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHER_API_KEY}&units=metric`
+          `https://api.openweathermap.org/data/2.5/forecast?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHERAPI_KEY}&units=metric`
         );
 
         setCurrentWeather(weeklyWeather.data.list[0]);
@@ -82,12 +83,12 @@ const WeatherDetail = () => {
 
         // 대기 질
         const airQuality = await axios.get(
-          `https://api.openweathermap.org/data/2.5/air_pollution?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHER_API_KEY}`
+          `https://api.openweathermap.org/data/2.5/air_pollution?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHERAPI_KEY}`
         );
 
         // UV Index API 호출
         const uviResponse = await axios.get(
-          `https://api.openweathermap.org/data/2.5/uvi?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHER_API_KEY}`
+          `https://api.openweathermap.org/data/2.5/uvi?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHERAPI_KEY}`
         );
 
         setAirData({

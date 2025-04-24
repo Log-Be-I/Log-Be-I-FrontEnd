@@ -31,7 +31,7 @@ const defineConfig = () => ({
     },
     package: "com.taekho.aegirogilogbei",
     googleServicesFile:
-      process.env.GOOGLE_SERVICES_JSON_PATH ?? "./google-services.json",
+      process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
   },
   web: {
     favicon: "./assets/app_icon.png",
