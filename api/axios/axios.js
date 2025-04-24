@@ -8,6 +8,7 @@ export const axiosWithoutToken = axios.create({
 
 // 토큰이 필요한 axios 인스턴스
 export const axiosWithToken = axios.create({
+
   baseURL: process.env.EXPO_PUBLIC_API_URL?.replace(/\/+$/, ""),
 });
 

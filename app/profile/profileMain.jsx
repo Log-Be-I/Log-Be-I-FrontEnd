@@ -60,7 +60,6 @@ export default function MemberInfo() {
         region: newRegion,
         birth: birthInput,
       });
-      console.log(member);
       setIsEditMode(false);
     } catch (error) {
       console.error("회원 정보 수정 실패:", error);

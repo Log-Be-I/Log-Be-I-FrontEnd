@@ -1,14 +1,14 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
 
-const NewsCard = ({ title, content, onPress }) => {
+const NewsCard = ({ title, content, pubDate, onPress }) => {
   return (
     <View style={styles.container}>
-      <View style={styles.dot} />
       <Pressable style={styles.card} onPress={onPress}>
         <ScrollView style={styles.scrollContainer}>
           <Text style={styles.title} numberOfLines={2}>{title}</Text>
           <Text style={styles.content}>{content}</Text>
+          <Text style={styles.pubDate}>{pubDate}</Text>
         </ScrollView>
       </Pressable>
     </View>
@@ -17,21 +17,11 @@ const NewsCard = ({ title, content, onPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 10,
+    marginVertical: 5,
     marginHorizontal: 20,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#3650FA',
-    position: 'absolute',
-    top: -4,
-    left: 10,
-    zIndex: 1,
-  },
   card: {
-    height: 160,
+    height: 185,
     backgroundColor: '#fff',
     borderTopWidth: 2,
     borderTopColor: '#69BAFF',
@@ -55,6 +45,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#032B77',
     lineHeight: 20,
+  },
+  pubDate: {
+    fontSize: 12,
+    color: '#032B77',
+    lineHeight: 16,
+    marginTop: 8,
+    textAlign: 'right',
+    marginLeft: 16,
   },
 });
 
