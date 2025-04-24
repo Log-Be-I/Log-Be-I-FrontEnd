@@ -4,11 +4,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // 기본 axios 인스턴스 (토큰 불필요)
 export const axiosWithoutToken = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
+  //baseURL: 'http://172.30.1.66:8080',
 });
 
 // 토큰이 필요한 axios 인스턴스
 export const axiosWithToken = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
+  //baseURL: 'http://172.30.1.66:8080',
 });
 
 // 토큰이 필요한 요청에 대한 인터셉터 설정
