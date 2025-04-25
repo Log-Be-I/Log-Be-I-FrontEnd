@@ -1,8 +1,8 @@
-import { axiosWithToken } from '../axios/axios';
+import { axiosWithToken } from "../axios/axios";
 
 export const postKeywords = async (data) => {
   try {
-    const response = await axiosWithToken.post('/keywords', data);
+    const response = await axiosWithToken.post("/keywords", data);
     return response.data;
   } catch (error) {
     throw error;
@@ -17,4 +17,4 @@ export const getKeywords = async () => {
   } catch (error) {
     throw error;
   }
-}; 
+};

@@ -21,7 +21,7 @@ import LocationIcon from "../../assets/sidebar/sidebarProfile/locationIcon.svg";
 import BirthIcon from "../../assets/images/birthDay.svg";
 import MyProfile from "../../assets/sidebar/sidebarProfile/myProfile.svg";
 import BirthInput from "../../components/common/BirthInput";
-import { updateMember } from "../../api/member/memberApi";
+import { updateMember } from "../../api/member";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useMemberStore } from "../../zustand/stores/member";
 
@@ -47,19 +47,10 @@ export default function MemberInfo() {
 
       console.log("✅ 최종 지역 값:", newRegion);
 
-      await updateMember(member.memberId, {
-        nickname: nicknameInput,
-        profile: "",
-        region: newRegion,
-        birth: birthInput,
-      });
+      const response = await updateMember(member.memberId, member);
+      console.log("response: ", response);
       // 상태 업데이트
-      setMember({
-        ...member,
-        nickname: nicknameInput,
-        region: newRegion,
-        birth: birthInput,
-      });
+      setMember(response.data);
       console.log(member);
       setIsEditMode(false);
     } catch (error) {

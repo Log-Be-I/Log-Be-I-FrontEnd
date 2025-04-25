@@ -23,17 +23,6 @@ export default function Login() {
   const { setMember } = useMemberStore();
   const { setSignUpState } = useSignUpStore();
 
-  console.log("clientId: ", process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
-  console.log("clientSecret: ", process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET);
-  console.log("redirectUri: ", process.env.EXPO_PUBLIC_API_URL);
-  console.log(
-    "androidClientId: ",
-    process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID
-  );
-
-  console.log("✅ webClientId:", process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
-  console.log("✅ clientId in configure:", GoogleSignin.configure.toString());
-
   const googleLogin = async () => {
     console.log("클릭");
     setIsLoading(true);
@@ -81,20 +70,15 @@ export default function Login() {
   };
 
   const handleLogin2 = async () => {
-    await AsyncStorage.setItem("accessToken", "test-token");
-    setMember({
-      memberId: 0,
-      name: "",
-      nickname: "",
-      email: "",
-      region: "",
-      birth: "",
-      profile: "assets/sitting-nalco.png",
-      notification: false,
-      memberStatus: "",
-      lastLoginAt: "",
-    });
-    router.replace("/(tabs)");
+    const response = await axiosWithoutToken.post("api/auth/test");
+    console.log("Test Login Response: ", response);
+    if (response.status === 200) {
+      setMember(response.data.user);
+      await AsyncStorage.setItem("accessToken", response.data.token);
+      router.replace("/(tabs)");
+    } else {
+      console.log("회원이 존재하지 않습니다.");
+    }
   };
 
   const handleRegister = () => {
@@ -138,7 +122,7 @@ export default function Login() {
             </Pressable>
             <Pressable onPress={handleLogin2}>
               <Text variant="medium" size={14} color="#666">
-                로그인 스킵
+                테스트 로그인
               </Text>
             </Pressable>
           </View>

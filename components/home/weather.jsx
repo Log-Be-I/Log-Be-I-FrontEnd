@@ -7,6 +7,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { getWeatherIcon } from "../../utils/weatherIcons";
 import { useRouter } from "expo-router";
 import axios from "axios";
+import Constants from "expo-constants";
 
 // 강남구 좌표
 const GANGNAM_COORDS = {
@@ -14,7 +15,7 @@ const GANGNAM_COORDS = {
   longitude: 127.0276,
 };
 
-const WEATHERAPI_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY;
+const WEATHER_API_KEY = Constants.expoConfig.extra.weatherApiKey;
 
 export default function Weather() {
   const router = useRouter();
@@ -29,10 +30,10 @@ export default function Weather() {
     try {
       const [currentResponse, forecastResponse] = await Promise.all([
         axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHERAPI_KEY}&units=metric`
+          `https://api.openweathermap.org/data/2.5/weather?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHER_API_KEY}&units=metric`
         ),
         axios.get(
-          `https://api.openweathermap.org/data/2.5/forecast?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHERAPI_KEY}&units=metric`
+          `https://api.openweathermap.org/data/2.5/forecast?lat=${GANGNAM_COORDS.latitude}&lon=${GANGNAM_COORDS.longitude}&appid=${WEATHER_API_KEY}&units=metric`
         ),
       ]);
 
