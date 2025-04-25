@@ -23,13 +23,25 @@ export default function Login() {
   const { setMember } = useMemberStore();
   const { setSignUpState } = useSignUpStore();
 
+  console.log("clientId: ", process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
+  console.log("clientSecret: ", process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET);
+  console.log("redirectUri: ", process.env.EXPO_PUBLIC_API_URL);
+  console.log(
+    "androidClientId: ",
+    process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID
+  );
+
+  console.log("✅ webClientId:", process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
+  console.log("✅ clientId in configure:", GoogleSignin.configure.toString());
+
   const googleLogin = async () => {
     console.log("클릭");
     setIsLoading(true);
     setError(null);
 
     try {
-      await GoogleSignin.hasPlayServices();
+      const hasPlay = await GoogleSignin.hasPlayServices();
+      console.log("hasPlay: ", hasPlay);
       const result = await GoogleSignin.signIn();
 
       console.log("result: ", result);
