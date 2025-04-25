@@ -30,8 +30,7 @@ const defineConfig = () => ({
       backgroundColor: "#ffffff",
     },
     package: "com.taekho.aegirogilogbei",
-    googleServicesFile:
-      process.env.GOOGLE_SERVICES_JSON || "./google-services.json",
+    googleServicesFile: "./google-services.json",
   },
   web: {
     favicon: "./assets/app_icon.png",
