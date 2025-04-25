@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { EXPO_PUBLIC_WEATHER_API_KEY } from "@env";
 import axios from "axios";
 import HourlyWeather from "../../components/weather/HourlyWeather";
 import WeeklyForecast from "../../components/weather/WeeklyForecast";
@@ -11,6 +10,8 @@ const GANGNAM_COORDS = {
   latitude: 37.4979,
   longitude: 127.0276,
 };
+
+const WEATHERAPI_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY;
 
 // 날씨 데이터를 일별로 그룹화하는 함수
 const groupWeatherByDay = (list) => {
@@ -67,7 +68,6 @@ const WeatherDetail = () => {
 
   useEffect(() => {
     const fetchAllWeatherData = async () => {
-      const WEATHERAPI_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY;
       try {
         // 현재 날씨와 시간별 날씨
         const weeklyWeather = await axios.get(
