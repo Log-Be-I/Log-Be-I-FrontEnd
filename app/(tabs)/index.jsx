@@ -1,7 +1,6 @@
-import React from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import React, { useEffect } from "react";
+import { View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import Text from "../../components/common/Text";
 import Weather from "../../components/home/weather";
 import MainScheduleList from "../../components/home/MainScheduleList";
 import { useMemberStore } from "../../zustand/stores/member";

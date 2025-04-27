@@ -1,48 +1,88 @@
-import axios from 'axios';
+import { axiosWithToken } from "./axios/axios";
 
 // 기록 삭제
 export const deleteRecord = async (recordId) => {
-  const response = await axios.delete(`/records/${recordId}`);
-
+  const response = await axiosWithToken.delete(`/records/${recordId}`);
+  console.log("deleteRecord", `/records/${recordId}`);
   return response.data;
 };
 
 // 기록 상세 조회
 export const getRecordDetail = async (recordId) => {
-  const response = await axios.get(`/records/${recordId}`);
-
-  return response.data;
+  const response = await axiosWithToken.get(`/records/${recordId}`);
+  console.log("getRecordDetail", `/records/${recordId}`);
+  const record = response.data;
+  const { category, ...rest } = record;
+  return {
+    ...rest,
+    categoryId: category?.categoryId ?? record.categoryId,
+  };
 };
 
-// 기록 전체 조회
-export const getRecords = async (page, size) => {
-  const response = await axios.get(`/records`, {
+// 기록 조회 (날짜 범위, 카테고리)
+export const getRecords = async (
+  page,
+  size,
+  startDate,
+  endDate,
+  categoryId
+) => {
+  const response = await axiosWithToken.get(`/records`, {
     params: {
-      page,
-      size,
+      page: page,
+      size: size,
+      startDate: startDate, // 이미 'YYYY-MM-DD' 형식으로 변환된 문자열
+      endDate: endDate, // 이미 'YYYY-MM-DD' 형식으로 변환된 문자열
+      categoryId: categoryId,
     },
   });
-
-  return response.data;
+  const mapped = (response.data.data || []).map((record) => {
+    const { category, ...rest } = record;
+    return {
+      ...rest,
+      categoryId: category?.categoryId ?? record.categoryId,
+    };
+  });
+  return {
+    data: mapped,
+    pageInfo: response.data.pageInfo,
+  };
 };
 
 // 기록 수정
 export const updateRecord = async (recordId, data) => {
-  const response = await axios.patch(`/records/${recordId}`, data);
-
-  return response.data;
+  const response = await axiosWithToken.patch(`/records/${recordId}`, data);
+  console.log("updateRecord", `/records/${recordId}`);
+  const record = response.data;
+  const { category, ...rest } = record;
+  return {
+    ...rest,
+    categoryId: category?.categoryId ?? record.categoryId,
+  };
 };
 
-// 텍스트 기록
+// 텍스트 기록 생성
 export const createTextRecord = async (data) => {
-  const response = await axios.post(`/text-records`, data);
-
-  return response.data;
+  console.log("recordPostData", data);
+  const response = await axiosWithToken.post(`/text-records`, data);
+  console.log("createTextRecord", `/text-records`);
+  const record = response.data;
+  const { category, ...rest } = record;
+  console.log("✅✅ 서버에서 등록한 데이터 : ", record);
+  return {
+    ...rest,
+    categoryId: category?.categoryId ?? record.categoryId,
+  };
 };
 
-// 오디오 기록
+// 오디오 기록 생성
 export const createAudioRecord = async (data) => {
-  const response = await axios.post(`/audio-records`, data);
-
-  return response.data;
+  const response = await axiosWithToken.post(`/audio-records`, data);
+  console.log("createAudioRecord", `/audio-records`);
+  const record = response.data;
+  const { category, ...rest } = record;
+  return {
+    ...rest,
+    categoryId: category?.categoryId ?? record.categoryId,
+  };
 };

@@ -10,7 +10,7 @@ const todaySchedules = async () => {
   console.log("todaySchedules: ", todaySchedules);
 };
 
-const ScheduleItem = ({ title, time, endTime, subTitle }) => (
+const ScheduleItem = ({ title, time, endTime }) => (
   <View style={styles.scheduleItem}>
     <View style={styles.leftContent}>
       <Image
@@ -20,9 +20,6 @@ const ScheduleItem = ({ title, time, endTime, subTitle }) => (
       <View style={styles.textContent}>
         <Text variant="bold" size={16} color="#0A4DAA">
           {title}
-        </Text>
-        <Text variant="regular" size={12} color="#666" style={styles.subTitle}>
-          {subTitle}
         </Text>
       </View>
     </View>
@@ -88,7 +85,7 @@ export default function MainScheduleList() {
       <FlatList
         data={todaySchedules}
         renderItem={({ item }) => <ScheduleItem {...item} />}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.scheduleId}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ListFooterComponent={() => <View style={{ height: 80 }} />}

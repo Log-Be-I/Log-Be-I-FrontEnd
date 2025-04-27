@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import TimePickerInput from "./TimePickerInput";
 import CategoryDropdown from "./CategoryDropdown";
 import RecordEditDateRange from "./RecordEditDateRange";
 import { CATEGORIES } from "../../constants/CategoryData";
+import { useMemberStore } from "../../zustand/stores/member";
+import dayjs from "dayjs";
 
 export default function RecordDetailModal({
   visible,
@@ -20,58 +22,49 @@ export default function RecordDetailModal({
   record,
   onSave,
 }) {
+  const { member } = useMemberStore();
   const [isEditing, setIsEditing] = useState(false);
-  const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState("00:00");
-  const [category, setCategory] = useState(CATEGORIES[0].category_id);
+  const [date, setDate] = useState(dayjs().toDate());
+  const [time, setTime] = useState(dayjs().format("HH:mm"));
+  const [category, setCategory] = useState(
+    record?.categoryId || CATEGORIES[0].categoryId
+  );
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
 
-  const scaleAnim = React.useRef(new Animated.Value(0.95)).current;
-  const opacityAnim = React.useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (visible) {
-      setInitialData();
-      Animated.parallel([
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
+    return () => {
       scaleAnim.setValue(0.95);
       opacityAnim.setValue(0);
-    }
-  }, [visible]);
+      console.log("전달받은 recordDetail", record);
+    };
+  }, []);
 
-  const setInitialData = () => {
-    if (record) {
-      setDate(new Date(record.record_date));
-      setTime(record.record_time);
-      setCategory(record.category_id || CATEGORIES[0].category_id);
+  useEffect(() => {
+    if (visible && record) {
+      const d = dayjs(record.recordDateTime);
+      setDate(d.toDate());
+      setTime(d.format("HH:mm"));
+      setCategory(record.categoryId || CATEGORIES[0].categoryId);
       setContent(record.content || "");
-      setCharCount(record.content?.length || 0);
-    } else {
-      setDate(new Date());
-      setTime(
-        new Date().toLocaleTimeString("ko-KR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      );
-      setCategory(CATEGORIES[0].category_id);
+      setCharCount((record.content || "").length);
+    } else if (visible) {
+      const now = dayjs();
+      setDate(now.toDate());
+      setTime(now.format("HH:mm"));
+      setCategory(CATEGORIES[0].categoryId);
       setContent("");
       setCharCount(0);
     }
+  }, [visible, record]);
+
+  const formatDate = (date) => {
+    return dayjs(date).format("YYYY년 M월 D일");
   };
 
   const handleSave = () => {
@@ -79,14 +72,15 @@ export default function RecordDetailModal({
       setError("내용을 입력해주세요.");
       return;
     }
-
+    const [hours, minutes] = time.split(":").map(Number);
+    const selectedDate = dayjs(date).hour(hours).minute(minutes).second(0);
+    const recordDateTime = selectedDate.format("YYYY-MM-DDTHH:mm:ss");
     onSave({
-      record_date: date.toISOString().split("T")[0],
-      record_time: time,
-      category_id: category,
+      recordDateTime,
+      categoryId: Number(category),
       content: content.trim(),
+      memberId: member.memberId,
     });
-
     handleClose();
   };
 
@@ -104,16 +98,11 @@ export default function RecordDetailModal({
     }
   };
 
-  const formatDate = (date) => {
-    return date.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
   const handleDateChange = (newDate) => {
-    setDate(newDate.toDate());
+    const koreanDate = new Date(
+      newDate.toDate().getTime() + 9 * 60 * 60 * 1000
+    );
+    setDate(koreanDate);
   };
 
   return (
@@ -133,60 +122,76 @@ export default function RecordDetailModal({
             },
           ]}
         >
-          <View style={styles.contentWrapper}>
-            <Pressable
-              style={styles.dateContainer}
-              onPress={() => isEditing && setShowCalendar(true)}
-            >
-              <MaterialCommunityIcons
-                name="calendar"
-                size={20}
-                color={isEditing ? "#69BAFF" : "#666666"}
-              />
-              <Text style={styles.dateText}>{formatDate(date)}</Text>
-            </Pressable>
+          {!record ? (
+            <View style={{ padding: 40 }}>
+              <Text style={{ color: "red", textAlign: "center", fontSize: 16 }}>
+                기록 정보를 불러올 수 없습니다.
+              </Text>
+              <Pressable
+                style={{ marginTop: 20, alignSelf: "center" }}
+                onPress={handleClose}
+              >
+                <Text style={{ color: "#69BAFF", fontWeight: "bold" }}>
+                  닫기
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.contentWrapper}>
+              <Pressable
+                style={styles.dateContainer}
+                onPress={() => isEditing && setShowCalendar(true)}
+              >
+                <MaterialCommunityIcons
+                  name="calendar"
+                  size={20}
+                  color={isEditing ? "#69BAFF" : "#666666"}
+                />
+                <Text style={styles.dateText}>{formatDate(date)}</Text>
+              </Pressable>
 
-            <View style={styles.timeContainer}>
-              <View style={styles.timeLine} />
-              <View style={styles.timeInputContainer}>
-                <TimePickerInput
-                  value={time}
-                  onChange={setTime}
+              <View style={styles.timeContainer}>
+                <View style={styles.timeLine} />
+                <View style={styles.timeInputContainer}>
+                  <TimePickerInput
+                    value={time}
+                    onChange={setTime}
+                    isEditing={isEditing}
+                    style={styles.timeInput}
+                  />
+                </View>
+                <View style={styles.timeLine} />
+              </View>
+
+              <View style={styles.categoryContainer}>
+                <CategoryDropdown
+                  value={category}
+                  onChange={setCategory}
                   isEditing={isEditing}
-                  style={styles.timeInput}
                 />
               </View>
-              <View style={styles.timeLine} />
-            </View>
 
-            <View style={styles.categoryContainer}>
-              <CategoryDropdown
-                value={category}
-                onChange={setCategory}
-                isEditing={isEditing}
-              />
+              <View style={styles.contentInputContainer}>
+                <TextInput
+                  style={[
+                    styles.contentInput,
+                    isEditing ? styles.contentInputEditing : null,
+                    error ? styles.contentInputError : null,
+                  ]}
+                  multiline
+                  value={content}
+                  onChangeText={handleContentChange}
+                  editable={isEditing}
+                  placeholder={isEditing ? "내용을 입력하세요" : ""}
+                  placeholderTextColor="#999999"
+                />
+                {error && <Text style={styles.errorText}>{error}</Text>}
+                {isEditing && (
+                  <Text style={styles.charCount}>{charCount}/500</Text>
+                )}
+              </View>
             </View>
-
-            <View style={styles.contentInputContainer}>
-              <TextInput
-                style={[
-                  styles.contentInput,
-                  isEditing ? styles.contentInputEditing : null,
-                  error ? styles.contentInputError : null,
-                ]}
-                multiline
-                value={content}
-                onChangeText={handleContentChange}
-                editable={isEditing}
-                placeholder={isEditing ? "내용을 입력하세요" : ""}
-                placeholderTextColor="#999999"
-              />
-              {error && <Text style={styles.errorText}>{error}</Text>}
-              {isEditing && (
-                <Text style={styles.charCount}>{charCount}/500</Text>
-              )}
-            </View>
-          </View>
+          )}
 
           <View style={styles.buttonContainer}>
             <Pressable

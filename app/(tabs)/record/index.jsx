@@ -1,74 +1,180 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Stack } from "expo-router";
 import { useState, useCallback, useEffect } from "react";
 import RecordList from "../../../components/record/RecordList";
 import RecordDateRange from "../../../components/record/RecordDateRange";
 import RecordButton from "../../../components/common/RecordButton";
-import { RECORDS } from "../../../constants/RecordDummyData";
-import { CATEGORIES, CATEGORY_ICONS } from "../../../constants/CategoryData";
+import { CATEGORIES, getCategoryByName } from "../../../constants/CategoryData";
 import RecordAddModal from "../../../components/record/RecordAddModal";
-import { useLocalSearchParams } from "expo-router";
+import {
+  getRecords,
+  createTextRecord,
+  updateRecord,
+  deleteRecord,
+} from "../../../api/record";
+import { useMemberStore } from "../../../zustand/stores/member";
+import { getKoreanToday } from "../../../hooks/utils/FormatForLocalDateTime";
+import useParsedRecords from "../../../hooks/useParsedRecords";
+
+// 날짜를 LocalDateTime 형식의 문자열로 변환 (startDate, endDate)
+const formatDateToString = (date, isEndDate = false) => {
+  if (!date) return "";
+  const d = new Date(date);
+  const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+  const kstDate = new Date(utc + 9 * 60 * 60 * 1000);
+
+  const year = kstDate.getFullYear();
+  const month = String(kstDate.getMonth() + 1).padStart(2, "0");
+  const day = String(kstDate.getDate()).padStart(2, "0");
+
+  // 종료 날짜인 경우 23:59:59, 시작 날짜인 경우 00:00:00
+  const time = isEndDate ? "23:59:59" : "00:00:00";
+
+  return `${year}-${month}-${day}T${time}`;
+};
 
 export default function RecordScreen() {
-  const { category } = useLocalSearchParams();
-  const selectedCategoryFromQuery = category ? Number(category) : null;
+  const [selectedCategory, setSelectedCategory] = useState("전체");
   const [selectedDateRange, setSelectedDateRange] = useState({
-    startDate: new Date(),
-    endDate: new Date(),
+    startDate: `${getKoreanToday()}T00:00:00`,
+    endDate: `${getKoreanToday()}T23:59:59`,
   });
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [records, setRecords] = useState(RECORDS);
+  const [records, setRecords] = useState([]);
   const [selectedRecords, setSelectedRecords] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pageInfo, setPageInfo] = useState({ page: 1, totalPages: 1 });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { member } = useMemberStore();
+  const today = getKoreanToday();
+
+  const fetchRecords = async (pageNum, isRefresh = false) => {
+    if (isLoading || (!isRefresh && pageInfo.page >= pageInfo.totalPages))
+      return;
+
+    setIsLoading(true);
+    try {
+      const categoryId =
+        selectedCategory === "전체"
+          ? 0
+          : getCategoryByName(selectedCategory).categoryId;
+      console.log("getRecords 파라미터", {
+        pageNum,
+        size: 20,
+        startDate: selectedDateRange.startDate,
+        endDate: selectedDateRange.endDate,
+        categoryId,
+      });
+      const { data, pageInfo: newPageInfo } = await getRecords(
+        pageNum,
+        20,
+        selectedDateRange.startDate,
+        selectedDateRange.endDate,
+        categoryId
+      );
+
+      if (isRefresh) {
+        setRecords(data);
+      } else {
+        setRecords((prev) => [...prev, ...data]);
+      }
+
+      setPageInfo(newPageInfo);
+    } catch (error) {
+      console.error("Error fetching records:", error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecords(1, true);
+  }, [selectedDateRange, selectedCategory]);
 
   const handleDateRangeChange = (range) => {
-    setSelectedDateRange(range);
+    setSelectedDateRange({
+      startDate: formatDateToString(range.startDate, false),
+      endDate: formatDateToString(range.endDate, true),
+    });
+    setPageInfo({ page: 1, totalPages: 1 });
   };
 
   const handleToggleSelectMode = () => {
     setIsSelectMode(!isSelectMode);
-    setSelectedRecords([]); // 선택 모드 종료 시 선택된 기록 초기화
+    setSelectedRecords([]);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selectedRecords.length === 0) return;
 
-    // 선택된 기록들을 제외한 나머지 기록들만 남김
-    const updatedRecords = records.filter(
-      (record) => !selectedRecords.includes(record.record_id)
-    );
-
-    setRecords(updatedRecords);
-    setSelectedRecords([]); // 선택된 기록 초기화
-    setIsSelectMode(false); // 선택 모드 종료
+    try {
+      await Promise.all(
+        selectedRecords.map((recordId) => deleteRecord(recordId))
+      );
+      setRecords((prev) =>
+        prev.filter((record) => !selectedRecords.includes(record.record_id))
+      );
+      setSelectedRecords([]);
+      setIsSelectMode(false);
+    } catch (error) {
+      console.error("Error deleting records:", error);
+    }
   };
 
-  const handleSave = (recordData) => {
-    // API 요청 로직 추가 예정 기록 추가
-    const newRecord = {
-      record_id: Date.now().toString(), // 임시 ID 생성
-      ...recordData,
-    };
-    setRecords([newRecord, ...records]);
-    setShowAddModal(false);
+  const handleSave = async (recordData) => {
+    try {
+      const record = await createTextRecord(recordData);
+      if (!record.recordDateTime) {
+        record.recordDateTime = recordData.recordDateTime || "";
+      }
+      setRecords((prev) => [
+        record,
+        ...prev.filter(
+          (r) => r && r.recordId && r.recordId !== record.recordId
+        ),
+      ]);
+      setShowAddModal(false);
+      return record;
+    } catch (error) {
+      console.error("Error creating record:", error);
+      alert("기록 추가 중 오류가 발생했습니다.");
+    }
   };
 
-  const handleUpdateRecord = (updatedRecord) => {
-    setRecords(
-      records.map((record) =>
-        record.record_id === updatedRecord.record_id ? updatedRecord : record
-      )
-    );
+  const handleUpdateRecord = async (updatedRecord) => {
+    try {
+      const record = await updateRecord(updatedRecord.recordId, updatedRecord);
+      if (!record.recordDateTime) {
+        record.recordDateTime = updatedRecord.recordDateTime || "";
+      }
+      setRecords((prev) => [
+        {
+          ...record,
+          categoryId: record.category?.categoryId ?? record.categoryId,
+        },
+        ...prev.filter(
+          (r) => r && r.recordId && r.recordId !== record.recordId
+        ),
+      ]);
+    } catch (error) {
+      console.error("Error updating record:", error);
+      alert("기록 수정 중 오류가 발생했습니다.");
+    }
   };
 
-  // 날짜 범위에 맞는 기록만 필터링
-  const filteredRecords = records.filter(
-    (record) =>
-      new Date(record.record_date) >=
-        new Date(selectedDateRange.startDate.setHours(0, 0, 0, 0)) &&
-      new Date(record.record_date) <=
-        new Date(selectedDateRange.endDate.setHours(23, 59, 59, 999))
-  );
+  const handleLoadMore = () => {
+    if (!isLoading && pageInfo.page < pageInfo.totalPages) {
+      fetchRecords(pageInfo.page + 1);
+    }
+  };
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setPageInfo({ page: 1, totalPages: 1 });
+    fetchRecords(1, true);
+  };
 
   return (
     <View style={styles.container}>
@@ -103,7 +209,7 @@ export default function RecordScreen() {
         isSelectMode={isSelectMode}
       />
       <RecordList
-        records={filteredRecords}
+        records={records}
         selectedStartDate={selectedDateRange.startDate}
         isSelectMode={isSelectMode}
         selectedRecords={selectedRecords}
@@ -115,7 +221,12 @@ export default function RecordScreen() {
           );
         }}
         onUpdateRecord={handleUpdateRecord}
-        initialCategory={selectedCategoryFromQuery}
+        initialCategory={selectedCategory}
+        onLoadMore={handleLoadMore}
+        onRefresh={handleRefresh}
+        isLoading={isLoading}
+        isRefreshing={isRefreshing}
+        hasMore={pageInfo.page < pageInfo.totalPages}
       />
       <RecordAddModal
         visible={showAddModal}

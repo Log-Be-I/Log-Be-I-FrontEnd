@@ -43,7 +43,17 @@ export default function RecordDateRange({ onRangeChange, isSelectMode }) {
 
   const formatDate = (date) => {
     if (!date) return "";
-    return format(date, "yyyy.MM.dd", { locale: ko });
+
+    // Date 객체인 경우 KST로 변환
+    const d = new Date(date);
+    const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+    const kstDate = new Date(utc + 9 * 60 * 60 * 1000);
+
+    const year = kstDate.getFullYear();
+    const month = String(kstDate.getMonth() + 1).padStart(2, "0");
+    const day = String(kstDate.getDate()).padStart(2, "0");
+
+    return `${year}.${month}.${day}`;
   };
 
   const handleDateChange = (date, type) => {
