@@ -1,74 +1,108 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { CATEGORIES, CATEGORY_ICONS } from "../../constants/CategoryData";
+import { CATEGORIES, getCategoryById } from "../../constants/CategoryData";
 
-export default function CategoryDropdown({ value, onChange, isEditing }) {
-  const [open, setOpen] = useState(false);
-  const [items] = useState(
-    CATEGORIES.map((category) => ({
-      label: category.name,
-      value: category.category_id,
-      icon: () => (
-        <MaterialCommunityIcons
-          name={CATEGORY_ICONS[category.name].name}
-          size={24}
-          color={CATEGORY_ICONS[category.name].color}
-        />
-      ),
-    }))
-  );
+export default function CategoryDropdown({
+  value,
+  onChange,
+  isEditing = true,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedCategory = getCategoryById(value);
 
-  if (!isEditing) {
-    const category = CATEGORIES.find((cat) => cat.category_id === value);
-    return (
-      <View style={styles.container}>
-        <MaterialCommunityIcons
-          name={CATEGORY_ICONS[category.name].name}
-          size={24}
-          color={CATEGORY_ICONS[category.name].color}
-        />
-        <Text style={styles.categoryText}>{category.name}</Text>
-      </View>
-    );
-  }
+  const handlePress = () => {
+    if (isEditing) {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  const handleSelect = (categoryId) => {
+    onChange(Number(categoryId));
+    setIsOpen(false);
+  };
 
   return (
     <View style={styles.container}>
-      <DropDownPicker
-        open={open}
-        value={value}
-        items={items}
-        setOpen={setOpen}
-        setValue={onChange}
-        style={styles.dropdown}
-        dropDownContainerStyle={styles.dropDownContainer}
-        textStyle={styles.dropdownText}
-        placeholder="카테고리 선택"
-        listMode="SCROLLVIEW"
-      />
+      <Pressable
+        style={styles.selectedCategory}
+        onPress={handlePress}
+        disabled={!isEditing}
+      >
+        <MaterialCommunityIcons
+          name={selectedCategory?.icon}
+          size={24}
+          color={isEditing ? selectedCategory?.color : "#666666"}
+        />
+        <Text
+          style={[
+            styles.categoryText,
+            !isEditing && styles.categoryTextDisabled,
+          ]}
+        >
+          {selectedCategory?.name}
+        </Text>
+        {isEditing && (
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color="#666666"
+          />
+        )}
+      </Pressable>
+      {isOpen && isEditing && (
+        <View style={styles.dropdownContainer}>
+          {CATEGORIES.map((category) => (
+            <Pressable
+              key={category.categoryId}
+              style={styles.dropdownItem}
+              onPress={() => handleSelect(category.categoryId)}
+            >
+              <MaterialCommunityIcons
+                name={category.icon}
+                size={24}
+                color={category.color}
+              />
+              <Text style={styles.dropdownText}>{category.name}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    position: "relative",
+    zIndex: 1,
+  },
+  selectedCategory: {
     flexDirection: "row",
     alignItems: "center",
-    zIndex: 1000,
-  },
-  dropdown: {
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     backgroundColor: "#F5F5F5",
-    borderWidth: 0,
-    borderRadius: 8,
-    minHeight: 40,
   },
-  dropDownContainer: {
+  categoryText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333333",
+  },
+  categoryTextDisabled: {
+    color: "#666666",
+  },
+  dropdownContainer: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    right: 0,
     backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E5E5E5",
-    borderRadius: 8,
+    borderRadius: 12,
+    padding: 8,
+    marginTop: 4,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -78,13 +112,15 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 12,
+    borderRadius: 8,
+  },
   dropdownText: {
     fontSize: 14,
     color: "#333333",
-  },
-  categoryText: {
-    fontSize: 14,
-    color: "#333333",
-    marginLeft: 8,
   },
 });

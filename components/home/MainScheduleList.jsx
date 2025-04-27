@@ -3,53 +3,14 @@ import { View, StyleSheet, FlatList, Image, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import Text from "../common/Text";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { getTodaySchedules } from "../../api/schedule";
 
-const DUMMY_DATA = [
-  {
-    id: "1",
-    title: "피그마 완성하기",
-    time: "11:30",
-    endTime: "14:30",
-    subTitle: "Mobile UI Kit",
-  },
-  {
-    id: "2",
-    title: "저녁 먹기",
-    time: "11:30",
-    endTime: "14:30",
-    subTitle: "Mobile UI Kit",
-  },
-  {
-    id: "3",
-    title: "Choose New Pages",
-    time: "11:30",
-    endTime: "14:30",
-    subTitle: "Mobile UI Kit",
-  },
-  {
-    id: "4",
-    title: "디자인 시스템 구축",
-    time: "15:00",
-    endTime: "17:30",
-    subTitle: "Mobile UI Kit",
-  },
-  {
-    id: "5",
-    title: "프로토타입 테스트",
-    time: "18:00",
-    endTime: "20:00",
-    subTitle: "Mobile UI Kit",
-  },
-  {
-    id: "6",
-    title: "최종 기획서 작성",
-    time: "20:30",
-    endTime: "22:00",
-    subTitle: "Mobile UI Kit",
-  },
-];
+const todaySchedules = async () => {
+  const todaySchedules = await getTodaySchedules();
+  console.log("todaySchedules: ", todaySchedules);
+};
 
-const ScheduleItem = ({ title, time, endTime, subTitle }) => (
+const ScheduleItem = ({ title, time, endTime }) => (
   <View style={styles.scheduleItem}>
     <View style={styles.leftContent}>
       <Image
@@ -59,9 +20,6 @@ const ScheduleItem = ({ title, time, endTime, subTitle }) => (
       <View style={styles.textContent}>
         <Text variant="bold" size={16} color="#0A4DAA">
           {title}
-        </Text>
-        <Text variant="regular" size={12} color="#666" style={styles.subTitle}>
-          {subTitle}
         </Text>
       </View>
     </View>
@@ -125,9 +83,9 @@ export default function MainScheduleList() {
         </Pressable>
       </View>
       <FlatList
-        data={DUMMY_DATA}
+        data={todaySchedules}
         renderItem={({ item }) => <ScheduleItem {...item} />}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.scheduleId}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ListFooterComponent={() => <View style={{ height: 80 }} />}

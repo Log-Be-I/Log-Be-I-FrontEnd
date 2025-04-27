@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,26 +13,40 @@ import TimePickerInput from "./TimePickerInput";
 import CategoryDropdown from "./CategoryDropdown";
 import RecordEditDateRange from "./RecordEditDateRange";
 import { CATEGORIES } from "../../constants/CategoryData";
+import { useMemberStore } from "../../zustand/stores/member";
+import dayjs from "dayjs";
 
 export default function RecordAddModal({ visible, onClose, onSave }) {
-  const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState(
-    new Date().toLocaleTimeString("ko-KR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  );
-  const [category, setCategory] = useState(CATEGORIES[0].category_id);
+  const { member } = useMemberStore();
+
+  const [date, setDate] = useState(dayjs().toDate());
+  const [time, setTime] = useState(dayjs().format("HH:mm"));
+  const [category, setCategory] = useState(CATEGORIES[0].categoryId);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
 
-  const scaleAnim = React.useRef(new Animated.Value(0.95)).current;
-  const opacityAnim = React.useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
+  useEffect(() => {
+    return () => {
+      scaleAnim.setValue(0.95);
+      opacityAnim.setValue(0);
+    };
+  }, []);
+
+  useEffect(() => {
     if (visible) {
+      const now = dayjs();
+      setDate(now.toDate());
+      setTime(now.format("HH:mm"));
+      setCategory(CATEGORIES[0].categoryId);
+      setContent("");
+      setCharCount(0);
+      setError("");
+
       Animated.parallel([
         Animated.timing(scaleAnim, {
           toValue: 1,
@@ -51,34 +65,48 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
     }
   }, [visible]);
 
-  const handleSave = () => {
+  const formatDate = (date) => {
+    return dayjs(date).format("YYYY년 M월 D일");
+  };
+
+  const handleSave = async () => {
     if (!content.trim()) {
       setError("내용을 입력해주세요.");
       return;
     }
 
-    onSave({
-      record_date: date.toISOString().split("T")[0],
-      record_time: time,
-      category_id: category,
-      content: content.trim(),
-    });
+    // 날짜와 시간 합치기 (KST 기준)
+    const [hours, minutes] = time.split(":").map(Number);
+    const selectedDate = dayjs(date).hour(hours).minute(minutes).second(0);
+    const recordDateTime = selectedDate.format("YYYY-MM-DDTHH:mm:ss"); // Java LocalDateTime 포맷
 
-    handleClose();
+    const recordData = {
+      recordDateTime,
+      content: content.trim(),
+      memberId: member.memberId,
+      categoryId: Number(category),
+    };
+
+    try {
+      const record = await onSave(recordData);
+      if (!record) {
+        alert("기록 저장에 실패했습니다.");
+        return;
+      }
+      if (!record.recordDateTime) {
+        record.recordDateTime = recordDateTime;
+      }
+      onClose();
+    } catch (error) {
+      console.error("Error creating record:", error);
+      alert("기록 추가 중 오류가 발생했습니다.");
+    }
   };
 
   const handleClose = () => {
     setError("");
     setContent("");
     setCharCount(0);
-    setDate(new Date());
-    setTime(
-      new Date().toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    );
-    setCategory(CATEGORIES[0].category_id);
     onClose();
   };
 
@@ -88,14 +116,6 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
       setCharCount(text.length);
       setError("");
     }
-  };
-
-  const formatDate = (date) => {
-    return date.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
   };
 
   return (

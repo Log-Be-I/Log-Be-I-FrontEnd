@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { CATEGORIES, CATEGORY_ICONS } from "../../constants/CategoryData";
+import { getCategoryById } from "../../constants/CategoryData";
 
 export default function RecordItem({
   record,
@@ -9,10 +9,7 @@ export default function RecordItem({
   isSelectMode,
   isSelected,
 }) {
-  const categoryInfo = CATEGORIES.find(
-    (cat) => cat.category_id === record.category_id
-  );
-  const iconInfo = CATEGORY_ICONS[categoryInfo?.name];
+  const category = getCategoryById(record.categoryId);
 
   return (
     <Pressable
@@ -21,9 +18,9 @@ export default function RecordItem({
     >
       <View style={styles.leftSection}>
         <MaterialCommunityIcons
-          name={iconInfo?.name}
+          name={category.icon}
           size={24}
-          color={iconInfo?.color}
+          color={category.color}
         />
       </View>
       <View style={styles.timeSection}>
@@ -38,10 +35,12 @@ export default function RecordItem({
         <Text style={styles.writeTimeText}>{record.record_date}</Text>
       </View>
       {isSelectMode && (
-        <View style={[styles.checkbox, isSelected && styles.checked]}>
-          {isSelected && (
-            <MaterialCommunityIcons name="check" size={16} color="#FFFFFF" />
-          )}
+        <View style={styles.checkboxContainer}>
+          <MaterialCommunityIcons
+            name={isSelected ? "check-circle" : "circle-outline"}
+            size={24}
+            color={isSelected ? "#69BAFF" : "#CCCCCC"}
+          />
         </View>
       )}
     </Pressable>
@@ -96,21 +95,9 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#666666",
   },
-  checkbox: {
+  checkboxContainer: {
     position: "absolute",
-    left: -5,
-    top: -5,
-    width: 20,
-    height: 20,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#69BAFF",
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checked: {
-    backgroundColor: "#69BAFF",
-    borderColor: "#69BAFF",
+    right: 16,
+    top: 16,
   },
 });

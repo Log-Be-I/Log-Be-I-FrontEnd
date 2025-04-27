@@ -60,6 +60,10 @@ const defineConfig = () => ({
   scheme: "com.taekho.aegirogilogbei",
   extra: {
     weatherApiKey: "cfd7da48004b32b5707dc9057ee32248",
+    apiUrl: process.env.EXPO_PUBLIC_API_URL,
+    googleClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    googleClientSecret: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET,
+    googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     eas: {
       projectId: "3b9fe13c-5188-46fa-80fe-dc73ca917cc4",
     },

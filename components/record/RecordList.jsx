@@ -6,13 +6,16 @@ import {
   StyleSheet,
   Image,
   ScrollView,
+  RefreshControl,
+  ActivityIndicator,
 } from "react-native";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import RecordButton from "../common/RecordButton";
 import RecordItem from "./RecordItem";
 import RecordDetailModal from "./RecordDetailModal";
-import { CATEGORIES, CATEGORY_ICONS } from "../../constants/CategoryData";
+import { CATEGORIES, getCategoryById } from "../../constants/CategoryData";
+import useParsedRecords from "../../hooks/useParsedRecords";
 
 const EmptyState = () => (
   <View style={styles.emptyContainer}>
@@ -32,7 +35,12 @@ export default function RecordList({
   selectedRecords,
   onRecordSelect,
   onUpdateRecord,
-  initialCategory = null,
+  initialCategory = "전체",
+  onLoadMore,
+  onRefresh,
+  isLoading,
+  isRefreshing,
+  pageInfo,
 }) {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
@@ -40,40 +48,66 @@ export default function RecordList({
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentDate, setCurrentDate] = useState(null);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const listRef = useRef(null);
+  const scrollHandler = useRef(
+    Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+      useNativeDriver: false,
+    })
+  ).current;
+
+  // records 파싱 hook 사용
+  const parsedRecords = useParsedRecords(records);
+
+  // 컴포넌트가 언마운트될 때 Animated.event 정리
+  useEffect(() => {
+    return () => {
+      scrollY.setValue(0);
+      if (scrollHandler) {
+        scrollHandler.remove?.();
+      }
+    };
+  }, []);
 
   // 리렌더 대비용 (URL 직접 입력 시 대응)
   useEffect(() => {
     setSelectedCategory(initialCategory);
   }, [initialCategory]);
 
-  // 날짜별로 데이터 그룹화
-  const groupedData = records.reduce((acc, record) => {
-    const date = record.record_date;
-    if (!acc[date]) {
-      acc[date] = [];
+  // 날짜별로 데이터 그룹화 및 섹션 생성을 useMemo로 최적화
+  const sections = useMemo(() => {
+    const groupedData = (parsedRecords || []).reduce((acc, record) => {
+      const date = record.record_date;
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(record);
+      return acc;
+    }, {});
+
+    return Object.entries(groupedData)
+      .sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA))
+      .map(([date, data]) => ({
+        title: date,
+        data: data.sort((a, b) => b.record_time.localeCompare(a.record_time)),
+      }));
+  }, [parsedRecords]);
+
+  // 필터링된 섹션도 useMemo로 최적화
+  const filteredSections = useMemo(() => {
+    if (selectedCategory === "전체") {
+      return sections;
     }
-    acc[date].push(record);
-    return acc;
-  }, {});
 
-  // SectionList 형식으로 데이터 변환
-  const sections = Object.entries(groupedData)
-    .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
-    .map(([date, data]) => ({
-      title: date,
-      data: data.sort((a, b) => new Date(a.time) - new Date(b.time)),
-    }));
-
-  const filteredSections = selectedCategory
-    ? sections
-        .map((section) => ({
-          ...section,
-          data: section.data.filter(
-            (record) => record.category_id === selectedCategory
-          ),
-        }))
-        .filter((section) => section.data.length > 0)
-    : sections;
+    const category = getCategoryByName(selectedCategory);
+    return sections
+      .map((section) => ({
+        ...section,
+        data: section.data.filter(
+          (record) => record.categoryId === category.categoryId
+        ),
+      }))
+      .filter((section) => section.data.length > 0);
+  }, [sections, selectedCategory]);
 
   const selectAll = () => {
     const allIds = records.map((record) => record.record_id);
@@ -90,16 +124,25 @@ export default function RecordList({
     if (isSelectMode) {
       onRecordSelect(record.record_id);
     } else {
-      setSelectedRecord(record);
+      setSelectedRecord({
+        ...record,
+        recordId: record.record_id,
+        recordDateTime: record.record_date + "T" + record.record_time,
+        categoryId: record.categoryId,
+      });
       setShowDetailModal(true);
     }
   };
 
   const handleSaveRecord = (updatedRecord) => {
     onUpdateRecord(updatedRecord);
-    // TODO: 실제 데이터 업데이트 로직 구현
-    console.log("Updated record:", updatedRecord);
     setShowDetailModal(false);
+  };
+
+  const handleEndReached = () => {
+    if (!isLoading && pageInfo && pageInfo.page < pageInfo.totalPages) {
+      onLoadMore();
+    }
   };
 
   const renderCategories = () => (
@@ -111,18 +154,16 @@ export default function RecordList({
     >
       <RecordButton
         label="전체"
-        onPress={() => setSelectedCategory(null)}
-        variant={selectedCategory === null ? "primary" : "default"}
+        onPress={() => setSelectedCategory("전체")}
+        variant={selectedCategory === "전체" ? "primary" : "default"}
         size="small"
       />
       {CATEGORIES.map((category) => (
         <RecordButton
-          key={category.category_id}
+          key={category.categoryId}
           label={category.name}
-          onPress={() => setSelectedCategory(category.category_id)}
-          variant={
-            selectedCategory === category.category_id ? "primary" : "default"
-          }
+          onPress={() => setSelectedCategory(category.name)}
+          variant={selectedCategory === category.name ? "primary" : "default"}
           size="small"
         />
       ))}
@@ -148,29 +189,44 @@ export default function RecordList({
     );
   };
 
-  const ListFooter = () => <View style={styles.footer} />;
+  const ListFooter = () => {
+    if (!isLoading || !(pageInfo && pageInfo.page < pageInfo.totalPages))
+      return null;
+    return (
+      <View style={styles.footer}>
+        <ActivityIndicator size="small" color="#69BAFF" />
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.categoriesWrapper}>{renderCategories()}</View>
       <View style={styles.listContainer}>
         <SectionList
+          ref={listRef}
           sections={filteredSections}
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
-          keyExtractor={(item) => item.record_id}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false }
-          )}
+          keyExtractor={(item) => item.recordId}
+          onScroll={scrollHandler}
           scrollEventThrottle={16}
+          stickySectionHeadersEnabled={true}
           ListEmptyComponent={EmptyState}
           ListFooterComponent={ListFooter}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+              colors={["#69BAFF"]}
+            />
+          }
           contentContainerStyle={[
-            styles.listContentContainer,
-            filteredSections.length === 0 && styles.emptyContentContainer,
+            styles.listContent,
+            filteredSections.length === 0 && styles.emptyContent,
           ]}
-          stickySectionHeadersEnabled={true}
         />
       </View>
       <RecordDetailModal
@@ -184,12 +240,13 @@ export default function RecordList({
 }
 
 const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
+  try {
+    const [year, month, day] = dateString.split("-");
+    return `${year}년 ${Number(month)}월 ${Number(day)}일`;
+  } catch (error) {
+    console.error("Date formatting error:", error);
+    return dateString;
+  }
 };
 
 const styles = StyleSheet.create({
@@ -213,24 +270,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   sectionHeader: {
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#F5F5F5",
     paddingVertical: 8,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
+    borderBottomColor: "#E5E5E5",
   },
   sectionHeaderText: {
     fontSize: 14,
-    fontWeight: "500",
-    color: "#666666",
+    fontWeight: "600",
+    color: "#333333",
   },
   listContainer: {
     flex: 1,
   },
-  listContentContainer: {
+  listContent: {
     flexGrow: 1,
   },
-  emptyContentContainer: {
+  emptyContent: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -249,12 +306,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: "#666666",
-    fontWeight: "500",
-  },
-  firstItemContainer: {
-    paddingTop: 8,
   },
   footer: {
-    height: 100, // 하단 탭바와 패딩을 고려한 높이
+    paddingVertical: 20,
+    alignItems: "center",
+    height: 100,
   },
 });
