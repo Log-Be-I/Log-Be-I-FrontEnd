@@ -10,7 +10,7 @@ export const axiosWithoutToken = axios.create({
 // 토큰이 필요한 axios 인스턴스
 export const axiosWithToken = axios.create({
   baseURL: Constants.expoConfig.extra.apiUrl?.replace(/\/+$/, ""),
-});
+
 
 // 토큰이 필요한 요청에 대한 인터셉터 설정
 axiosWithToken.interceptors.request.use(
