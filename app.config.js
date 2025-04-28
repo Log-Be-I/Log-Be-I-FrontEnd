@@ -34,7 +34,7 @@ const defineConfig = () => ({
       process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
   },
   web: {
-    favicon: "./assets/app_icon.png",
+    favicon: "./assets/girogi.png",
   },
   plugins: [
     ["expo-router"],

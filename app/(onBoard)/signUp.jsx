@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TextComponent from "../../components/onBoard/text";
@@ -10,6 +10,7 @@ import { RegionDropdown } from "../../components/common/RegionDropdown";
 import { useMemberStore, useSignUpStore } from "../../zustand/stores/member";
 import { axiosWithoutToken } from "../../api/axios/axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Text from "../../components/common/Text";
 
 const SignUp = () => {
   const router = useRouter();

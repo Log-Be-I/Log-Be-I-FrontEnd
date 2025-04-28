@@ -8,6 +8,7 @@ import { getTodaySchedules } from "../../api/schedule";
 const todaySchedules = async () => {
   const todaySchedules = await getTodaySchedules();
   console.log("todaySchedules: ", todaySchedules);
+  return todaySchedules;
 };
 
 const ScheduleItem = ({ title, time, endTime }) => (

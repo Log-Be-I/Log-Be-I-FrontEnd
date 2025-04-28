@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import HourlyWeather from "../../components/weather/HourlyWeather";
 import WeeklyForecast from "../../components/weather/WeeklyForecast";
 import AirQuality from "../../components/weather/AirQuality";
 import Constants from "expo-constants";
-
+import Text from "../../components/common/Text";
 const GANGNAM_COORDS = {
   latitude: 37.4979,
   longitude: 127.0276,

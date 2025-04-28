@@ -72,12 +72,12 @@ export const createTextRecord = async (data) => {
 
 // 오디오 기록 생성
 export const createAudioRecord = async (data) => {
-  const response = await axiosWithToken.post(`/audio-records`, data);
+  const response = await axiosWithToken.post(`/audio-records`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   console.log("createAudioRecord", `/audio-records`);
   const record = response.data;
-  const { category, ...rest } = record;
-  return {
-    ...rest,
-    categoryId: category?.categoryId ?? record.categoryId,
-  };
+  return record;
 };
