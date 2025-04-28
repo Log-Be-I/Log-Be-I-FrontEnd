@@ -8,13 +8,13 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import RecordButton from "../common/RecordButton";
 import RecordItem from "./RecordItem";
 import RecordDetailModal from "./RecordDetailModal";
-import { CATEGORIES, getCategoryById } from "../../constants/CategoryData";
+import { CATEGORIES } from "../../constants/CategoryData";
 import useParsedRecords from "../../hooks/useParsedRecords";
 
 const EmptyState = () => (
@@ -30,144 +30,76 @@ const EmptyState = () => (
 
 export default function RecordList({
   records,
-  selectedStartDate,
-  isSelectMode,
   selectedRecords,
   onRecordSelect,
-  onUpdateRecord,
-  initialCategory = "전체",
+  isSelectMode,
   onLoadMore,
   onRefresh,
   isLoading,
   isRefreshing,
-  pageInfo,
+  hasMore,
+  showAddedMessage,
+  onCategoryChange,
+  onUpdateRecord,
 }) {
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("전체");
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [currentDate, setCurrentDate] = useState(null);
+  const [currentRecord, setCurrentRecord] = useState(null);
+  const [showUpdatedMessage, setShowUpdatedMessage] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const listRef = useRef(null);
-  const scrollHandler = useRef(
-    Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
-      useNativeDriver: false,
-    })
-  ).current;
 
-  // records 파싱 hook 사용
   const parsedRecords = useParsedRecords(records);
 
-  // 컴포넌트가 언마운트될 때 Animated.event 정리
   useEffect(() => {
-    return () => {
-      scrollY.setValue(0);
-      if (scrollHandler) {
-        scrollHandler.remove?.();
-      }
-    };
-  }, []);
+    onCategoryChange?.(selectedCategory);
+  }, [selectedCategory]);
 
-  // 리렌더 대비용 (URL 직접 입력 시 대응)
-  useEffect(() => {
-    setSelectedCategory(initialCategory);
-  }, [initialCategory]);
-
-  // 날짜별로 데이터 그룹화 및 섹션 생성을 useMemo로 최적화
   const sections = useMemo(() => {
     const groupedData = (parsedRecords || []).reduce((acc, record) => {
       const date = record.record_date;
-      if (!acc[date]) {
-        acc[date] = [];
-      }
+      if (!acc[date]) acc[date] = [];
       acc[date].push(record);
       return acc;
     }, {});
 
     return Object.entries(groupedData)
-      .sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA))
+      .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
       .map(([date, data]) => ({
         title: date,
-        data: data.sort((a, b) => b.record_time.localeCompare(a.record_time)),
+        data: data.sort((a, b) => a.record_time.localeCompare(b.record_time)),
       }));
   }, [parsedRecords]);
 
-  // 필터링된 섹션도 useMemo로 최적화
-  const filteredSections = useMemo(() => {
-    if (selectedCategory === "전체") {
-      return sections;
-    }
-
-    const category = getCategoryByName(selectedCategory);
-    return sections
-      .map((section) => ({
-        ...section,
-        data: section.data.filter(
-          (record) => record.categoryId === category.categoryId
-        ),
-      }))
-      .filter((section) => section.data.length > 0);
-  }, [sections, selectedCategory]);
-
-  const selectAll = () => {
-    const allIds = records.map((record) => record.record_id);
-    setSelectedItems(allIds);
-  };
-
-  const toggleItemSelection = (id) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
-    );
-  };
-
-  const handleRecordPress = (record) => {
-    if (isSelectMode) {
-      onRecordSelect(record.record_id);
-    } else {
-      setSelectedRecord({
-        ...record,
-        recordId: record.record_id,
-        recordDateTime: record.record_date + "T" + record.record_time,
-        categoryId: record.categoryId,
+  const handleUpdateRecord = async (updatedData) => {
+    try {
+      await onUpdateRecord({
+        ...updatedData,
+        recordId: currentRecord.recordId,
       });
-      setShowDetailModal(true);
+      setShowUpdatedMessage(true);
+      setTimeout(() => setShowUpdatedMessage(false), 2000);
+    } catch (error) {
+      console.error("Error updating record", error);
+      alert("기록 수정 실패했습니다.");
     }
   };
 
-  const handleSaveRecord = (updatedRecord) => {
-    onUpdateRecord(updatedRecord);
-    setShowDetailModal(false);
-  };
-
-  const handleEndReached = () => {
-    if (!isLoading && pageInfo && pageInfo.page < pageInfo.totalPages) {
-      onLoadMore();
-    }
-  };
-
-  const renderCategories = () => (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.categoriesContainer}
-      contentContainerStyle={styles.categoriesContent}
-    >
-      <RecordButton
-        label="전체"
-        onPress={() => setSelectedCategory("전체")}
-        variant={selectedCategory === "전체" ? "primary" : "default"}
-        size="small"
-      />
-      {CATEGORIES.map((category) => (
-        <RecordButton
-          key={category.categoryId}
-          label={category.name}
-          onPress={() => setSelectedCategory(category.name)}
-          variant={selectedCategory === category.name ? "primary" : "default"}
-          size="small"
-        />
-      ))}
-    </ScrollView>
+  const renderItem = ({ item }) => (
+    <RecordItem
+      record={item}
+      onSelect={() => {
+        if (isSelectMode) {
+          onRecordSelect(item.recordId);
+        } else {
+          setCurrentRecord(item);
+          setShowDetailModal(true);
+        }
+      }}
+      isSelectMode={isSelectMode}
+      isSelected={selectedRecords.includes(item.recordId)}
+      isNew={item.isNew}
+    />
   );
 
   const renderSectionHeader = ({ section }) => (
@@ -176,22 +108,8 @@ export default function RecordList({
     </View>
   );
 
-  const renderItem = ({ item }) => {
-    const isSelected = selectedRecords?.includes(item.record_id);
-
-    return (
-      <RecordItem
-        record={item}
-        onSelect={() => handleRecordPress(item)}
-        isSelectMode={isSelectMode}
-        isSelected={isSelected}
-      />
-    );
-  };
-
   const ListFooter = () => {
-    if (!isLoading || !(pageInfo && pageInfo.page < pageInfo.totalPages))
-      return null;
+    if (!isLoading || !hasMore) return null;
     return (
       <View style={styles.footer}>
         <ActivityIndicator size="small" color="#69BAFF" />
@@ -201,39 +119,85 @@ export default function RecordList({
 
   return (
     <View style={styles.container}>
-      <View style={styles.categoriesWrapper}>{renderCategories()}</View>
-      <View style={styles.listContainer}>
-        <SectionList
-          ref={listRef}
-          sections={filteredSections}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          keyExtractor={(item) => item.recordId}
-          onScroll={scrollHandler}
-          scrollEventThrottle={16}
-          stickySectionHeadersEnabled={true}
-          ListEmptyComponent={EmptyState}
-          ListFooterComponent={ListFooter}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.5}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={onRefresh}
-              colors={["#69BAFF"]}
-            />
-          }
-          contentContainerStyle={[
-            styles.listContent,
-            filteredSections.length === 0 && styles.emptyContent,
-          ]}
-        />
-      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoryBar}
+        contentContainerStyle={styles.categoryContent}
+      >
+        {["전체", ...CATEGORIES.map((c) => c.name)].map((cat) => (
+          <Pressable
+            key={cat}
+            onPress={() => setSelectedCategory(cat)}
+            style={({ pressed }) => [
+              styles.categoryButton,
+              selectedCategory === cat && styles.categoryButtonSelected,
+              pressed && { opacity: 0.7 },
+            ]}
+          >
+            <Text
+              style={
+                selectedCategory === cat
+                  ? styles.categoryTextSelected
+                  : styles.categoryText
+              }
+            >
+              {cat}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      {showAddedMessage && (
+        <Animated.View style={styles.addedMessageContainer}>
+          <Text style={styles.addedMessageText}>✅ 기록이 추가되었습니다.</Text>
+        </Animated.View>
+      )}
+
+      {showUpdatedMessage && (
+        <Animated.View style={styles.addedMessageContainer}>
+          <Text style={styles.addedMessageText}>✅ 기록이 수정되었습니다.</Text>
+        </Animated.View>
+      )}
+
+      <SectionList
+        ref={listRef}
+        sections={sections}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        keyExtractor={(item) => item.recordId.toString()}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+        stickySectionHeadersEnabled
+        ListEmptyComponent={EmptyState}
+        ListFooterComponent={ListFooter}
+        onEndReached={onLoadMore}
+        onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={["#69BAFF"]}
+          />
+        }
+        contentContainerStyle={[
+          styles.listContent,
+          sections.length === 0 && styles.emptyContent,
+          { paddingBottom: 88 },
+        ]}
+      />
+
       <RecordDetailModal
         visible={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
-        record={selectedRecord}
-        onSave={handleSaveRecord}
+        onClose={() => {
+          setShowDetailModal(false);
+          setCurrentRecord(null);
+        }}
+        record={currentRecord}
+        onSave={handleUpdateRecord}
       />
     </View>
   );
@@ -243,73 +207,72 @@ const formatDate = (dateString) => {
   try {
     const [year, month, day] = dateString.split("-");
     return `${year}년 ${Number(month)}월 ${Number(day)}일`;
-  } catch (error) {
-    console.error("Date formatting error:", error);
+  } catch {
     return dateString;
   }
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
-  categoriesWrapper: {
-    height: 44,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-    backgroundColor: "#FFFFFF",
-  },
-  categoriesContainer: {
-    height: "100%",
-  },
-  categoriesContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    gap: 8,
-    flexDirection: "row",
-  },
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  listContent: { flexGrow: 1 },
+  emptyContent: { flex: 1, justifyContent: "center", alignItems: "center" },
   sectionHeader: {
     backgroundColor: "#F5F5F5",
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E5",
   },
-  sectionHeaderText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333333",
-  },
-  listContainer: {
-    flex: 1,
-  },
-  listContent: {
-    flexGrow: 1,
-  },
-  emptyContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  sectionHeaderText: { fontSize: 14, fontWeight: "600", color: "#333333" },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 40,
   },
-  emptyImage: {
-    width: 200,
-    height: 200,
-    marginBottom: 16,
+  emptyImage: { width: 200, height: 200, marginBottom: 16 },
+  emptyText: { fontSize: 16, color: "#666666" },
+  footer: { paddingVertical: 20, alignItems: "center" },
+  addedMessageContainer: {
+    position: "absolute",
+    top: 10,
+    alignSelf: "center",
+    backgroundColor: "#69BAFF",
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    zIndex: 10,
   },
-  emptyText: {
-    fontSize: 16,
-    color: "#666666",
+  addedMessageText: { color: "white", fontWeight: "600", fontSize: 14 },
+  categoryBar: {
+    flexGrow: 0,
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEEEEE",
+    backgroundColor: "#FFFFFF",
   },
-  footer: {
-    paddingVertical: 20,
+  categoryContent: {
+    paddingHorizontal: 10,
+    flexDirection: "row",
     alignItems: "center",
-    height: 100,
+    height: 30,
+    marginBottom: 10,
+  },
+  categoryButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginHorizontal: 4,
+    backgroundColor: "#F0F0F0",
+  },
+  categoryButtonSelected: {
+    backgroundColor: "#69BAFF",
+  },
+  categoryText: {
+    fontSize: 13,
+    color: "#333333",
+  },
+  categoryTextSelected: {
+    fontSize: 13,
+    color: "white",
+    fontWeight: "600",
   },
 });

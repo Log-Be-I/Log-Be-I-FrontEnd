@@ -4,7 +4,7 @@ import { axiosWithToken } from "./axios/axios";
 export const deleteRecord = async (recordId) => {
   const response = await axiosWithToken.delete(`/records/${recordId}`);
   console.log("deleteRecord", `/records/${recordId}`);
-  return response.data;
+  return response;
 };
 
 // 기록 상세 조회
@@ -52,13 +52,8 @@ export const getRecords = async (
 // 기록 수정
 export const updateRecord = async (recordId, data) => {
   const response = await axiosWithToken.patch(`/records/${recordId}`, data);
-  console.log("updateRecord", `/records/${recordId}`);
-  const record = response.data;
-  const { category, ...rest } = record;
-  return {
-    ...rest,
-    categoryId: category?.categoryId ?? record.categoryId,
-  };
+  console.log("Record 수정 응답 : ", response.data);
+  return response.data.data;
 };
 
 // 텍스트 기록 생성

@@ -120,11 +120,6 @@ export default function Login() {
                 </Text>
               </View>
             </Pressable>
-            <Pressable onPress={handleLogin2}>
-              <Text variant="medium" size={14} color="#666">
-                테스트 로그인
-              </Text>
-            </Pressable>
           </View>
           {error && <Text style={styles.errorText}>{error}</Text>}
         </View>

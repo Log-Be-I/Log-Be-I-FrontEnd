@@ -30,6 +30,11 @@ export default function RootLayout() {
         forceCodeForRefreshToken: true,
         webClientId: Constants.expoConfig.extra.googleWebClientId,
         offlineAccess: true,
+        // scopes: [
+        //   "email",
+        //   "profile",
+        //   "https://www.googleapis.com/auth/calendar",
+        // ],
       });
     }
   }, [loaded]);
