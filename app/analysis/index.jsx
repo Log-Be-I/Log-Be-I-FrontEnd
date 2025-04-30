@@ -1,50 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
-import YearDropdown from '../../components/analysis/YearDropdown';
-import ReportItem from '../../components/analysis/ReportItem';
-import { mockReports } from '../../components/analysis/mockData';
-import Icon from 'react-native-vector-icons/Ionicons';
-import Header from '../../components/common/Header';
-// import { getReportsAll } from '../api/analysis/analysisApi';
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
+import { useRouter } from "expo-router";
+import YearDropdown from "../../components/analysis/YearDropdown";
+import ReportItem from "../../components/analysis/ReportItem";
+import Icon from "react-native-vector-icons/Ionicons";
+import Header from "../../components/common/Header";
+import { getReportsAll } from "../../api/analysis/analysisApi";
 
 export default function AnalysisPage() {
   const router = useRouter();
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [reports, setReports] = useState([]);
 
   useEffect(() => {
-    fetchReports();
+    fetchYearlyReports();
   }, [selectedYear]);
 
-  const fetchReports = async () => {
+  const fetchYearlyReports = async () => {
     try {
       // API 구현 후 아래 주석 해제
-      // const response = await getReportsAll(selectedYear);
-      // setReports(response);
-
-      // Mock 데이터 사용
-      const filteredReports = mockReports.filter((report) => {
-        const reportYear = new Date(report.yearMonth).getFullYear();
-        return reportYear === selectedYear;
-      });
-      setReports(filteredReports);
+      const response = await getReportsAll(selectedYear);
+      setReports(response);
+      console.log("리포트 조회 성공:", response);
     } catch (error) {
-      console.error('리포트 조회 실패:', error);
+      console.error("리포트 조회 실패:", error);
     }
   };
 
-  const handleReportPress = (monthlyId) => {
-    router.push(`/analysis/detailAnalysis?monthlyId=${monthlyId}`);
+  const handleReportPress = (monthlyTitle) => {
+    router.push(`/analysis/detailAnalysis?monthlyTitle=${monthlyTitle}`);
   };
 
   const handleBack = () => {
     router.back();
   };
 
+  console.log("🟢 reports 데이터 확인:", reports);
   return (
     <View style={styles.container}>
-        {/* <Header /> */}
+      {/* <Header /> */}
       <View style={styles.headerContainer}>
         <Pressable onPress={handleBack} style={styles.backButton}>
           <Icon name="chevron-back" size={24} color="#000" />
@@ -52,25 +46,23 @@ export default function AnalysisPage() {
         <Text style={styles.headerTitle}>Report</Text>
       </View>
 
-      <YearDropdown 
-          selectedYear={selectedYear} 
-          onSelect={setSelectedYear}
-          style={styles.dropdown}
-        />
+      <YearDropdown
+        selectedYear={selectedYear}
+        onSelect={setSelectedYear}
+        style={styles.dropdown}
+      />
 
       <ScrollView style={styles.middle}>
         {reports.map((report) => (
           <ReportItem
-            key={report.monthlyId}
-            title={report.title}
-            onPress={() => handleReportPress(report.monthlyId)}
+            key={report.monthlyTitle}
+            title={report.monthlyTitle}
+            onPress={() => handleReportPress(report.monthlyTitle)}
           />
         ))}
       </ScrollView>
 
-      <View style={styles.bottom}>
-        {/* Footer will be rendered here */}
-      </View>
+      <View style={styles.bottom}>{/* Footer will be rendered here */}</View>
     </View>
   );
 }
@@ -78,14 +70,14 @@ export default function AnalysisPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: "#E5E7EB",
   },
   backButton: {
     padding: 10,
@@ -93,18 +85,18 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 25,
-    fontWeight: '600',
+    fontWeight: "600",
     marginRight: 44, // backButton width + padding to center title
-    color: '#82ACF1',
+    color: "#82ACF1",
   },
   middle: {
     flex: 1,
   },
   dropdown: {
-    position: 'center',
+    position: "center",
     transform: [{ translateY: -12 }],
     width: 80,
   },
-}); 
+});

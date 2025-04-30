@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import HourlyWeather from "../../components/weather/HourlyWeather";
 import WeeklyForecast from "../../components/weather/WeeklyForecast";
 import AirQuality from "../../components/weather/AirQuality";
 import Constants from "expo-constants";
+import { useRouter } from "expo-router";
+import Icon from "react-native-vector-icons/Ionicons";
 
 const GANGNAM_COORDS = {
   latitude: 37.4979,
@@ -66,6 +68,7 @@ const WeatherDetail = () => {
   const [weeklyData, setWeeklyData] = useState(null);
   const [airData, setAirData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchAllWeatherData = async () => {
@@ -120,8 +123,16 @@ const WeatherDetail = () => {
     );
   }
 
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
     <View style={styles.wrapper}>
+      <Pressable onPress={handleBack} style={styles.backButton}>
+        <Icon name="chevron-back" size={24} color="#000" />
+      </Pressable>
+
       <ScrollView style={styles.container}>
         <LinearGradient
           colors={["rgba(17, 146, 223, 0.45)", "rgba(17, 112, 223, 1)"]}
@@ -154,6 +165,14 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginLeft: 8,
   },
   container: {
     flex: 1,

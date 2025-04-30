@@ -11,6 +11,7 @@ import React, { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { axiosWithoutToken } from "../../api/axios/axios";
 import { useMemberStore, useSignUpStore } from "../../zustand/stores/member";
+import Constants from "expo-constants";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -22,6 +23,20 @@ export default function Login() {
 
   const { setMember } = useMemberStore();
   const { setSignUpState } = useSignUpStore();
+
+  console.log(
+    "googleAndroidClientId: ",
+    Constants.expoConfig.extra.googleClientId
+  );
+  console.log(
+    "googleWebClientId: ",
+    Constants.expoConfig.extra.googleWebClientId
+  );
+  console.log(
+    "googleClientSecret: ",
+    Constants.expoConfig.extra.googleClientSecret
+  );
+  console.log("apiUrl: ", Constants.expoConfig.extra.apiUrl);
 
   const googleLogin = async () => {
     console.log("클릭");

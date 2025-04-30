@@ -42,7 +42,7 @@ export default function BirthInput({
         <DateTimePicker
           value={selectedDate}
           mode="date"
-          display="spinner"
+          display="default"
           maximumDate={new Date()}
           onChange={onChange}
           style={styles.datePicker}

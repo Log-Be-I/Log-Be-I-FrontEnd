@@ -131,8 +131,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusBar: {
-    width: 100,
-    height: 4,
+    width: 80,
+    height: 6,
     borderRadius: 2,
   },
   statusText: {
