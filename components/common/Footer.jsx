@@ -1,19 +1,34 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  Modal,
+  Text,
+  TouchableOpacity,
+  ToastAndroid,
+} from "react-native";
 import { Audio } from "expo-av";
 import FooterItem from "./FooterItem";
-import RecordingCard from "./RecordingCard"; // ✅ 추가
+import RecordingCard from "./RecordingCard";
 import { createAudioRecord } from "../../api/record";
+import * as FileSystem from "expo-file-system";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import uuid from "react-native-uuid";
 
 export default function Footer({ currentTab, onTabPress }) {
   const [isRecording, setIsRecording] = useState(false);
   const [recording, setRecording] = useState(null);
   const [permissionResponse, requestPermission] = Audio.usePermissions();
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [lastSavedUri, setLastSavedUri] = useState(null);
+
   async function startRecording() {
     try {
       if (recording) {
-        console.log("Stopping previous recording...");
         await recording.stopAndUnloadAsync();
         await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
         setRecording(null);
@@ -21,7 +36,6 @@ export default function Footer({ currentTab, onTabPress }) {
       }
 
       if (permissionResponse.status !== "granted") {
-        console.log("Requesting permission...");
         const newPermission = await requestPermission();
         if (newPermission.status !== "granted") {
           alert("마이크 권한이 필요합니다.");
@@ -41,7 +55,7 @@ export default function Footer({ currentTab, onTabPress }) {
       setRecording(newRecording);
       setIsRecording(true);
     } catch (error) {
-      console.error("Failed to start recording", error);
+      console.error("녹음 시작 실패", error);
       alert("녹음 시작 실패");
     }
   }
@@ -52,49 +66,99 @@ export default function Footer({ currentTab, onTabPress }) {
         await recording.stopAndUnloadAsync();
         await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
         const uri = recording.getURI();
-        console.log("Recording saved at:", uri);
+        console.log("🎤 저장된 파일 경로:", uri);
         setRecording(null);
         setIsRecording(false);
 
-        if (uri) {
-          console.log("업로드 시작", uri);
-          const result = await uploadRecording(uri);
-          console.log("업로드 결과", result);
+        const localUri = await saveRecordingLocally(uri);
+        setLastSavedUri(localUri);
+        console.log("📁 로컬 저장 경로:", localUri);
+
+        if (localUri) {
+          setIsLoading(true);
+          const result = await uploadRecording(localUri);
+          setIsLoading(false);
+
+          if (result) {
+            ToastAndroid.show("✅ 기록 저장 완료", ToastAndroid.SHORT);
+            setUploadResult(result);
+            setShowModal(true);
+          } else {
+            ToastAndroid.show("❌ 기록 저장 실패", ToastAndroid.SHORT);
+          }
         }
       }
     } catch (error) {
-      console.error("Failed to stop recording", error);
+      console.error("녹음 중지 실패", error);
+      setIsLoading(false);
     }
   }
 
-  // ✅ 녹음 파일 업로드 함수
-  async function uploadRecording(uri) {
+  async function saveRecordingLocally(originalUri) {
     try {
-      const formData = new FormData();
-      formData.append("audio", {
-        // ✅ 수정: file -> audio
-        uri,
-        name: "recording.m4a",
-        type: "audio/m4a",
+      const folderUri = FileSystem.cacheDirectory + "recordings/"; // 외부로 노출 가능
+      const folderInfo = await FileSystem.getInfoAsync(folderUri);
+      if (!folderInfo.exists) {
+        await FileSystem.makeDirectoryAsync(folderUri, { intermediates: true });
+      }
+
+      const newFileName = `record-${uuid.v4()}.m4a`;
+      const newUri = folderUri + newFileName;
+
+      await FileSystem.copyAsync({
+        from: originalUri,
+        to: newUri,
       });
 
-      const result = await createAudioRecord(formData);
+      return newUri;
+    } catch (e) {
+      console.error("로컬 저장 실패", e);
+      return null;
+    }
+  }
 
-      console.log("업로드 성공!", result);
-      return result;
+  async function uploadRecording(uri) {
+    try {
+      const uploadUrl = "https://logbe-i.com/audio-records";
+      const token = await AsyncStorage.getItem("accessToken");
+
+      const result = await FileSystem.uploadAsync(uploadUrl, uri, {
+        httpMethod: "POST",
+        uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+        fieldName: "audio",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (result.status !== 200) {
+        console.error("업로드 실패 - 응답코드:", result.status);
+        return null;
+      }
+
+      const parsed = JSON.parse(result.body);
+      return parsed;
     } catch (error) {
-      console.error("업로드 실패", error);
-      alert("업로드 실패했습니다.");
+      console.error("uploadAsync 실패:", error);
+      return null;
     }
   }
 
   const handleCenterPress = async () => {
     if (isRecording) {
       await stopRecording();
-      setIsRecording(false);
     } else {
       await startRecording();
     }
+  };
+
+  const handleExportPathLog = async () => {
+    if (!lastSavedUri) {
+      ToastAndroid.show("⚠️ 저장된 파일 없음", ToastAndroid.SHORT);
+      return;
+    }
+    console.log("📍 저장된 경로를 외부에서 접근하려면:", lastSavedUri);
+    ToastAndroid.show("📍 경로 로그 확인 (콘솔)", ToastAndroid.SHORT);
   };
 
   return (
@@ -128,7 +192,40 @@ export default function Footer({ currentTab, onTabPress }) {
           onPress={() => onTabPress("settings")}
         />
       </View>
+
       {isRecording && <RecordingCard onStop={handleCenterPress} />}
+
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#ffffff" />
+        </View>
+      )}
+
+      <Modal visible={showModal} transparent animationType="fade">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>기록이 저장되었어요!</Text>
+            <Text style={styles.modalText}>{uploadResult?.content}</Text>
+            <TouchableOpacity
+              onPress={() => setShowModal(false)}
+              style={styles.modalButton}
+            >
+              <Text style={styles.modalButtonText}>확인</Text>
+            </TouchableOpacity>
+            {lastSavedUri && (
+              <TouchableOpacity
+                onPress={handleExportPathLog}
+                style={[
+                  styles.modalButton,
+                  { marginTop: 10, backgroundColor: "#777" },
+                ]}
+              >
+                <Text style={styles.modalButtonText}>경로 로그 출력</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -149,11 +246,43 @@ const styles = StyleSheet.create({
     height: "100%",
     paddingBottom: 8,
   },
-  centerButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: "#69BAFF",
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 24,
+    borderRadius: 16,
+    width: "80%",
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  modalText: {
+    fontSize: 16,
     marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: "#69BAFF",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });
