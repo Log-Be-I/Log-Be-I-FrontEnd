@@ -9,7 +9,7 @@ import {
   Animated,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import TimePickerInput from "./TimePickerInput";
+import RecordTimePickerInput from "./RecordTimePickerInput";
 import CategoryDropdown from "./CategoryDropdown";
 import RecordEditDateRange from "./RecordEditDateRange";
 import { CATEGORIES } from "../../constants/CategoryData";
@@ -75,6 +75,10 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
 
   const handleTimeChange = (newTime) => {
     setTime(newTime);
+    // 시간 문자열을 Date 객체로 변환
+    const [hours, minutes] = newTime.split(":").map(Number);
+    const newDate = dayjs(date).hour(hours).minute(minutes).toDate();
+    setDate(newDate);
   };
 
   const formatDate = (date) => {
@@ -163,7 +167,7 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
 
             <View style={styles.timeContainer}>
               <View style={styles.timeLine} />
-              <TimePickerInput
+              <RecordTimePickerInput
                 value={time}
                 onChange={handleTimeChange}
                 isEditing={true}

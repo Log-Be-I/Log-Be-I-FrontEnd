@@ -84,18 +84,6 @@ export default function Login() {
     }
   };
 
-  const handleLogin2 = async () => {
-    const response = await axiosWithoutToken.post("api/auth/test");
-    console.log("Test Login Response: ", response);
-    if (response.status === 200) {
-      setMember(response.data.user);
-      await AsyncStorage.setItem("accessToken", response.data.token);
-      router.replace("/(tabs)");
-    } else {
-      console.log("회원이 존재하지 않습니다.");
-    }
-  };
-
   const handleRegister = () => {
     router.push("/(onBoard)/signUp");
   };

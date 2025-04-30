@@ -1,6 +1,6 @@
 import { View, StyleSheet } from "react-native";
-import { Stack } from "expo-router";
-import { useState, useEffect } from "react";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { useState, useEffect, useMemo } from "react";
 import RecordList from "../../../components/record/RecordList";
 import RecordDateRange from "../../../components/record/RecordDateRange";
 import RecordButton from "../../../components/common/RecordButton";
@@ -28,6 +28,8 @@ const formatDateToString = (date, isEndDate = false) => {
 };
 
 export default function RecordScreen() {
+  const params = useLocalSearchParams();
+  const { member } = useMemberStore();
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [selectedDateRange, setSelectedDateRange] = useState({
     startDate: `${getKoreanToday()}T00:00:00`,
@@ -41,17 +43,27 @@ export default function RecordScreen() {
   const [pageInfo, setPageInfo] = useState({ page: 1, totalPages: 1 });
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showAddedMessage, setShowAddedMessage] = useState(false);
-  const { member } = useMemberStore();
+
+  useEffect(() => {
+    if (params?.category) {
+      const categoryName = getCategoryNameById(Number(params.category));
+      if (categoryName) {
+        setSelectedCategory(categoryName);
+      }
+    }
+  }, [params?.category]);
+
+  const categoryId = useMemo(() => {
+    return selectedCategory === "전체"
+      ? 0
+      : getCategoryByName(selectedCategory)?.categoryId || 0;
+  }, [selectedCategory]);
 
   const fetchRecords = async (pageNum, isRefresh = false) => {
     if (isLoading || (!isRefresh && pageInfo.page >= pageInfo.totalPages))
       return;
     setIsLoading(true);
     try {
-      const categoryId =
-        selectedCategory === "전체"
-          ? 0
-          : getCategoryByName(selectedCategory).categoryId;
       const { data, pageInfo: newPageInfo } = await getRecords(
         pageNum,
         20,
@@ -66,7 +78,7 @@ export default function RecordScreen() {
       }
       setPageInfo(newPageInfo);
     } catch (error) {
-      console.error(error);
+      console.error("📛 기록 불러오기 실패:", error);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -75,7 +87,7 @@ export default function RecordScreen() {
 
   useEffect(() => {
     fetchRecords(1, true);
-  }, [selectedDateRange, selectedCategory]);
+  }, [selectedDateRange, categoryId]);
 
   const handleToggleSelectMode = () => {
     setIsSelectMode(!isSelectMode);
@@ -178,7 +190,7 @@ export default function RecordScreen() {
         hasMore={pageInfo.page < pageInfo.totalPages}
         showAddedMessage={showAddedMessage}
         onSaveRecord={handleUpdateRecord}
-        onUpdateRecord={handleUpdateRecord} // ✅ 여기 추가 꼭!!
+        onUpdateRecord={handleUpdateRecord}
         selectedCategory={selectedCategory}
         onCategoryChange={(category) => {
           setSelectedCategory(category);
@@ -204,3 +216,14 @@ const styles = StyleSheet.create({
   },
   headerRight: { flexDirection: "row", gap: 8 },
 });
+
+const getCategoryNameById = (categoryId) => {
+  const categories = {
+    1: "일상",
+    2: "소비",
+    3: "건강",
+    4: "할 일",
+    5: "기타",
+  };
+  return categories[categoryId] || "전체";
+};

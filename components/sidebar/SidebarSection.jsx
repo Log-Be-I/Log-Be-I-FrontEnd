@@ -1,7 +1,12 @@
-import { View, Text, StyleSheet } from 'react-native';
-import SidebarMenuItem from './SidebarMenuItem';
+import { View, Text, StyleSheet } from "react-native";
+import SidebarMenuItem from "./SidebarMenuItem";
 
-export default function SidebarSection({ title, items, onItemPress, activeItemId }) {
+export default function SidebarSection({
+  title,
+  items,
+  onItemPress,
+  activeItemId,
+}) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -9,9 +14,9 @@ export default function SidebarSection({ title, items, onItemPress, activeItemId
         {items.map((item, index) => (
           <SidebarMenuItem
             key={item.id}
-            icon={item.icon}
+            icon={item.iconComponent || item.icon} // 아이콘 컴포넌트 우선 사용
             label={item.label}
-            onPress={() => onItemPress?.(item.route)} // route전달
+            onPress={() => onItemPress?.(item.route)}
             isActive={activeItemId === item.id}
             isLast={index === items.length - 1}
           />
@@ -25,28 +30,28 @@ export default function SidebarSection({ title, items, onItemPress, activeItemId
 const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
-    position: 'relative',
+    position: "relative",
   },
   sectionTitle: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#0057FF',
+    fontWeight: "600",
+    color: "#0057FF",
     marginBottom: 12,
     paddingLeft: 4,
   },
   menuItemsContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
   },
   divider: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -12,
-    left: '5%',
-    right: '5%',
+    left: "5%",
+    right: "5%",
     height: 1,
-    backgroundColor: 'rgba(105, 186, 255, 0.2)',
+    backgroundColor: "rgba(105, 186, 255, 0.2)",
   },
-}); 
+});
