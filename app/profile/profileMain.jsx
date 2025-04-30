@@ -77,13 +77,13 @@ export default function MemberInfo() {
       {isEditMode && (
         <View style={styles.header}>
           <Pressable style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.buttonText}>Save</Text>
+            <Text style={styles.buttonText}>저장</Text>
           </Pressable>
           <Pressable
             style={styles.cancelButton}
             onPress={() => setIsEditMode(false)}
           >
-            <Text style={[styles.buttonText, styles.cancelText]}>Cancel</Text>
+            <Text style={[styles.buttonText, styles.cancelText]}>취소</Text>
           </Pressable>
         </View>
       )}

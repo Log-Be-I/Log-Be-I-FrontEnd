@@ -1,148 +1,168 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, Switch, Keyboard, Modal, Pressable } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { Calendar } from 'react-native-calendars';
-import DayInput from './DayInput';
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, Pressable, Modal } from "react-native";
+import { Calendar } from "react-native-calendars";
+import Icon from "react-native-vector-icons/Ionicons";
+import DayInput from "./DayInput";
 
-export default function DateRangeSelector({ 
-  startDate, 
-  endDate, 
-  onDateRangeChange, 
+export default function DateRangeSelector({
+  startDate,
+  endDate,
+  onDateRangeChange,
   disabled,
-  onChange, // 부모에서 내려온 setIsEditing(true)
-  onCalendarOpen, // 부모로부터 받은 콜백
- }) {
+  onChange,
+  onCalendarOpen,
+  isAllDay,
+}) {
   const [startedDate, setStartedDate] = useState(new Date(startDate));
   const [endedDate, setEndedDate] = useState(new Date(endDate));
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [markedDates, setMarkedDates] = useState({});
-  const [dateType, setDateType] = useState(null); // 'start' or 'end'
-  const [isAllDay, setIsAllDay] = useState(false);
+  const [dateType, setDateType] = useState(null);
+
+  // ✅ 하루종일 상태가 변경될 때 날짜와 시간 업데이트
+  useEffect(() => {
+    if (isAllDay) {
+      const start = new Date(startedDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(startedDate);
+      end.setHours(23, 50, 0, 0);
+
+      setStartedDate(start);
+      setEndedDate(end);
+      updateMarkedDates(start, end);
+      onDateRangeChange(start, end);
+    }
+  }, [isAllDay]);
 
   const updateMarkedDates = (start, end) => {
     const marks = {};
-    const startStr = start.toISOString().split('T')[0];
-    const endStr = end.toISOString().split('T')[0];
+    const startStr = start.toISOString().split("T")[0];
+    const endStr = end.toISOString().split("T")[0];
 
-    if (startStr === endStr) {
-      marks[startStr] = { selected: true, selectedColor: '#69BAFF' };
-    } else {
-      // 기간 표시
-      const currentDate = new Date(start);
-      while (currentDate <= end) {
-        const dateStr = currentDate.toISOString().split('T')[0];
-        marks[dateStr] = {
-          marked: true,
-          dotColor: '#69BAFF'
-        };
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-      // 시작일과 종료일 강조
-      marks[startStr] = { ...marks[startStr], selected: true, selectedColor: '#69BAFF' };
-      marks[endStr] = { ...marks[endStr], selected: true, selectedColor: '#69BAFF' };
+    const currentDate = new Date(start);
+    while (currentDate <= end) {
+      const dateStr = currentDate.toISOString().split("T")[0];
+      marks[dateStr] = {
+        marked: true,
+        dotColor: "#69BAFF",
+      };
+      currentDate.setDate(currentDate.getDate() + 1);
     }
+
+    marks[startStr] = {
+      ...marks[startStr],
+      selected: true,
+      selectedColor: "#69BAFF",
+    };
+    marks[endStr] = {
+      ...marks[endStr],
+      selected: true,
+      selectedColor: "#69BAFF",
+    };
+
     setMarkedDates(marks);
-  };
-
-  const handleAllDayToggle = () => {
-    const newIsAllDay = !isAllDay;
-    if (newIsAllDay) {
-      const start = new Date(startedDate);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(start);
-      end.setHours(23, 50, 0, 0);
-      setStartedDate(start);
-      setEndedDate(end);
-    }
-    setIsAllDay(newIsAllDay);
-    if (onChange) onChange(); // 변경 발생 알림
   };
 
   const handleDateSelect = (day) => {
     const selectedDateTime = new Date(day.dateString);
-    
-    if (dateType === 'start') {
+
+    if (dateType === "start") {
       selectedDateTime.setHours(startedDate.getHours());
       selectedDateTime.setMinutes(startedDate.getMinutes());
       setStartedDate(selectedDateTime);
-      
-      // 선택된 시작일이 종료일보다 늦으면 종료일도 같이 변경
+
       if (selectedDateTime > endedDate) {
         setEndedDate(selectedDateTime);
       }
-      updateMarkedDates(selectedDateTime, selectedDateTime > endedDate ? selectedDateTime : endedDate);
-    } else if (dateType === 'end') {
+      const newEnd =
+        selectedDateTime > endedDate ? selectedDateTime : endedDate;
+      updateMarkedDates(selectedDateTime, newEnd);
+      onDateRangeChange(selectedDateTime, newEnd);
+    } else if (dateType === "end") {
       selectedDateTime.setHours(endedDate.getHours());
       selectedDateTime.setMinutes(endedDate.getMinutes());
-      
-      // 선택된 종료일이 시작일보다 이르면 무시
+
       if (selectedDateTime >= startedDate) {
         setEndedDate(selectedDateTime);
         updateMarkedDates(startedDate, selectedDateTime);
+        onDateRangeChange(startedDate, selectedDateTime);
       }
     }
-    // 날짜가 변경되면 하루종일 토글을 false로 설정
-    setIsAllDay(false);
     setShowCalendarModal(false);
-    if (onChange) onChange(); // 변경 발생 알림 
+    if (onChange) onChange();
   };
 
   const handleStartDatePress = () => {
-    setDateType('start');
+    setDateType("start");
     setShowCalendarModal(true);
     updateMarkedDates(startedDate, endedDate);
-    if (onCalendarOpen) onCalendarOpen(); // 부모로 콜백 전달
-    Keyboard.dismiss();
+    if (onCalendarOpen) onCalendarOpen();
   };
 
   const handleEndDatePress = () => {
-    setDateType('end');
+    setDateType("end");
     setShowCalendarModal(true);
     updateMarkedDates(startedDate, endedDate);
-    if (onCalendarOpen) onCalendarOpen(); // 부모로 콜백 전달
-    Keyboard.dismiss();
+    if (onCalendarOpen) onCalendarOpen();
+  };
+
+  const handleTimeChange = (date, isStart) => {
+    if (isAllDay) {
+      // 하루종일이면 시간을 강제로 설정
+      const newDate = new Date(date);
+      if (isStart) {
+        newDate.setHours(0, 0, 0, 0);
+        setStartedDate(newDate);
+        updateMarkedDates(newDate, endedDate);
+        onDateRangeChange(newDate, endedDate);
+      } else {
+        newDate.setHours(23, 50, 0, 0);
+        setEndedDate(newDate);
+        updateMarkedDates(startedDate, newDate);
+        onDateRangeChange(startedDate, newDate);
+      }
+    } else {
+      // 하루종일이 아니면 일반적인 시간 변경
+      if (isStart) {
+        setStartedDate(date);
+        updateMarkedDates(date, endedDate);
+        onDateRangeChange(date, endedDate);
+      } else {
+        setEndedDate(date);
+        updateMarkedDates(startedDate, date);
+        onDateRangeChange(startedDate, date);
+      }
+    }
+
+    if (onChange) onChange();
   };
 
   return (
-    // 일정칸
     <View style={styles.container}>
-      <View style={styles.allDayContainer}>
-      <View style={styles.allDayLeft}>
-            <Icon name="time-outline" size={24} color="#666" />
-            <Text style={styles.allDayText}>하루종일</Text>
-        <Switch
-        trackColor={{
-            true: '#69BAFF',
-            false: '#E5E5E5',
-        }}
-        thumbColor={isAllDay ? '#69BAFF' : '#E5E5E5'}
-        value={isAllDay}
-        onValueChange={handleAllDayToggle}
-        />
-      </View>
-      </View>
-      <View style={styles.dateContainer}>
+      <View style={styles.dateRow}>
         <DayInput
           label="시작"
           date={startedDate}
           onDateChange={(date) => {
-            setStartedDate(date)
-            if (onChange) onChange();
+            handleTimeChange(date, true);
           }}
           onPressDate={handleStartDatePress}
-          onTimePress={() => setShowCalendarModal(false)}
+          isAllDay={isAllDay}
+          isStart={true}
         />
-        <Icon name="arrow-forward" size={20} color="#666" style={styles.arrow} />
+        <Icon
+          name="arrow-forward"
+          size={24}
+          color="#666"
+          style={styles.arrow}
+        />
         <DayInput
           label="종료"
           date={endedDate}
-          onDateChange={(date) => {
-            setEndedDate(date)
-            if (onChange) onChange();
-          }}
-          minimumDate={startedDate}
+          onDateChange={(date) => handleTimeChange(date, false)}
           onPressDate={handleEndDatePress}
-          onTimePress={() => setShowCalendarModal(false)}
+          isAllDay={isAllDay}
+          isStart={false}
         />
       </View>
 
@@ -159,80 +179,67 @@ export default function DateRangeSelector({
           >
             <Pressable style={styles.calendarWrapper} onPress={() => {}}>
               <Calendar
-                current={dateType === 'start' ? startedDate.toISOString() : endedDate.toISOString()}
-                minDate={dateType === 'end' ? startedDate.toISOString().split('T')[0] : undefined}
+                current={
+                  dateType === "start"
+                    ? startedDate.toISOString()
+                    : endedDate.toISOString()
+                }
+                minDate={
+                  dateType === "end"
+                    ? startedDate.toISOString().split("T")[0]
+                    : undefined
+                }
                 onDayPress={handleDateSelect}
                 markedDates={markedDates}
                 style={styles.calendar}
                 theme={{
-                calendarBackground: 'white',
-                selectedDayBackgroundColor: '#69BAFF',
-                todayTextColor: '#2563ED',
-              }}
-              monthFormat={'yyyy년 MM월'}
-            />
+                  calendarBackground: "white",
+                  selectedDayBackgroundColor: "#69BAFF",
+                  todayTextColor: "#2563ED",
+                }}
+                monthFormat={"yyyy년 MM월"}
+              />
+            </Pressable>
           </Pressable>
-        </Pressable>
-      </Modal>
+        </Modal>
       )}
     </View>
   );
-  }
+}
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: 'white',
-    padding: 16,
+    marginTop: 24,
+    paddingHorizontal: 16,
   },
-  allDayContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 0,
-  },
-  allDayLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  allDayText: {
-    fontSize: 14,
-    color: '#888',
-    marginLeft: 4,
-  },
-  dateContainer: {
-    marginTop: 12,
-    marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 16,
+    marginTop: 16,
+    marginBottom: 24,
   },
   arrow: {
-    alignSelf: 'center',
-    marginVertical: 8,
-    marginHorizontal: 8,
-    marginTop: 32,
+    marginHorizontal: 12,
+    marginTop: 36,
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   calendarWrapper: {
-    width: '92%',
+    width: "90%",
+    backgroundColor: "white",
     borderRadius: 12,
-    backgroundColor: 'white',
+    padding: 12,
   },
   calendar: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: "#E5E5E5",
     borderRadius: 12,
-    backgroundColor: 'white',
-    elevation: 4,
-    padding: 5,
-    width: '100%',
     height: 380,
-    alignSelf: 'center',
   },
-}); 
+});

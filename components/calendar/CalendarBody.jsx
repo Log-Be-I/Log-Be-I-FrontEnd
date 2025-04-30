@@ -1,36 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, parseISO } from 'date-fns';
-import CalendarDay from './CalendarDay';
-//import { getAllSchedules } from '../../api/schedule/scheduleApi';
-import { Holidays } from '../../dummyData/Holidays';
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+} from "date-fns";
+import CalendarDay from "./CalendarDay";
 
-export default function CalendarBody ({ selected, onDayPress, schedules = []}) {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
-
-
-  useEffect(() => {
-    // fetchSchedules();
-  }, []);
-
-  const fetchSchedules = async () => {
-    try {
-      //const response = await getAllSchedules();
-      //setSchedules(response.data);
-      setSchedules(mockSchedules);
-    } catch (error) {
-      console.error('일정을 불러오는데 실패했습니다:', error);
-    }
-  };
+export default function CalendarBody({
+  selected,
+  onDayPress,
+  markedDates = {}, // ✅ 받음
+  onMonthChange, // 월 변경 이벤트 핸들러 추가
+  currentMonth,
+  currentYear,
+}) {
+  const [currentDate, setCurrentDate] = useState(
+    new Date(currentYear, currentMonth - 1)
+  );
 
   const onPrevMonth = () => {
-    setCurrentDate(subMonths(currentDate, 1));
+    const newDate = subMonths(currentDate, 1);
+    setCurrentDate(newDate);
+    onMonthChange?.(newDate);
   };
 
   const onNextMonth = () => {
-    setCurrentDate(addMonths(currentDate, 1));
+    const newDate = addMonths(currentDate, 1);
+    setCurrentDate(newDate);
+    onMonthChange?.(newDate);
   };
+
+  // currentMonth나 currentYear가 변경되면 currentDate 업데이트
+  useEffect(() => {
+    setCurrentDate(new Date(currentYear, currentMonth - 1));
+  }, [currentMonth, currentYear]);
 
   const getDaysInMonth = () => {
     const start = startOfMonth(currentDate);
@@ -38,13 +46,8 @@ export default function CalendarBody ({ selected, onDayPress, schedules = []}) {
     return eachDayOfInterval({ start, end });
   };
 
-  // const handleDayPress = (day) => {
-  //   setSelectedDate(day.dateString);
-  //   onDayPress?.({ dateString: format(day.date, 'yyyy-MM-dd') });
-  // };
   const handleSelectDate = (date) => {
-    setSelectedDate(date); // 내부 선택 상태 업데이트
-    onDayPress?.({ dateString: format(date, 'yyyy-MM-dd') }); // 외부 콜백 호출
+    onDayPress?.({ dateString: format(date, "yyyy-MM-dd") });
     if (!isSameMonth(date, currentDate)) {
       setCurrentDate(date);
     }
@@ -53,19 +56,19 @@ export default function CalendarBody ({ selected, onDayPress, schedules = []}) {
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity onPress={onPrevMonth}>
-        <Text style={[styles.headerButton, {color: '#69BAFF'}]}>{'<'}</Text>
+        <Text style={[styles.headerButton, { color: "#69BAFF" }]}>{"<"}</Text>
       </TouchableOpacity>
-      <Text style={[styles.headerTitle, {color: '#5B75B1'}]}>
-        {format(currentDate, 'yyyy년 MM월')}
+      <Text style={[styles.headerTitle, { color: "#5B75B1" }]}>
+        {format(currentDate, "yyyy년 MM월")}
       </Text>
       <TouchableOpacity onPress={onNextMonth}>
-        <Text style={[styles.headerButton, {color: '#69BAFF'}]}>{'>'}</Text>
+        <Text style={[styles.headerButton, { color: "#69BAFF" }]}>{">"}</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderDays = () => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     return (
       <View style={styles.daysRow}>
         {days.map((day, index) => (
@@ -73,8 +76,8 @@ export default function CalendarBody ({ selected, onDayPress, schedules = []}) {
             key={day}
             style={[
               styles.dayLabel,
-              index === 0 ? styles.sundayLabel : null,
-              index === 6 ? styles.saturdayLabel : null,
+              index === 0 && styles.sundayLabel,
+              index === 6 && styles.saturdayLabel,
             ]}
           >
             {day}
@@ -89,45 +92,56 @@ export default function CalendarBody ({ selected, onDayPress, schedules = []}) {
     const firstDayOfMonth = startOfMonth(currentDate).getDay();
     const weeks = [];
     let week = new Array(7).fill(null);
-    
-    // 이전 달의 날짜 채우기
+
     for (let i = 0; i < firstDayOfMonth; i++) {
-      const prevDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), -firstDayOfMonth + i + 1);
-      week[i] = prevDate;
+      week[i] = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        -firstDayOfMonth + i + 1
+      );
     }
 
     days.forEach((day, index) => {
       const weekDay = (firstDayOfMonth + index) % 7;
       week[weekDay] = day;
-      
       if (weekDay === 6) {
         weeks.push([...week]);
         week = new Array(7).fill(null);
       }
     });
 
-    // 마지막 주 채우기
-    if (week.some(day => day !== null)) {
+    // 마지막 주 채우기 - 다음달 날짜로
+    if (week.some((day) => day === null)) {
       let nextMonthDay = 1;
       for (let i = 0; i < 7; i++) {
         if (!week[i]) {
-          week[i] = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, nextMonthDay++);
+          week[i] = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() + 1,
+            nextMonthDay++
+          );
         }
       }
-      weeks.push(week);
+      // 주 전체가 다음달인 경우 렌더링 제외
+      const allDaysNextMonth = week.every(
+        (day) => day.getMonth() !== currentDate.getMonth()
+      );
+
+      if (!allDaysNextMonth) {
+        weeks.push(week);
+      }
     }
 
-    return weeks.map((week, weekIndex) => (
-      <View key={weekIndex} style={styles.week}>
-        {week.map((day, dayIndex) => (
+    return weeks.map((week, weekIdx) => (
+      <View key={weekIdx} style={styles.week}>
+        {week.map((day, dayIdx) => (
           <CalendarDay
-            key={dayIndex}
+            key={dayIdx}
             date={day}
+            selectedDate={selected}
             currentDate={currentDate}
-            selectedDate={selectedDate}
             onSelectDate={handleSelectDate}
-            schedules={schedules} // 전체 일정 리스트
-            holidays={Holidays}
+            markedDates={markedDates} //  넘김
           />
         ))}
       </View>
@@ -141,47 +155,26 @@ export default function CalendarBody ({ selected, onDayPress, schedules = []}) {
       {renderCalendar()}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    padding: 10,
-  },
+  container: { backgroundColor: "#fff", padding: 10 },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    //paddingVertical: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  headerButton: {
-    fontSize: 20,
-    padding: 10,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  headerButton: { fontSize: 20, padding: 10 },
+  headerTitle: { fontSize: 18, fontWeight: "bold" },
   daysRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingVertical: 4,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
-  dayLabel: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 14,
-  },
-  sundayLabel: {
-    color: 'red',
-  },
-  saturdayLabel: {
-    color: 'blue',
-  },
-  week: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
+  dayLabel: { flex: 1, textAlign: "center", fontSize: 14 },
+  sundayLabel: { color: "red" },
+  saturdayLabel: { color: "blue" },
+  week: { flexDirection: "row", justifyContent: "space-around" },
 });
