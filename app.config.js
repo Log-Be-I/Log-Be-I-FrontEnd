@@ -13,7 +13,7 @@ const defineConfig = () => ({
   owner: "taekho",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/icon.png",
+  icon: "./assets/girogi.png",
   userInterfaceStyle: "light",
   splash: {
     image: "./assets/splashscreen_logo.png",
@@ -26,7 +26,7 @@ const defineConfig = () => ({
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: "./assets/app_icon.png",
+      foregroundImage: "./assets/girogi.png",
       backgroundColor: "#ffffff",
     },
     package: "com.taekho.aegirogilogbei",
@@ -34,7 +34,7 @@ const defineConfig = () => ({
       process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
   },
   web: {
-    favicon: "./assets/app_icon.png",
+    favicon: "./assets/girogi.png",
   },
   plugins: [
     ["expo-router"],

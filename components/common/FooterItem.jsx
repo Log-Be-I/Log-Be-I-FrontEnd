@@ -11,7 +11,6 @@ export default function FooterItem({ name, active, onPress, isCenter }) {
   // 이름에 따라 SVG 아이콘 선택
   const IconComponent = {
     index: HomeIcon,
-    home: HomeIcon,
     record: DailyIcon,
     center: RecordIcon, // 중앙 구슬 아이콘
     calendar: CalendarIcon,

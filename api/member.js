@@ -3,8 +3,8 @@ import { axiosWithToken, axiosWithoutToken } from "./axios/axios";
 // 회원 탈퇴
 export const deleteMember = async (memberId) => {
   const response = await axiosWithToken.delete(`/members/${memberId}`);
-
-  return response.data;
+  console.log("삭제 응답 : ", response);
+  return response;
 };
 
 // 회원 전체 조회

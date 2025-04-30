@@ -15,12 +15,15 @@ import RecordEditDateRange from "./RecordEditDateRange";
 import { CATEGORIES } from "../../constants/CategoryData";
 import { useMemberStore } from "../../zustand/stores/member";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 export default function RecordAddModal({ visible, onClose, onSave }) {
   const { member } = useMemberStore();
 
-  const [date, setDate] = useState(dayjs().toDate());
-  const [time, setTime] = useState(dayjs().format("HH:mm"));
+  const getKSTNow = () => dayjs().add(9, "hour");
+  const [date, setDate] = useState(getKSTNow());
+  const [time, setTime] = useState(getKSTNow().format("HH:mm"));
   const [category, setCategory] = useState(CATEGORIES[0].categoryId);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
@@ -39,13 +42,14 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
 
   useEffect(() => {
     if (visible) {
-      const now = dayjs();
-      setDate(now.toDate());
+      const now = getKSTNow();
+      setDate(now);
       setTime(now.format("HH:mm"));
       setCategory(CATEGORIES[0].categoryId);
       setContent("");
       setCharCount(0);
       setError("");
+      console.log("NOW (KST): ", now.format("YYYY-MM-DD HH:mm:ss"));
 
       Animated.parallel([
         Animated.timing(scaleAnim, {
@@ -65,8 +69,16 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
     }
   }, [visible]);
 
+  const handleDateChange = (newDate) => {
+    setDate(dayjs(newDate).tz("Asia/Seoul"));
+  };
+
+  const handleTimeChange = (newTime) => {
+    setTime(newTime);
+  };
+
   const formatDate = (date) => {
-    return dayjs(date).format("YYYY년 M월 D일");
+    return dayjs(date).format("YYYY년 MM월 DD일");
   };
 
   const handleSave = async () => {
@@ -75,11 +87,10 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
       return;
     }
 
-    // 날짜와 시간 합치기 (KST 기준)
+    // 날짜와 시간 합치기 (사용자가 입력한 시간 그대로 사용)
     const [hours, minutes] = time.split(":").map(Number);
-    const selectedDate = dayjs(date).hour(hours).minute(minutes).second(0);
-    const recordDateTime = selectedDate.format("YYYY-MM-DDTHH:mm:ss"); // Java LocalDateTime 포맷
-
+    const selectedDate = date.hour(hours).minute(minutes).second(0);
+    const recordDateTime = selectedDate.format("YYYY-MM-DDTHH:mm:ss");
     const recordData = {
       recordDateTime,
       content: content.trim(),
@@ -89,6 +100,8 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
 
     try {
       const record = await onSave(recordData);
+      console.log("recordData : ", recordData);
+      console.log("record : ", record);
       if (!record) {
         alert("기록 저장에 실패했습니다.");
         return;
@@ -152,7 +165,7 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
               <View style={styles.timeLine} />
               <TimePickerInput
                 value={time}
-                onChange={setTime}
+                onChange={handleTimeChange}
                 isEditing={true}
                 style={styles.timeInput}
               />
@@ -223,10 +236,7 @@ export default function RecordAddModal({ visible, onClose, onSave }) {
               </View>
               <RecordEditDateRange
                 date={date}
-                onDateChange={(newDate) => {
-                  setDate(new Date(newDate));
-                  setShowCalendar(false);
-                }}
+                onDateChange={handleDateChange}
               />
             </View>
           </View>

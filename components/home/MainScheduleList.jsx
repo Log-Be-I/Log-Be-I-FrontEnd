@@ -1,14 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet, FlatList, Image, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import Text from "../common/Text";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { getTodaySchedules } from "../../api/schedule";
-
-const todaySchedules = async () => {
-  const todaySchedules = await getTodaySchedules();
-  console.log("todaySchedules: ", todaySchedules);
-};
 
 const ScheduleItem = ({ title, time, endTime }) => (
   <View style={styles.scheduleItem}>
@@ -40,6 +35,20 @@ const ScheduleItem = ({ title, time, endTime }) => (
 
 export default function MainScheduleList() {
   const router = useRouter();
+  const [todaySchedules, setTodaySchedules] = useState([]);
+
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      try {
+        const data = await getTodaySchedules();
+        setTodaySchedules(data);
+      } catch (error) {
+        console.error("오늘의 일정을 불러오는데 실패했습니다.", error);
+      }
+    };
+
+    fetchSchedules();
+  }, []);
 
   return (
     <View style={styles.container}>
