@@ -66,7 +66,7 @@ export default function MainScheduleList() {
             <View style={styles.underline} />
           </View>
         </View>
-        <Pressable
+        {/* <Pressable
           style={styles.rightButton}
           onPress={() => {
             // TODO: 기능 구현
@@ -89,7 +89,7 @@ export default function MainScheduleList() {
               style={styles.rightWaveform}
             />
           </View>
-        </Pressable>
+        </Pressable> */}
       </View>
       <FlatList
         data={todaySchedules}

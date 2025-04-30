@@ -1,135 +1,93 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { format, isSameMonth, isSameDay, isWeekend } from 'date-fns';
-import { Holidays } from '../../dummyData/Holidays';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { format, isSameMonth, isSameDay } from "date-fns";
+import { Holidays } from "../../dummyData/Holidays";
 
-export default function CalendarDay({ date, currentDate, selectedDate, onSelectDate, schedules }) {
+export default function CalendarDay({
+  date,
+  currentDate,
+  selectedDate,
+  onSelectDate,
+  schedules,
+  markedDates = {},
+}) {
   if (!date) return <View style={styles.dayContainer} />;
 
+  const dateString = format(date, "yyyy-MM-dd");
   const isToday = isSameDay(date, new Date());
   const isSelected = isSameDay(date, selectedDate);
   const isCurrentMonth = isSameMonth(date, currentDate);
   const isSunday = date.getDay() === 0;
   const isSaturday = date.getDay() === 6;
-
-  const dateString = format(date, 'yyyy-MM-dd');
-  const holydayInfo = Holidays[dateString];
-  const isHoliday = !!holydayInfo;
-  //const holidayName = holydayInfo?.name || '';
-  
- // // 일정 있는 날 체크
- // const hasSchedule = Array.isArray(schedules) && schedules.some(schedule => {
- //   const scheduleDate = new Date(schedule.date);
- //   return isSameDay(date, scheduleDate);
- // });
-
- // 일정 있는 날 체크 (key 기반)
-  const hasSchedule = Array.isArray(schedules[dateString]) && schedules[dateString].length > 0;
+  const isHoliday = !!Holidays[dateString];
+  const marked = markedDates[dateString];
 
   const getDayColor = () => {
-    if (!isCurrentMonth) return '#D1D5DB';
-    if (isSelected) return '#fff'; // 선택된 날짜는 흰색 텍스트
-    if (isToday) return '#69BAFF'; 
-    if (isHoliday || isSunday) return '#FF4B4B'; // 공휴일 또는 일요일
-    if (isSaturday) return '#4B75FF'; // 토요일
-    return '#000'; // 기본 텍스트 색
+    if (!isCurrentMonth) return "#D1D5DB"; // 이전/다음달 회색 처리
+    if (isSelected) return "#fff";
+    if (isToday) return "#69BAFF";
+    if (isHoliday || isSunday) return "#FF4B4B";
+    if (isSaturday) return "#4B75FF";
+    return "#000";
   };
 
   const getDotColor = () => {
-    if(isHoliday) return 'red';
-    if(hasSchedule) return isSelected ? 'white' : '#69BAFF';
-    //return isSelected ? 'white' : '#69BAFF';
-    return 'transparent';
-  }
+    if (!marked?.marked) return "transparent";
+    if (isSelected) return "white";
+    return marked.dotColor || "#69BAFF";
+  };
 
   return (
     <TouchableOpacity
       style={styles.dayContainer}
       onPress={() => onSelectDate(date)}
     >
-      <View style = {styles.dayContent}>
-        {isSelected && <View style = {styles.selectedCircle} />}
-        <Text
-          style={[
-            styles.dayText, // 오늘 날짜 텍스트 파란색
-            { color: getDayColor() },
-          ]}
-        >
-          {format(date, 'd')}
+      <View style={styles.dayContent}>
+        {isSelected && <View style={styles.selectedCircle} />}
+        <Text style={[styles.dayText, { color: getDayColor() }]}>
+          {format(date, "d")}
         </Text>
-      </View>
-      {isHoliday
-        //<Text style={styles.holidayText} numberOfLines={1}>
-          //{holidayName}
-        //</Text>
-      }
-      <View style = {styles.dotWrapper}>
-        {(isHoliday || hasSchedule) && (
-          <View style={[styles.dot, {backgroundColor: getDotColor() }]} />
-      )}
+        <View style={styles.dotWrapper}>
+          {getDotColor() !== "transparent" && (
+            <View style={[styles.dot, { backgroundColor: getDotColor() }]} />
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );
-};
+}
 
 const styles = StyleSheet.create({
   dayContainer: {
     flex: 1,
     aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 2,
+    alignItems: "center",
+    justifyContent: "center",
   },
   dayContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   selectedCircle: {
-    position: 'absolute',
-    backgroundColor: '#69BAFF',
-    borderRadius: 999,
+    position: "absolute",
     width: 40,
     height: 40,
-    transform: [{ translateY: 2 }]
+    borderRadius: 20,
+    backgroundColor: "#69BAFF",
   },
   dayText: {
     fontSize: 14,
-    color: '#000',
-    textAlign: 'center',
-  },
-  todayText: {
-    color: '#69BAFF',
-    fontWeight: 'bold',
-  },
-  selectedDayText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  otherMonthText: {
-    color: '#D1D5DB',
-  },
-  sundayText: {
-    color: 'red',
-  },
-  saturdayText: {
-    color: 'blue',
-  },
-  holidayText: {
-    color: 'red',
-    fontSize: 10,
-    marginTop: 2,
+    textAlign: "center",
   },
   dotWrapper: {
-    height: 6, // 항상 공간 확보
+    height: 6,
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   dot: {
     width: 4,
     height: 4,
     borderRadius: 2,
-    //backgroundColor: '#69BAFF',
-    marginTop: 2,
   },
 });

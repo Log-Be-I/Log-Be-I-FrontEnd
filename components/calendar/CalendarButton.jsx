@@ -2,64 +2,64 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Text from "../common/Text";
 
-export default function CalendarButton({ text, icon, onPress, textStyle, disabled, iconStyle }) {
+export default function CalendarButton({
+  text,
+  onPress,
+  disabled,
+  type = "primary",
+}) {
   return (
-    <Pressable style={[styles.buttonOuter, disabled && styles.disabledButton]} 
-    onPress={onPress} 
-    disabled={disabled}
+    <Pressable
+      style={[
+        styles.buttonBase,
+        typeStyles[type],
+        disabled && styles.disabledButton,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
     >
-      <View style={[styles.buttonInner, icon && styles.iconOnly]}>
-        {icon ? (
-          <View style={iconStyle}>{icon}</View>
-        ) : (
-          <Text variant="semiBold" size={12} style={textStyle}>
-            {text}
-          </Text>
-        )}
-      </View>
+      <Text style={[styles.buttonText, textStyles[type]]}>{text}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  buttonOuter: {
-    alignSelf: "center",
-    borderRadius: 50,
-    padding: 2,
-    backgroundColor: "#f0f4ff",
-    shadowColor: "#B7BFFF",
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 6,
+  buttonBase: {
+    borderRadius: 15,
+    width: 120,
+    height: 45,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 5,
+    marginTop: 50,
   },
   disabledButton: {
-    borderRadius: 50,
-    backgroundColor: '#f0f4ff',
-    //shadowColor: '#f5f5f5',
+    opacity: 0.5,
   },
-  buttonInner: {
-    backgroundColor: "#fff",
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: "#E0E9FF",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 120,
-    height: 45,
-  },
-  iconOnly: {
-    height: 45,
-    padding: 0,
-    backgroundColor: "#fff",
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: "#E0E9FF",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 120,
+  buttonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    lineHeight: 18,
   },
 });
+
+const typeStyles = {
+  cancel: { backgroundColor: "#F0F0F0" },
+  edit: { backgroundColor: "#72B8FF" },
+  delete: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#FF9500",
+  },
+  ok: { backgroundColor: "#72B8FF" },
+  primary: { backgroundColor: "#72B8FF" },
+};
+
+const textStyles = {
+  cancel: { color: "#666666", fontWeight: "bold" },
+  edit: { color: "#FFFFFF", fontWeight: "bold" },
+  delete: { color: "#FF9500", fontWeight: "bold" },
+  ok: { color: "#FFFFFF", fontWeight: "bold" },
+  primary: { color: "#FFFFFF", fontWeight: "bold" },
+};

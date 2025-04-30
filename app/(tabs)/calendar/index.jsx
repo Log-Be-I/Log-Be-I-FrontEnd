@@ -1,54 +1,62 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useRouter } from 'expo-router';
-import { getAllSchedules } from '../../../api/schedule/scheduleApi';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
+import { format } from "date-fns";
 
-import CalendarBody from '../../../components/calendar/CalendarBody';
-import ScheduleComponent from '../../../components/calendar/ScheduleComponent';
-import { Holidays } from '../../../dummyData/Holidays';
-
+import CalendarBody from "../../../components/calendar/CalendarBody";
+import ScheduleComponent from "../../../components/calendar/ScheduleComponent";
+import { getAllSchedules } from "../../../api/schedule/scheduleApi";
+import { Holidays } from "../../../dummyData/Holidays";
 
 export default function MyCalendar() {
   const router = useRouter();
-  const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
+  const { refresh, selectedDate, targetMonth, targetYear } =
+    useLocalSearchParams();
+  const [selected, setSelected] = useState(
+    selectedDate || new Date().toISOString().split("T")[0]
+  );
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDaySchedules, setSelectedDaySchedules] = useState([]);
-  const [allSchedules, setAllSchedules] = useState(null);
+  const [allSchedules, setAllSchedules] = useState({});
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
-  const fetchSchedules = async () => {
+  const fetchSchedules = async (year, month) => {
     try {
-      const now = new Date();
-      const data = await getAllSchedules(now.getFullYear(), now.getMonth() + 1);
-      const safeDate = selected || new Date().toISOString().split('T')[0];
-      //data를 날짜별로 묶는 형태로 가공해야 한다.
+      const data = await getAllSchedules(year, month);
       const formatted = {};
       const marks = {};
-      data?.data?.forEach((item) => {
+
+      data.forEach((item) => {
         const start = new Date(item.startDateTime);
         const end = new Date(item.endDateTime);
         const current = new Date(start);
 
+        // 시작일부터 종료일까지 모든 날짜에 마크 추가
         while (current <= end) {
-          const dateKey = current.toISOString().split('T')[0]; // ex) '2025-04-20'
-
-          // 날짜 일정 목록 구성
+          const dateKey = current.toISOString().split("T")[0];
           if (!formatted[dateKey]) formatted[dateKey] = [];
           formatted[dateKey].push({
-            id: item.id,
+            id: item.scheduleId,
             title: item.title,
             startDateTime: item.startDateTime,
             endDateTime: item.endDateTime,
             calendarId: item.calendarId,
           });
-
-          // 마커 설정
           marks[dateKey] = {
+            ...(marks[dateKey] || {}),
             marked: true,
-            dotColor: '#69BAFF',
+            dotColor: "#69BAFF",
+            originDotColor: "#69BAFF",
           };
-
           current.setDate(current.getDate() + 1);
         }
       });
@@ -58,105 +66,85 @@ export default function MyCalendar() {
         marks[date] = {
           ...(marks[date] || {}),
           marked: true,
-          dotColor: '#FF4B4B',
+          dotColor: "#FF4B4B",
+          originDotColor: "#FF4B4B",
         };
-
-      // 공휴일을 일정으로 포함
-      if(!formatted[date]) formatted[date] = [];
-      formatted[date].push({
-        title: Holidays[date].name,
-        startDateTime: `${date}T12:00:00`,
-        endDateTime: `${date}T23:50:00`,
-        isHoliday: true,
+        if (!formatted[date]) formatted[date] = [];
+        formatted[date].push({
+          title: Holidays[date].name,
+          startDateTime: `${date}T00:00:00`,
+          endDateTime: `${date}T23:59:59`,
+          isHoliday: true,
+        });
       });
-    });
 
-      //마커 설정
-        marks[safeDate] = {
-        ...(marks[safeDate] || {}),
-        selected: true,
-        dotColor: formatted[safeDate] ? 'white' : '#69BAFF',
-      };
+      setAllSchedules((prev) => {
+        const merged = { ...prev, ...formatted };
+        return merged;
+      });
 
-      setAllSchedules(formatted);
-      // 선택된 날짜의 일정 리스트를 ScheduleComponent에 전달
-      setSelectedDaySchedules(formatted[safeDate] || []);
-      setMarkedDates(marks);
+      setMarkedDates((prev) => {
+        const merged = { ...prev, ...marks };
+        return merged;
+      });
 
+      setSelectedDaySchedules(formatted[selected] || []);
     } catch (error) {
-      console.error('일정 조회 실패:', error);
+      console.error("일정 조회 실패:", error);
     }
   };
 
-// expo-router에서 페이지가 포커싱될 때마다 재요청
+  // 새로고침 플래그가 있을 때 일정 다시 불러오기
+  useEffect(() => {
+    if (refresh) {
+      const date = new Date(selectedDate);
+      // 선택된 날짜의 월과 년도로 캘린더 이동
+      setCurrentMonth(date.getMonth() + 1);
+      setCurrentYear(date.getFullYear());
+      // 해당 월의 일정 불러오기
+      fetchSchedules(date.getFullYear(), date.getMonth() + 1);
+      // 선택된 날짜 설정
+      setSelected(selectedDate);
+    }
+  }, [refresh, selectedDate]);
+
+  // 월이 변경될 때마다 일정 다시 불러오기
+  useEffect(() => {
+    fetchSchedules(currentYear, currentMonth);
+  }, [currentYear, currentMonth]);
+
   useFocusEffect(
     useCallback(() => {
-      fetchSchedules();
-    }, []) // selected를 넣어 날짜가 바뀔때마다 조회된다. 최초만 하고 싶다면 제거하자!
+      fetchSchedules(currentYear, currentMonth);
+    }, [currentYear, currentMonth])
   );
 
-  
-  // useEffect(() => {
-  //   // 마커 설정
-  //   const marks = {};
-  //   Object.keys(mockSchedules).forEach((date) => {
-  //     marks[date] = {
-  //       marked: true,
-  //       dotColor: '#69BAFF',
-  //     };
-  //   });
-
-  //   setMarkedDates(marks);
-  // }, []);
-
-  useEffect(() => {
-    if (!allSchedules)  return
-      // 선택된 날짜의 일정 설정
-      setSelectedDaySchedules(allSchedules[selected] || []);
-      // // 마커 업데이트
-      // setMarkedDates(prev => {
-      //   const newMarkedDates = { ...prev };
-        
-      //   // 이전 선택 제거
-      //   Object.keys(newMarkedDates).forEach(date => {
-      //     if (newMarkedDates[date].selected) {
-      //       delete newMarkedDates[date].selected;
-      //       // if (mockSchedules[date]) {
-      //       //   newMarkedDates[date].dotColor = '#69BAFF';
-      //       // }
-      //     }
-      //   });
-
-      //   // 새로운 선택 추가
-      //   newMarkedDates[selected] = {
-      //     ...(newMarkedDates[selected] || {}),
-      //     selected: true,
-      //     dotColor: allSchedules[selected] ? 'white' : '#69BAFF',
-      //   };
-
-      //   return newMarkedDates;
-      // });
-  }, [selected, allSchedules]);
+  const handleMonthChange = (date) => {
+    const newMonth = date.getMonth() + 1;
+    const newYear = date.getFullYear();
+    setCurrentMonth(newMonth);
+    setCurrentYear(newYear);
+    // 달이 변경될 때 선택된 날짜와 일정 초기화
+    setSelected(null);
+    setSelectedDaySchedules([]);
+  };
 
   const handleDayPress = (day) => {
     setSelected(day.dateString);
+    setSelectedDaySchedules(allSchedules[day.dateString] || []);
   };
 
   const handleAddSchedule = () => {
     router.push({
       pathname: "/(tabs)/calendar/addSchedule",
-      params: {
-        selectedDate: selected // 선택된 날짜를 params로 전달
-      }
+      params: { selectedDate: selected },
     });
   };
 
   const handleSchedulePress = (schedule) => {
     router.push({
       pathname: "/(tabs)/calendar/editSchedule",
-      params: {
-        schedule: JSON.stringify(schedule) // 객체 그대로는 안넘겨진다. 문자열로 직렬화가 피요하다. 
-      }
+      params: { schedule: JSON.stringify(schedule) },
     });
   };
 
@@ -167,21 +155,21 @@ export default function MyCalendar() {
           selected={selected}
           onDayPress={handleDayPress}
           markedDates={markedDates}
-          schedules={selectedDaySchedules}
+          onMonthChange={handleMonthChange}
+          currentMonth={currentMonth}
+          currentYear={currentYear}
         />
       </View>
 
-      {/* 일정 리스트 컴포넌트 */}
       <View style={styles.scheduleWrapper}>
-      {/* <EventList schedules={selectedDaySchedules} onPress={handleSchedulePress} /> */}
-        <ScheduleComponent 
-        schedules={selectedDaySchedules} 
-        onPress={handleSchedulePress} 
-        selectedDate={selected}
+        {/* <SafeAreaView style={{ flex: 1, backgroundColor: "white" }} /> */}
+        <ScheduleComponent
+          schedules={selectedDaySchedules}
+          onPress={handleSchedulePress}
+          selectedDate={selected}
         />
       </View>
 
-      {/* 일정 추가 버튼 */}
       <TouchableOpacity style={styles.addButton} onPress={handleAddSchedule}>
         <Icon name="add" size={24} color="white" />
       </TouchableOpacity>
@@ -190,40 +178,35 @@ export default function MyCalendar() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-    //padding: 0,
-  },
+  container: { flex: 1, backgroundColor: "white" },
   calendarWrapper: {
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: "#E5E5E5",
     paddingBottom: 10,
   },
   scheduleWrapper: {
-    flex: 1, // 리스트가 남은 공간을 차지하게
+    flex: 1,
     paddingHorizontal: 10,
   },
-  calendar: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+  scheduleScrollView: {
+    flex: 1,
+  },
+  scheduleContent: {
+    paddingBottom: 60, // 스크롤 뷰의 bottom이 60
   },
   addButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 20,
     bottom: 70,
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#4A90E2',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#4A90E2",
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
