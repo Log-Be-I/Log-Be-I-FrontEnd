@@ -9,6 +9,12 @@ export default function ProfileLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="deleteAccount"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

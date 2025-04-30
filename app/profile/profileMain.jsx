@@ -50,8 +50,13 @@ export default function MemberInfo() {
       const response = await updateMember(member.memberId, member);
       console.log("response: ", response);
       // 상태 업데이트
-      setMember(response.data);
-      console.log(member);
+
+      setMember({
+        ...member,
+        nickname: nicknameInput,
+        region: newRegion,
+        birth: birthInput,
+      });
       setIsEditMode(false);
     } catch (error) {
       console.error("회원 정보 수정 실패:", error);

@@ -10,7 +10,23 @@ export default function HomeScreen() {
 
   const { member } = useMemberStore();
 
-  console.log(member);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace("/(onBoard)");
+    } catch (error) {
+      console.error("로그아웃 에러:", error);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      router.push("/settings/deleteAccount");
+    } catch (error) {
+      console.error("계정 삭제 에러:", error);
+    }
+  };
 
   return (
     <View style={styles.container}>

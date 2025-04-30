@@ -99,13 +99,6 @@ export default function Login() {
               </Text>
               <View style={styles.underline} />
             </View>
-            <View style={styles.titleContainer}>
-              <Pressable onPress={handleRegister}>
-                <Text variant="medium" size={24} color="#999">
-                  Register
-                </Text>
-              </Pressable>
-            </View>
           </View>
           <View style={styles.buttonContainer}>
             <Pressable
