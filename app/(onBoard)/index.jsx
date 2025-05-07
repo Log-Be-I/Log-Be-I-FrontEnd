@@ -7,68 +7,52 @@ import LogBeIText from "../../assets/images/logBeIText.svg";
 import BackgroundSVG from "../../assets/images/loginPageBackground.svg";
 import * as WebBrowser from "expo-web-browser";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { axiosWithoutToken } from "../../api/axios/axios";
 import { useMemberStore, useSignUpStore } from "../../zustand/stores/member";
 import Constants from "expo-constants";
+import * as Font from "expo-font";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const router = useRouter();
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   const { setMember } = useMemberStore();
   const { setSignUpState } = useSignUpStore();
 
-  console.log(
-    "googleAndroidClientId: ",
-    Constants.expoConfig.extra.googleClientId
-  );
-  console.log(
-    "googleWebClientId: ",
-    Constants.expoConfig.extra.googleWebClientId
-  );
-  console.log(
-    "googleClientSecret: ",
-    Constants.expoConfig.extra.googleClientSecret
-  );
-  console.log("apiUrl: ", Constants.expoConfig.extra.apiUrl);
+  // ✅ 폰트 로딩
+  useEffect(() => {
+    Font.loadAsync({
+      "Pretendard-Regular": require("../../assets/fonts/Pretendard-Regular.otf"),
+      "Pretendard-Medium": require("../../assets/fonts/Pretendard-Medium.otf"),
+      "Pretendard-Bold": require("../../assets/fonts/Pretendard-Bold.otf"),
+    }).then(() => setFontsLoaded(true));
+  }, []);
+
+  if (!fontsLoaded) return null; // ✅ 로딩 전에는 렌더 안함
 
   const googleLogin = async () => {
-    console.log("클릭");
     setIsLoading(true);
     setError(null);
 
     try {
       const hasPlay = await GoogleSignin.hasPlayServices();
-      console.log("hasPlay: ", hasPlay);
       const result = await GoogleSignin.signIn();
-
-      console.log("result: ", result);
-      console.log("ServerAuthCode: ", result.data.serverAuthCode);
 
       const response = await axiosWithoutToken.post("api/auth/google/code", {
         code: result.data.serverAuthCode,
       });
 
-      console.log("response: ", response);
-
-      console.log("response.data: ", response.data);
-
       if (response.data.status === "login") {
         setMember(response.data.user);
-        console.log("로그인 성공");
-
-        await Promise.all([
-          AsyncStorage.setItem("accessToken", response.data.token),
-        ]);
+        await AsyncStorage.setItem("accessToken", response.data.token);
         router.replace("/(tabs)");
       } else {
-        console.log("회원가입으로 이동합니다.");
         setSignUpState({
           name: response.data.user.name,
           email: response.data.user.email,
@@ -84,12 +68,7 @@ export default function Login() {
     }
   };
 
-  const handleRegister = () => {
-    router.push("/(onBoard)/signUp");
-  };
-
   return (
-    // <ErrorBoundary>
     <SafeAreaView style={styles.container}>
       <BackgroundSVG style={styles.background} />
       <View style={styles.contentContainer}>
@@ -110,8 +89,18 @@ export default function Login() {
               disabled={isLoading}
             >
               <View style={styles.googleContent}>
-                <GoogleSigninImage width={20} height={20} />
-                <Text variant="medium" size={14} color="#666">
+                <GoogleSigninImage
+                  width={20}
+                  height={20}
+                  style={{ marginRight: 8 }}
+                />
+                <Text
+                  variant="medium"
+                  size={14}
+                  color="#666"
+                  style={{ flexShrink: 1 }}
+                  numberOfLines={1}
+                >
                   {isLoading ? "로그인 중..." : "Sign In with Google"}
                 </Text>
               </View>
@@ -134,7 +123,6 @@ export default function Login() {
         </View>
       </View>
     </SafeAreaView>
-    // {/* </ErrorBoundary> */}
   );
 }
 
@@ -175,7 +163,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
   },
   footer: { alignItems: "center", marginBottom: 16 },
   footerText: { marginBottom: 2 },

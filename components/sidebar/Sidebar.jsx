@@ -9,6 +9,7 @@ import LogoutIcon from "../../assets/sidebar/logoutIcon.svg";
 import { useMemberStore } from "../../zustand/stores/member";
 import { CATEGORIES } from "../../constants/CategoryData";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Sidebar({ onClose }) {
   const router = useRouter();
@@ -25,86 +26,88 @@ export default function Sidebar({ onClose }) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.upperContainer}>
-        <SidebarHeader onClose={onClose} />
-        <SidebarProfile />
-      </View>
-
-      <View style={styles.lowerContainer}>
-        <View style={styles.sideNavMenu}>
-          <SidebarNavMenu />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
+        <View style={styles.upperContainer}>
+          <SidebarHeader onClose={onClose} />
+          <SidebarProfile />
         </View>
 
-        <View style={styles.contentArea}>
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.sectionsContainer}
-            showsVerticalScrollIndicator={false}
-          >
-            <SidebarSection
-              title="My Record"
-              items={CATEGORIES.map((cat) => ({
-                id: `category-${cat.categoryId}`,
-                label: `나의 ${cat.name}`,
-                iconComponent: (
-                  <Icon name={cat.icon} size={20} color={cat.color} />
-                ),
-                route: `/record?category=${cat.categoryId}`,
-              }))}
-              onItemPress={(route) => {
-                router.push({
-                  pathname: "/record",
-                  params: { category: route.split("=")[1] },
-                });
-                onClose();
-              }}
-            />
+        <View style={styles.lowerContainer}>
+          <View style={styles.sideNavMenu}>
+            <SidebarNavMenu />
+          </View>
 
-            <SidebarSection
-              title="My Report"
-              items={[
-                {
-                  id: "analysis",
-                  label: "나의 일상 분석",
-                  icon: "📊",
-                  route: "/analysis",
-                },
-              ]}
-              onItemPress={(route) => router.push(route)}
-            />
+          <View style={styles.contentArea}>
+            <ScrollView
+              style={styles.scrollView}
+              contentContainerStyle={styles.sectionsContainer}
+              showsVerticalScrollIndicator={false}
+            >
+              <SidebarSection
+                title="My Record"
+                items={CATEGORIES.map((cat) => ({
+                  id: `category-${cat.categoryId}`,
+                  label: `나의 ${cat.name}`,
+                  iconComponent: (
+                    <Icon name={cat.icon} size={20} color={cat.color} />
+                  ),
+                  route: `/record?category=${cat.categoryId}`,
+                }))}
+                onItemPress={(route) => {
+                  router.push({
+                    pathname: "/record",
+                    params: { category: route.split("=")[1] },
+                  });
+                  onClose();
+                }}
+              />
 
-            <SidebarSection
-              title="My Activity"
-              items={[
-                {
-                  id: "issue",
-                  label: "오늘의 이슈",
-                  icon: "🔍",
-                  route: "/issueCard/loading",
-                },
-                { id: "qna", label: "나의 QnA", icon: "💭", route: "/qna" },
-                {
-                  id: "faq",
-                  label: "자주 하는 질문",
-                  icon: "❓",
-                  route: "/faq",
-                },
-              ]}
-              onItemPress={(route) => router.push(route)}
-            />
-          </ScrollView>
+              <SidebarSection
+                title="My Report"
+                items={[
+                  {
+                    id: "analysis",
+                    label: "나의 일상 분석",
+                    icon: "📊",
+                    route: "/analysis",
+                  },
+                ]}
+                onItemPress={(route) => router.push(route)}
+              />
 
-          <View style={styles.logoutContainer}>
-            <View style={styles.logoutDivider} />
-            <Pressable style={styles.logoutButton} onPress={handleLogout}>
-              <LogoutIcon width={20} height={20} />
-              <Text style={styles.logoutText}>Log Out</Text>
-            </Pressable>
+              <SidebarSection
+                title="My Activity"
+                items={[
+                  {
+                    id: "issue",
+                    label: "오늘의 이슈",
+                    icon: "🔍",
+                    route: "/issueCard/loading",
+                  },
+                  { id: "qna", label: "나의 QnA", icon: "💭", route: "/qna" },
+                  {
+                    id: "faq",
+                    label: "자주 하는 질문",
+                    icon: "❓",
+                    route: "/faq",
+                  },
+                ]}
+                onItemPress={(route) => router.push(route)}
+              />
+            </ScrollView>
+
+            <View style={styles.logoutContainer}>
+              <View style={styles.logoutDivider} />
+              <Pressable style={styles.logoutButton} onPress={handleLogout}>
+                <LogoutIcon width={20} height={20} />
+                <Text style={styles.logoutText}>Log Out</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

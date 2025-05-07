@@ -48,8 +48,19 @@ export default function Footer({ currentTab, onTabPress }) {
         playsInSilentModeIOS: true,
       });
 
+      const recordingOptions = {
+        android: {
+          extension: ".m4a",
+          outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
+          audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
+          sampleRate: 44100,
+          numberOfChannels: 1,
+          bitRate: 128000,
+        },
+      };
+
       const { recording: newRecording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+        recordingOptions
       );
 
       setRecording(newRecording);
@@ -212,17 +223,6 @@ export default function Footer({ currentTab, onTabPress }) {
             >
               <Text style={styles.modalButtonText}>확인</Text>
             </TouchableOpacity>
-            {lastSavedUri && (
-              <TouchableOpacity
-                onPress={handleExportPathLog}
-                style={[
-                  styles.modalButton,
-                  { marginTop: 10, backgroundColor: "#777" },
-                ]}
-              >
-                <Text style={styles.modalButtonText}>경로 로그 출력</Text>
-              </TouchableOpacity>
-            )}
           </View>
         </View>
       </Modal>
