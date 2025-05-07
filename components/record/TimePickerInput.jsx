@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import dayjs from "dayjs";
 
 const ITEM_HEIGHT = 40;
 const VISIBLE_ITEMS = 5;
@@ -25,8 +26,9 @@ const TimePicker = ({ value, onChange }) => {
 
   useEffect(() => {
     if (value) {
-      const hours = value.getHours();
-      const minutes = value.getMinutes();
+      const date = dayjs(value);
+      const hours = date.hour();
+      const minutes = date.minute();
       setSelectedHour(hours);
       setSelectedMinute(minutes);
     }
@@ -41,8 +43,10 @@ const TimePicker = ({ value, onChange }) => {
   };
 
   const handleConfirm = () => {
-    const newDate = new Date(value);
-    newDate.setHours(selectedHour, selectedMinute, 0, 0);
+    const newDate = dayjs(value)
+      .hour(selectedHour)
+      .minute(selectedMinute)
+      .toDate();
     onChange(newDate);
     setModalVisible(false);
   };

@@ -4,8 +4,25 @@ import { useRouter } from "expo-router";
 import Text from "../common/Text";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { getTodaySchedules } from "../../api/schedule";
+import dayjs from "dayjs";
 
-const ScheduleItem = ({ title, time, endTime }) => (
+const renderItem = ({ item }) => {
+  const startTime = dayjs(item.startDateTime).format("HH:mm");
+  const endTime = dayjs(item.endDateTime).format("HH:mm");
+
+  const parsedItem = {
+    ...item,
+    title: item.title,
+    startTime: startTime,
+    endTime: endTime,
+    isAllDay: startTime === "00:00" && endTime === "23:50",
+  };
+  console.log("parsedItem: ", parsedItem);
+
+  return <ScheduleItem item={parsedItem} />;
+};
+
+const ScheduleItem = ({ item }) => (
   <View style={styles.scheduleItem}>
     <View style={styles.leftContent}>
       <Image
@@ -14,21 +31,29 @@ const ScheduleItem = ({ title, time, endTime }) => (
       />
       <View style={styles.textContent}>
         <Text variant="bold" size={16} color="#0A4DAA">
-          {title}
+          {item.title}
         </Text>
       </View>
     </View>
     <View style={styles.timeWrapper}>
-      <Text variant="regular" size={14} color="#1170DF">
-        {time}
-      </Text>
-      <Text variant="regular" size={14} color="#666">
-        {" "}
-        To{" "}
-      </Text>
-      <Text variant="regular" size={14} color="#1170DF">
-        {endTime}
-      </Text>
+      {item.isAllDay ? (
+        <Text variant="regular" size={14} color="#1170DF">
+          하루종일
+        </Text>
+      ) : (
+        <>
+          <Text variant="regular" size={14} color="#1170DF">
+            {item.startTime}
+          </Text>
+          <Text variant="regular" size={14} color="#666">
+            {" "}
+            To{" "}
+          </Text>
+          <Text variant="regular" size={14} color="#1170DF">
+            {item.endTime}
+          </Text>
+        </>
+      )}
     </View>
   </View>
 );
@@ -36,12 +61,14 @@ const ScheduleItem = ({ title, time, endTime }) => (
 export default function MainScheduleList() {
   const router = useRouter();
   const [todaySchedules, setTodaySchedules] = useState([]);
+  console.log("TodaySchedules: ", todaySchedules);
 
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
         const data = await getTodaySchedules();
         setTodaySchedules(data);
+        console.log(data);
       } catch (error) {
         console.error("오늘의 일정을 불러오는데 실패했습니다.", error);
       }
@@ -93,7 +120,7 @@ export default function MainScheduleList() {
       </View>
       <FlatList
         data={todaySchedules}
-        renderItem={({ item }) => <ScheduleItem {...item} />}
+        renderItem={renderItem}
         keyExtractor={(item) => item.scheduleId}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}

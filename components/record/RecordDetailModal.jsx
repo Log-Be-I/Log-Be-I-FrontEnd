@@ -9,12 +9,12 @@ import {
   Animated,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import TimePickerInput from "./TimePickerInput";
 import CategoryDropdown from "./CategoryDropdown";
 import RecordEditDateRange from "./RecordEditDateRange";
 import { CATEGORIES } from "../../constants/CategoryData";
 import { useMemberStore } from "../../zustand/stores/member";
 import dayjs from "dayjs";
+import RecordTimePickerInput from "./RecordTimePickerInput";
 
 export default function RecordDetailModal({
   visible,
@@ -139,7 +139,7 @@ export default function RecordDetailModal({
 
               <View style={styles.timeContainer}>
                 <View style={styles.timeLine} />
-                <TimePickerInput
+                <RecordTimePickerInput
                   value={time}
                   onChange={setTime}
                   isEditing={isEditing}

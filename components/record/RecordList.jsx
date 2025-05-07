@@ -41,8 +41,8 @@ export default function RecordList({
   showAddedMessage,
   onCategoryChange,
   onUpdateRecord,
+  selectedCategory,
 }) {
-  const [selectedCategory, setSelectedCategory] = useState("전체");
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
   const [showUpdatedMessage, setShowUpdatedMessage] = useState(false);
@@ -50,10 +50,6 @@ export default function RecordList({
   const listRef = useRef(null);
 
   const parsedRecords = useParsedRecords(records);
-
-  useEffect(() => {
-    onCategoryChange?.(selectedCategory);
-  }, [selectedCategory]);
 
   const sections = useMemo(() => {
     const groupedData = (parsedRecords || []).reduce((acc, record) => {
@@ -128,7 +124,7 @@ export default function RecordList({
         {["전체", ...CATEGORIES.map((c) => c.name)].map((cat) => (
           <Pressable
             key={cat}
-            onPress={() => setSelectedCategory(cat)}
+            onPress={() => onCategoryChange(cat)}
             style={({ pressed }) => [
               styles.categoryButton,
               selectedCategory === cat && styles.categoryButtonSelected,
