@@ -61,13 +61,10 @@ export const createTextRecord = async (data) => {
   console.log("recordPostData", data);
   const response = await axiosWithToken.post(`/text-records`, data);
   console.log("createTextRecord", `/text-records`);
-  const record = response.data;
-  const { category, ...rest } = record;
+  const record = response.data.data;
+  const { categoryId, ...rest } = record;
   console.log("✅✅ 서버에서 등록한 데이터 : ", record);
-  return {
-    ...rest,
-    categoryId: category?.categoryId ?? record.categoryId,
-  };
+  return record;
 };
 
 // 오디오 기록 생성
