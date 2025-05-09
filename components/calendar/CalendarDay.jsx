@@ -14,7 +14,8 @@ export default function CalendarDay({
   if (!date) return <View style={styles.dayContainer} />;
 
   const dateString = format(date, "yyyy-MM-dd");
-  const isToday = isSameDay(date, new Date());
+  // UTC기준이 아니라 한국 시간 기준으로 판별
+  const isToday = isSameDay(date, new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })));
   const isSelected = isSameDay(date, selectedDate);
   const isCurrentMonth = isSameMonth(date, currentDate);
   const isSunday = date.getDay() === 0;

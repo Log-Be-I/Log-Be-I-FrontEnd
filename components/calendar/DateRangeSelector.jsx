@@ -36,6 +36,7 @@ export default function DateRangeSelector({
 
   const updateMarkedDates = (start, end) => {
     const marks = {};
+    // 한국시간 (UTC+9)으로 문자열 변환
     const startStr = start.toISOString().split("T")[0];
     const endStr = end.toISOString().split("T")[0];
 
@@ -106,6 +107,23 @@ export default function DateRangeSelector({
     if (onCalendarOpen) onCalendarOpen();
   };
 
+  const calculateEndDateTime = (startDate) => {
+    const newEnd = new Date(startDate);
+    const startHour = newEnd.getHours();
+    const startMinute = newEnd.getMinutes();
+    // 23시일 경우 다음날로 넘어가되 , 분(minute) 유지
+    // 만약 날짜가 넘어가면 다음날로 처리
+  if (startHour === 23) {
+    newEnd.setDate(newEnd.getDate() + 1);
+    newEnd.setHours(0, startMinute, 0, 0);
+  } else {
+    newEnd.setHours(startHour + 1);
+    newEnd.setMinutes(startMinute);
+  }
+  
+  return newEnd;
+};
+
   const handleTimeChange = (date, isStart) => {
     if (isAllDay) {
       // 하루종일이면 시간을 강제로 설정
@@ -124,9 +142,12 @@ export default function DateRangeSelector({
     } else {
       // 하루종일이 아니면 일반적인 시간 변경
       if (isStart) {
+        // 시작 시간을 설정할 때 종료 시간을 자동으로 +1 시간으로 설정
+        const newEndDate = calculateEndDateTime(date);
         setStartedDate(date);
-        updateMarkedDates(date, endedDate);
-        onDateRangeChange(date, endedDate);
+        setEndedDate(newEndDate);
+        updateMarkedDates(date, newEndDate);
+        onDateRangeChange(date, newEndDate);
       } else {
         setEndedDate(date);
         updateMarkedDates(startedDate, date);

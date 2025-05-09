@@ -17,7 +17,6 @@ const renderItem = ({ item }) => {
     endTime: endTime,
     isAllDay: startTime === "00:00" && endTime === "23:50",
   };
-  console.log("parsedItem: ", parsedItem);
 
   return <ScheduleItem item={parsedItem} />;
 };
@@ -61,14 +60,12 @@ const ScheduleItem = ({ item }) => (
 export default function MainScheduleList() {
   const router = useRouter();
   const [todaySchedules, setTodaySchedules] = useState([]);
-  console.log("TodaySchedules: ", todaySchedules);
 
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
         const data = await getTodaySchedules();
         setTodaySchedules(data);
-        console.log(data);
       } catch (error) {
         console.error("오늘의 일정을 불러오는데 실패했습니다.", error);
       }

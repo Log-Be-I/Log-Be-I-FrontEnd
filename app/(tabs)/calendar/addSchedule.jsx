@@ -59,8 +59,6 @@ export default function AddSchedule() {
     } else {
       // 하루종일 해제할 때
       const now = new Date();
-      console.log("🧪 now:", now);
-      console.log("🧪 now.getHours()", now.getHours());
       const newStartDate = new Date(startDate);
       newStartDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
       const newEndDate = new Date(startDate);
@@ -78,13 +76,13 @@ export default function AddSchedule() {
     }
 
     try {
-      const formattedStartDate = new Date(startDate);
-      const formattedEndDate = new Date(endDate);
+      // const formattedStartDate = new Date(startDate);
+      // const formattedEndDate = new Date(endDate);
 
       await createTextSchedule({
         title,
-        startDateTime: formattedStartDate,
-        endDateTime: formattedEndDate,
+        startDateTime: startDate,
+        endDateTime: endDate,
       });
 
       setToastMessage("일정이 성공적으로 추가되었습니다.");
@@ -95,9 +93,9 @@ export default function AddSchedule() {
           pathname: "/calendar/",
           params: {
             refresh: true,
-            selectedDate: formattedStartDate.toISOString().split("T")[0],
-            targetMonth: formattedStartDate.getMonth() + 1,
-            targetYear: formattedStartDate.getFullYear(),
+            selectedDate: startDate.toISOString().split("T")[0],
+            targetMonth: startDate.getMonth() + 1,
+            targetYear: startDate.getFullYear(),
           },
         });
       }, 1000);

@@ -16,49 +16,68 @@ import ScheduleComponent from "../../../components/calendar/ScheduleComponent";
 import { getAllSchedules } from "../../../api/schedule/scheduleApi";
 import { Holidays } from "../../../dummyData/Holidays";
 
-export default function MyCalendar() {
+// ✅ 한국 시간 (Asia/Seoul) 기준으로 현재 날짜 가져오기
+const getKSTDate = () => {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const kstOffset = 9 * 60 * 60000; // KST: UTC +9
+  return new Date(utc + kstOffset);
+};
+
+export default function MyCalendar() { 
   const router = useRouter();
-  const { refresh, selectedDate, targetMonth, targetYear } =
-    useLocalSearchParams();
+  const { refresh, selectedDate } = useLocalSearchParams();
+  const initialDate = getKSTDate();
+
   const [selected, setSelected] = useState(
-    selectedDate || new Date().toISOString().split("T")[0]
+    selectedDate ? new Date(selectedDate) : initialDate
   );
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDaySchedules, setSelectedDaySchedules] = useState([]);
   const [allSchedules, setAllSchedules] = useState({});
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-
+  const [currentMonth, setCurrentMonth] = useState(initialDate.getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(initialDate.getFullYear());
+// 일정 데이터를 서버에서 가져와 달력에 마킹하고 표시하는 함수
   const fetchSchedules = async (year, month) => {
     try {
+      // 서버에 지정된 월의 일정 데이터를 가져온다.
       const data = await getAllSchedules(year, month);
-      const formatted = {};
-      const marks = {};
+      // 일정 데이터를 저장할 객체들 초기화
+      const formatted = {}; // 날짜별 일정 저장
+      const marks = {}; // 날짜별 마킹 저장(공휴일 포함)
+      // 서버에서 받아온 일정 데이터를 하나씩 처리
+      data.data.forEach((item) => {
+        const start = item.startDateTime; // KST 시간 그대로 사용
+        const end = item.endDateTime;
+        // 시작일과 종료일의 날짜만 추출
+        const startDate = start.split("T")[0]; // 2025-05-09
+        const endDate = end.split("T")[0]; // 2025-05-10
+        // 시작일부터 종료일까지 날짜를 증가시키며 저장할 변수
+        let currentDate = startDate;
 
-      data.forEach((item) => {
-        const start = new Date(item.startDateTime);
-        const end = new Date(item.endDateTime);
-        const current = new Date(start);
-
-        // 시작일부터 종료일까지 모든 날짜에 마크 추가
-        while (current <= end) {
-          const dateKey = current.toISOString().split("T")[0];
-          if (!formatted[dateKey]) formatted[dateKey] = [];
-          formatted[dateKey].push({
+        // 시작일부터 종료일까지 모든 날짜에 일정 추가
+        while (currentDate <= endDate) {
+          //해당 날짜에 일정 배열이 없으면 새로 생성
+          if (!formatted[currentDate]) formatted[currentDate] = [];
+          formatted[currentDate].push({
             id: item.scheduleId,
             title: item.title,
-            startDateTime: item.startDateTime,
-            endDateTime: item.endDateTime,
+            startDateTime: item.startDateTime, // 시작 시간(KST)
+            endDateTime: item.endDateTime, // 종료 시간(KST)
             calendarId: item.calendarId,
           });
-          marks[dateKey] = {
-            ...(marks[dateKey] || {}),
-            marked: true,
+          // 날짜 마커 설정(표시용)
+          marks[currentDate] = {
+            ...(marks[currentDate] || {}), // 기존 마커 유지
+            marked: true, // 마커 표시
             dotColor: "#69BAFF",
             originDotColor: "#69BAFF",
           };
-          current.setDate(current.getDate() + 1);
-        }
+          // currentDate를 다음 날짜로 증가 (KST 유지)
+          const nextDay = new Date(currentDate);
+          nextDay.setDate(nextDay.getDate() + 1);
+          currentDate = nextDay.toISOString().split("T")[0];
+      }
       });
 
       // 공휴일 마커 추가
@@ -78,17 +97,14 @@ export default function MyCalendar() {
         });
       });
 
-      setAllSchedules((prev) => {
-        const merged = { ...prev, ...formatted };
-        return merged;
-      });
-
-      setMarkedDates((prev) => {
-        const merged = { ...prev, ...marks };
-        return merged;
-      });
-
-      setSelectedDaySchedules(formatted[selected] || []);
+      // 처리된 일정 데이터를 상태로 저장
+      setAllSchedules(formatted); // 날짜별 일정 목록
+      setMarkedDates(marks); // 날짜별 마킹 정보
+    // 사용자가 선택한 날짜의 일정 보여주기
+    if (selected) {
+      const selectedDateString = typeof selected === "string" ? selected : selected.toISOString().split("T")[0];
+      setSelectedDaySchedules(formatted[selectedDateString] || []);
+    }
     } catch (error) {
       console.error("일정 조회 실패:", error);
     }
@@ -97,14 +113,14 @@ export default function MyCalendar() {
   // 새로고침 플래그가 있을 때 일정 다시 불러오기
   useEffect(() => {
     if (refresh) {
-      const date = new Date(selectedDate);
+      const date = getKSTDate();
       // 선택된 날짜의 월과 년도로 캘린더 이동
       setCurrentMonth(date.getMonth() + 1);
       setCurrentYear(date.getFullYear());
       // 해당 월의 일정 불러오기
       fetchSchedules(date.getFullYear(), date.getMonth() + 1);
       // 선택된 날짜 설정
-      setSelected(selectedDate);
+      setSelected(selectedDate || date.toISOString().split("T")[0]);
     }
   }, [refresh, selectedDate]);
 
@@ -113,11 +129,11 @@ export default function MyCalendar() {
     fetchSchedules(currentYear, currentMonth);
   }, [currentYear, currentMonth]);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchSchedules(currentYear, currentMonth);
-    }, [currentYear, currentMonth])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchSchedules(currentYear, currentMonth);
+  //   }, [currentYear, currentMonth])
+  // );
 
   const handleMonthChange = (date) => {
     const newMonth = date.getMonth() + 1;
@@ -131,7 +147,10 @@ export default function MyCalendar() {
 
   const handleDayPress = (day) => {
     setSelected(day.dateString);
-    setSelectedDaySchedules(allSchedules[day.dateString] || []);
+    const daySchedules = allSchedules[day.dateString] || [];
+  
+    // 서버에서 받은 KST 시간 그대로 사용
+    setSelectedDaySchedules(daySchedules);
   };
 
   const handleAddSchedule = () => {

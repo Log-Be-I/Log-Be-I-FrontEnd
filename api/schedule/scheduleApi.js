@@ -1,6 +1,69 @@
 import { axiosWithToken } from "../axios/axios";
 import { parseISO, format } from "date-fns";
+import ko from "date-fns/locale";
 
+const toKSTISOString = (dateString) => {
+  const date = new Date(dateString);
+  return new Date(date.getTime() + 9 * 60 * 60 * 1000).toISOString().split(".")[0];
+};
+// 일정 생성
+export const createTextSchedule = async (data) => {
+  console.log("📝 [CREATE] 일정 생성 요청 데이터:", data);
+  try {
+    const parsedData = {
+      ...data,
+      startDateTime: toKSTISOString(data.startDateTime),
+      endDateTime: toKSTISOString(data.endDateTime),
+    };
+
+    // const parsedData = {
+    //   ...data,
+    //   startDateTime: data.startDateTime.toISOString().split(".")[0],
+    //   endDateTime: data.endDateTime.toISOString().split(".")[0],
+    // }
+
+    console.log("🧪 일정 생성 데이터 (KST):", parsedData);
+
+    const response = await axiosWithToken.post(
+      "/text-schedules",
+      parsedData,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("일정 생성 실패:", error);
+    throw error;
+  }
+};
+
+// 일정 수정
+export const updateSchedule = async (scheduleId, data) => {
+  console.log("📝 [UPDATE] 일정 수정 요청 데이터:", data);
+  try {
+    const parsedData = {
+      ...data,
+      startDateTime: toKSTISOString(data.startTime),
+      endDateTime: toKSTISOString(data.endTime),
+    };
+    // const parsedData = {
+    //   ...data,
+    //   startDateTime: data.startTime.toISOString().split(".")[0],
+    //   endDateTime: data.endTime.toISOString().split(".")[0],
+    // }
+
+    console.log("🧪 일정 수정 데이터 (KST):", parsedData);
+
+    const response = await axiosWithToken.patch(
+      `/schedules/${scheduleId}`,
+      parsedData
+    );
+    return response.data;
+  } catch (error) {
+    console.error("일정 수정 중 오류 발생:", error);
+    throw error;
+  }
+};
+
+// 일정 조회
 export const getAllSchedules = async (year, month) => {
   try {
     const response = await axiosWithToken.get(`/schedules`, {
@@ -9,7 +72,6 @@ export const getAllSchedules = async (year, month) => {
         month,
       },
     });
-    console.log("🧪 일정 전체 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("일정 조회 실패:", error);
@@ -17,56 +79,6 @@ export const getAllSchedules = async (year, month) => {
   }
 };
 
-export const createTextSchedule = async (data) => {
-  try {
-    const formattedData = {
-      ...data,
-      startDateTime: new Date(data.startDateTime).toISOString().slice(0, 19),
-      endDateTime: new Date(data.endDateTime).toISOString().slice(0, 19),
-    };
-    console.log("🧪 일정 생성 데이터:", formattedData);
-    const response = await axiosWithToken.post(
-      "/text-schedules",
-      formattedData
-    );
-    console.log("🧪 post 응답:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("일정 생성 실패:", error);
-    throw error;
-  }
-};
-
-export const updateSchedule = async (scheduleId, data) => {
-  try {
-    const start =
-      typeof data.startTime === "string"
-        ? parseISO(data.startTime)
-        : data.startTime;
-    const end =
-      typeof data.endTime === "string" ? parseISO(data.endTime) : data.endTime;
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error("Invalid start or end DateTime provided.");
-    }
-
-    const formattedData = {
-      ...data,
-      startDateTime: format(start, "yyyy-MM-dd'T'HH:mm:ss"),
-      endDateTime: format(end, "yyyy-MM-dd'T'HH:mm:ss"),
-    };
-    console.log("🧪 서버로 보내는 데이터:", formattedData);
-
-    const response = await axiosWithToken.patch(
-      `/schedules/${scheduleId}`,
-      formattedData
-    );
-    return response.data;
-  } catch (error) {
-    console.error("일정 수정 중 오류 발생:", error);
-    throw error;
-  }
-};
 
 export const deleteSchedule = async (scheduleId) => {
   try {
@@ -81,7 +93,6 @@ export const deleteSchedule = async (scheduleId) => {
 // 일정 조회
 export const getScheduleDetail = async (scheduleId) => {
   const response = await axiosWithToken.get(`/schedules/${scheduleId}`);
-  console.log("🧪 일정 상세 응답:", response.data);
   return response.data;
 };
 
