@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 프로필용 스토어
@@ -37,8 +37,8 @@ export const useMemberStore = create(
         }),
     }),
     {
-      name: "member-storage", // AsyncStorage에 저장될 key 이름
-      getStorage: () => AsyncStorage,
+      name: "member-storage",
+      storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );
