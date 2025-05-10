@@ -76,9 +76,6 @@ export default function AddSchedule() {
     }
 
     try {
-      // const formattedStartDate = new Date(startDate);
-      // const formattedEndDate = new Date(endDate);
-
       await createTextSchedule({
         title,
         startDateTime: startDate,
@@ -90,12 +87,12 @@ export default function AddSchedule() {
 
       setTimeout(() => {
         router.replace({
-          pathname: "/calendar/",
+          pathname: "/(tabs)/calendar/",
           params: {
             refresh: true,
             selectedDate: startDate.toISOString().split("T")[0],
-            targetMonth: startDate.getMonth() + 1,
-            targetYear: startDate.getFullYear(),
+            currentMonth: startDate.getMonth() + 1,
+            currentYear: startDate.getFullYear()
           },
         });
       }, 1000);

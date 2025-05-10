@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
 import { format } from "date-fns";
 
 import CalendarBody from "../../../components/calendar/CalendarBody";
@@ -37,51 +34,43 @@ export default function MyCalendar() {
   const [allSchedules, setAllSchedules] = useState({});
   const [currentMonth, setCurrentMonth] = useState(initialDate.getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(initialDate.getFullYear());
-// 일정 데이터를 서버에서 가져와 달력에 마킹하고 표시하는 함수
+
+  // 일정 데이터를 서버에서 가져와 달력에 마킹하고 표시하는 함수
   const fetchSchedules = async (year, month) => {
     try {
-      // 서버에 지정된 월의 일정 데이터를 가져온다.
       const data = await getAllSchedules(year, month);
-      // 일정 데이터를 저장할 객체들 초기화
-      const formatted = {}; // 날짜별 일정 저장
-      const marks = {}; // 날짜별 마킹 저장(공휴일 포함)
-      // 서버에서 받아온 일정 데이터를 하나씩 처리
+      const formatted = {};
+      const marks = {};
+
+      // 서버에서 받아온 일정 데이터 처리
       data.data.forEach((item) => {
-        const start = item.startDateTime; // KST 시간 그대로 사용
-        const end = item.endDateTime;
-        // 시작일과 종료일의 날짜만 추출
-        const startDate = start.split("T")[0]; // 2025-05-09
-        const endDate = end.split("T")[0]; // 2025-05-10
-        // 시작일부터 종료일까지 날짜를 증가시키며 저장할 변수
+        const startDate = item.startDateTime.split("T")[0];
+        const endDate = item.endDateTime.split("T")[0];
         let currentDate = startDate;
 
-        // 시작일부터 종료일까지 모든 날짜에 일정 추가
         while (currentDate <= endDate) {
-          //해당 날짜에 일정 배열이 없으면 새로 생성
           if (!formatted[currentDate]) formatted[currentDate] = [];
           formatted[currentDate].push({
             id: item.scheduleId,
             title: item.title,
-            startDateTime: item.startDateTime, // 시작 시간(KST)
-            endDateTime: item.endDateTime, // 종료 시간(KST)
+            startDateTime: item.startDateTime,
+            endDateTime: item.endDateTime,
             calendarId: item.calendarId,
           });
-          // 날짜 마커 설정(표시용)
           marks[currentDate] = {
-            ...(marks[currentDate] || {}), // 기존 마커 유지
-            marked: true, // 마커 표시
+            ...(marks[currentDate] || {}),
+            marked: true,
             dotColor: "#69BAFF",
             originDotColor: "#69BAFF",
           };
-          // currentDate를 다음 날짜로 증가 (KST 유지)
           const nextDay = new Date(currentDate);
           nextDay.setDate(nextDay.getDate() + 1);
           currentDate = nextDay.toISOString().split("T")[0];
-      }
+        }
       });
 
-      // 공휴일 마커 추가
-      Object.keys(Holidays).forEach((date) => {
+      // 공휴일 처리
+      Object.entries(Holidays).forEach(([date, holiday]) => {
         marks[date] = {
           ...(marks[date] || {}),
           marked: true,
@@ -89,74 +78,82 @@ export default function MyCalendar() {
           originDotColor: "#FF4B4B",
         };
         if (!formatted[date]) formatted[date] = [];
-        formatted[date].push({
-          title: Holidays[date].name,
-          startDateTime: `${date}T00:00:00`,
-          endDateTime: `${date}T23:59:59`,
-          isHoliday: true,
+        
+        const holidayList = Array.isArray(holiday) ? holiday : [holiday];
+        holidayList.forEach(h => {
+          formatted[date].push({
+            title: h.name,
+            startDateTime: `${date}T00:00:00`,
+            endDateTime: `${date}T23:59:59`,
+            isHoliday: true,
+          });
         });
       });
 
-      // 처리된 일정 데이터를 상태로 저장
-      setAllSchedules(formatted); // 날짜별 일정 목록
-      setMarkedDates(marks); // 날짜별 마킹 정보
-    // 사용자가 선택한 날짜의 일정 보여주기
-    if (selected) {
-      const selectedDateString = typeof selected === "string" ? selected : selected.toISOString().split("T")[0];
-      setSelectedDaySchedules(formatted[selectedDateString] || []);
-    }
+      setAllSchedules(formatted);
+      setMarkedDates(marks);
+      setSelectedDaySchedules(formatted[format(selected, 'yyyy-MM-dd')] || []);
     } catch (error) {
       console.error("일정 조회 실패:", error);
     }
   };
 
-  // 새로고침 플래그가 있을 때 일정 다시 불러오기
+  // 초기 로딩 및 새로고침 처리
   useEffect(() => {
-    if (refresh) {
-      const date = getKSTDate();
-      // 선택된 날짜의 월과 년도로 캘린더 이동
-      setCurrentMonth(date.getMonth() + 1);
-      setCurrentYear(date.getFullYear());
-      // 해당 월의 일정 불러오기
-      fetchSchedules(date.getFullYear(), date.getMonth() + 1);
-      // 선택된 날짜 설정
-      setSelected(selectedDate || date.toISOString().split("T")[0]);
-    }
+    const date = refresh ? getKSTDate() : initialDate;
+    const selectedDateObj = selectedDate ? new Date(selectedDate) : date;
+    setSelected(selectedDateObj);
+    
+    // 선택된 날짜의 월과 년도로 캘린더 이동
+    setCurrentMonth(selectedDateObj.getMonth() + 1);
+    setCurrentYear(selectedDateObj.getFullYear());
+    
+    // 해당 월의 일정을 가져옴
+    fetchSchedules(selectedDateObj.getFullYear(), selectedDateObj.getMonth() + 1);
   }, [refresh, selectedDate]);
 
-  // 월이 변경될 때마다 일정 다시 불러오기
+  // 월 변경 처리
   useEffect(() => {
     fetchSchedules(currentYear, currentMonth);
   }, [currentYear, currentMonth]);
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     fetchSchedules(currentYear, currentMonth);
-  //   }, [currentYear, currentMonth])
-  // );
+  const handleDayPress = (day) => {
+    const newSelected = new Date(day.dateString);
+    const newMonth = newSelected.getMonth() + 1;
+    const newYear = newSelected.getFullYear();
+
+    // 선택한 날짜가 현재 표시된 달과 다른 경우
+    if (newMonth !== currentMonth || newYear !== currentYear) {
+      setCurrentMonth(newMonth);
+      setCurrentYear(newYear);
+      // 새로운 달의 일정을 가져옴
+      fetchSchedules(newYear, newMonth).then(() => {
+        setSelected(newSelected);
+        setSelectedDaySchedules(allSchedules[day.dateString] || []);
+      });
+    } else {
+      setSelected(newSelected);
+      setSelectedDaySchedules(allSchedules[day.dateString] || []);
+    }
+  };
 
   const handleMonthChange = (date) => {
     const newMonth = date.getMonth() + 1;
     const newYear = date.getFullYear();
     setCurrentMonth(newMonth);
     setCurrentYear(newYear);
-    // 달이 변경될 때 선택된 날짜와 일정 초기화
     setSelected(null);
     setSelectedDaySchedules([]);
-  };
-
-  const handleDayPress = (day) => {
-    setSelected(day.dateString);
-    const daySchedules = allSchedules[day.dateString] || [];
-  
-    // 서버에서 받은 KST 시간 그대로 사용
-    setSelectedDaySchedules(daySchedules);
   };
 
   const handleAddSchedule = () => {
     router.push({
       pathname: "/(tabs)/calendar/addSchedule",
-      params: { selectedDate: selected },
+      params: { 
+        selectedDate: selected,
+        currentMonth: currentMonth,
+        currentYear: currentYear
+      },
     });
   };
 
@@ -181,7 +178,6 @@ export default function MyCalendar() {
       </View>
 
       <View style={styles.scheduleWrapper}>
-        {/* <SafeAreaView style={{ flex: 1, backgroundColor: "white" }} /> */}
         <ScheduleComponent
           schedules={selectedDaySchedules}
           onPress={handleSchedulePress}
@@ -206,12 +202,6 @@ const styles = StyleSheet.create({
   scheduleWrapper: {
     flex: 1,
     paddingHorizontal: 10,
-  },
-  scheduleScrollView: {
-    flex: 1,
-  },
-  scheduleContent: {
-    paddingBottom: 60, // 스크롤 뷰의 bottom이 60
   },
   addButton: {
     position: "absolute",
