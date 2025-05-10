@@ -37,6 +37,7 @@
     "expo-media-library": "~17.0.6",
     "expo-modules-autolinking": "~2.0.0",
     "expo-modules-core": "~2.2.3",
+    "expo-notifications": "~0.29.14",
     "expo-random": "^14.0.1",
     "expo-router": "~4.0.20",
     "expo-sharing": "~13.0.1",
@@ -46,6 +47,7 @@
     "expo-system-ui": "~4.0.9",
     "expo-updates": "~0.27.4",
     "expo-web-browser": "~14.0.2",
+    "firebase": "^11.7.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
@@ -66,8 +68,7 @@
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "uuid": "^11.1.0",
-    "zustand": "^5.0.3",
-    "expo-notifications": "~0.29.14"
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
