@@ -4,7 +4,11 @@ import AnswerIcon from '../../assets/qna/answerIcon.svg';
 import GirogiIcon from '../../assets/qna/answerGirogi.svg';
 
 export default function IconComponent({ questionAnswerStatus }) {
-  if (questionAnswerStatus !== 'DONE_ANSWER') return null;
+  console.log("🚀 아이콘 렌더링 상태:", questionAnswerStatus);
+
+  // ✅ 조건을 대문자로 변환하여 비교
+  const status = questionAnswerStatus?.trim().toUpperCase();
+  if (status !== 'DONE_ANSWER') return null;
 
   return (
     <View style={styles.iconContainer}>

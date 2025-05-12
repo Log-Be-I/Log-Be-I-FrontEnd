@@ -29,42 +29,10 @@ export default function QnaPage() {
   const [titleKeyword, setTitleKeyword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { updatedId, updatedTitle, updatedContent } = useLocalSearchParams();
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchQuestions();
-    }, [selected, currentPage])
-  );
-
   useEffect(() => {
-    if (keywords) {
-      try {
-        const parsedKeywords = JSON.parse(keywords); // title만 넘긴 경우에는 그냥 string으로 받음
-        setTitleKeyword(parsedKeywords.title || "");
-      } catch (error) {
-        console.error("키워드 파싱 오류:", error);
-      }
-    }
-  }, [keywords]);
-
-  useEffect(() => {
-    if (updatedId) {
-      setQuestions((prev) =>
-        prev.map((question) =>
-          question.id === Number(updatedId)
-            ? { ...question, title: updatedTitle, content: updatedContent }
-            : question
-        )
-      );
-    }
-  }, [updatedId]);
-
-  // 현재 페이지 이동시에 groupIndex 업데이트
-  useEffect(() => {
-    const newGroupIndex = Math.floor((currentPage - 1) / itemsPerPage);
-    setGroupIndex(newGroupIndex);
-  }, [currentPage]);
+    fetchQuestions();
+  }, [selected, currentPage]);
+  
 
   const fetchQuestions = async () => {
     setIsLoading(true);
@@ -74,53 +42,26 @@ export default function QnaPage() {
         size: itemsPerPage,
         orderBy: selected === "latest" ? "DESC" : "ASC",
       });
+ 
+        const questionsData = response.data || [];
+        const pageInfo = response.pageInfo || {};
+        //console.log("✅ 상태로 설정된 questions:", questionsData);
+        console.log("✅ 페이지 정보:", pageInfo);
 
-      // 삭제되지 않은 질문만 필터링
-      const activeQuestions = response.data.filter(
-        (item) => item.questionStatus !== "QUESTION_DELETED"
-      );
+        setQuestions(questionsData);
+        setTotalPages(pageInfo.totalPages || 1);
 
-      // 필터링 된 데이터 기준으로 정렬렬
-      const sortedData = [...activeQuestions].sort((a, b) => {
-        const dateA = new Date(a.createdAt);
-        const dateB = new Date(b.createdAt);
-        return selected === "latest" ? dateB - dateA : dateA - dateB;
-      });
-
-      // 키워드가 있으면 해당 제목을 가진 질문을 맨 앞으로 정렬
-      if (titleKeyword) {
-        sortedData.sort((a, b) => {
-          const isA = a.title.includes(titleKeyword);
-          const isB = b.title.includes(titleKeyword);
-          if (isA && !isB) return -1;
-          if (!isA && isB) return 1;
-          return 0;
-        });
-      }
-      // 페이지 수 재계산
-      const recalculatedTotalPages = Math.ceil(
-        sortedData.length / itemsPerPage
-      );
-      // 현재 페이지가 초과되면 보정
-      if (currentPage > recalculatedTotalPages) {
-        setCurrentPage(recalculatedTotalPages || 1); // 최소 1페이지 유지지
-      }
-      // 현재 페이지에 맞는 데이터 슬라이싱
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginationData = sortedData.slice(startIndex, endIndex);
-      // 상태 반영
-      setQuestions(paginationData);
-      setTotalPages(recalculatedTotalPages);
     } catch (error) {
       console.error("질문 조회 중 오류 발생:", error);
+      setQuestions([]); // 오류 발생 시 빈 배열로 설정
+      setTotalPages(1);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleBack = () => {
-    router.replace("/");
+    router.replace("/(tabs)/")
   };
 
   return (
@@ -153,14 +94,15 @@ export default function QnaPage() {
           <NoMyQuestion />
         ) : (
           <>
-            {questions.map((item) => {
+            {questions.map((item, index) => {
+              //console.log("✅ 렌더링 질문:", index + 1, item);
               const formattedDate = format(
                 new Date(item.createdAt),
                 "yyyy-MM-dd"
               );
               return (
                 <QnaCardWrapper
-                  key={`${item.id || item.questionId}`}
+                  key={`${item.questionId}-${index}`}
                   title={item.title}
                   createdAt={formattedDate}
                   questionAnswerStatus={item.questionAnswerStatus}

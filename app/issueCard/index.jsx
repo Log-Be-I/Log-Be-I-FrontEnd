@@ -42,7 +42,7 @@ export default function IssueCardPage() {
 
       const knownTitles = interestCategories.flatMap(row => row.map(item => item.title));
 
-      const keywordNames = parsedKeywords.map(keyword => keyword.name);
+      //const keywordNames = parsedKeywords.map(keyword => keyword.name);
       // 선택된 카테고리 키워드
       const predefined = parsedKeywords.filter(title => knownTitles.includes(title));
       // 사용자가 입력한 커스텀 키워드

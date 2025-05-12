@@ -4,6 +4,15 @@ import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/Ionicons";
 import DayInput from "./DayInput";
 
+// ✅ 한국 시간 (UTC+9)으로 날짜 생성 함수
+const getKoreanDate = (date = new Date()) => {
+  const koreanTimeOffset = 9 * 60; // UTC+9
+  const localTime = date.getTime();
+  const offset = date.getTimezoneOffset() * 60000; // UTC offset
+  const koreanDate = new Date(localTime + offset + koreanTimeOffset * 60000);
+  return koreanDate;
+};
+
 export default function DateRangeSelector({
   startDate,
   endDate,
@@ -18,6 +27,24 @@ export default function DateRangeSelector({
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [markedDates, setMarkedDates] = useState({});
   const [dateType, setDateType] = useState(null);
+
+  // ✅ 초기화: 일정 생성 및 수정 시 기본 시간 설정
+useEffect(() => {
+  if (!startDate || !endDate) {
+    const { start, end } = setDefaultTime();
+    setStartedDate(start);
+    setEndedDate(end);
+    updateMarkedDates(start, end);
+    onDateRangeChange(start, end);
+  } else {
+    // 수정의 경우 사용자가 지정한 시간 유지
+    const initialStart = new Date(startDate);
+    const initialEnd = new Date(endDate);
+    setStartedDate(initialStart);
+    setEndedDate(initialEnd);
+    updateMarkedDates(initialStart, initialEnd);
+  }
+}, [startDate, endDate]);
 
   // ✅ 하루종일 상태가 변경될 때 날짜와 시간 업데이트
   useEffect(() => {
@@ -55,13 +82,22 @@ export default function DateRangeSelector({
       selected: true,
       selectedColor: "#69BAFF",
     };
-    marks[endStr] = {
-      ...marks[endStr],
-      selected: true,
-      selectedColor: "#69BAFF",
-    };
+    // marks[endStr] = {
+    //   ...marks[endStr],
+    //   selected: true,
+    //   selectedColor: "#69BAFF",
+    // };
 
     setMarkedDates(marks);
+  };
+
+    // ✅ 기본 시간 (09:00 ~ 10:00) 설정 함수
+  const setDefaultTime = () => {
+    const koreanDate = getKoreanDate();
+    koreanDate.setHours(9, 0, 0, 0); // 시작 시간 09:00
+    const endDate = new Date(koreanDate);
+    endDate.setHours(10, 0, 0, 0); // 종료 시간 10:00
+    return { start: koreanDate, end: endDate };
   };
 
   const handleDateSelect = (day) => {

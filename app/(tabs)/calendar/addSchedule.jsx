@@ -41,6 +41,11 @@ export default function AddSchedule() {
     return () => clearTimeout(timer);
   }, []);
 
+  const getKoreanDateString = (date) => {
+    const koreanDate = new Date(date.getTime() + 9 * 60 * 60 * 1000); // UTC+9 적용
+    return koreanDate.toISOString().split("T")[0];
+  };
+
   const handleDateRangeChange = (start, end) => {
     setStartDate(start);
     setEndDate(end);
@@ -90,7 +95,7 @@ export default function AddSchedule() {
           pathname: "/(tabs)/calendar/",
           params: {
             refresh: true,
-            selectedDate: startDate.toISOString().split("T")[0],
+            selectedDate: getKoreanDateString(startDate),
             currentMonth: startDate.getMonth() + 1,
             currentYear: startDate.getFullYear()
           },

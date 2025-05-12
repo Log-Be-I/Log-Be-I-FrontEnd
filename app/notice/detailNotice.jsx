@@ -61,14 +61,19 @@ export default function DetailNoticePage() {
           </View>
         </View>
 
-        {notice.image && (
+        {notice.fileUrls && notice.fileUrls.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>첨부파일</Text>
-            <Image 
-              source={{ uri: notice.image }} 
-              style={styles.attachedImage} 
-              resizeMode="contain"
-            />
+            <ScrollView horizontal style={styles.imageScroll}>
+              {notice.fileUrls.map((url, index) => (
+                <Image 
+                  key={index}
+                  source={{ uri: url }} 
+                  style={styles.attachedImage} 
+                  resizeMode="contain"
+                />
+              ))}
+            </ScrollView>
           </View>
         )}
       </ScrollView>
@@ -167,5 +172,20 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
+  },
+  attachmentIcon: {
+    marginLeft: 8,
+  },
+  attachedImage: {
+    width: 150,
+    height: 150,
+    marginRight: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  imageScroll: {
+    flexDirection: 'row',
+    marginTop: 10,
   },
 });

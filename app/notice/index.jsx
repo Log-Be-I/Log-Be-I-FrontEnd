@@ -15,9 +15,6 @@ export default function NoticePage() {
   const itemsPerPage = 6;
   const [totalPages, setTotalPages] = useState(0);
 
-  const startIndex = currentPage * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-
   // 정렬된 공지사항 리스트를 state에 저장s
   useEffect(() => {
     fetchNotices();
@@ -99,19 +96,24 @@ export default function NoticePage() {
             {notices.map((notice) => {
               const formattedDate = format(new Date(notice.createdAt), 'yyyy-MM-dd');
               return (
-              <Pressable
-                key={notice.noticeId}
-                style={styles.noticeItem}
-                onPress={() => handleNoticePress(notice.noticeId)}
-              >
-                <View style={styles.noticeContent}>
-                  <View style={styles.titleContainer}>
-                    <NoticeButton isPinned={notice.isPinned} />
-                    <Text style={styles.noticeTitle}>{notice.title}</Text>
+              <View key={notice.noticeId} style={styles.noticeItem}>
+                <Pressable
+                  key={notice.noticeId}
+                  style={styles.noticeItem}
+                  onPress={() => handleNoticePress(notice.noticeId)}
+                >
+                  <View style={styles.noticeContent}>
+                    <View style={styles.titleContainer}>
+                      <NoticeButton isPinned={notice.isPinned} />
+                      <Text style={styles.noticeTitle}>{notice.title}</Text>
+                      {notice.fileUrls && notice.fileUrls.length > 0 && (
+                        <Icon name="attach-outline" size={20} color="#007AFF" style={styles.attachmentIcon} />
+                      )}
+                    </View>
+                    <Text style={styles.noticeDate}>{formattedDate}</Text>
                   </View>
-                  <Text style={styles.noticeDate}>{formattedDate}</Text>
-                </View>
-              </Pressable>
+                </Pressable>
+              </View>
               );
           })}
     </View>

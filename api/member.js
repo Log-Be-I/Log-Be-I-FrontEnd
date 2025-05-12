@@ -43,6 +43,8 @@ export const getMemberDetail = async (memberId) => {
 
 // 회원 수정
 export const updateMember = async (memberId, data) => {
+  console.log("📡 요청 URL:", `https://logbe-i.com/members/${memberId}`);
+  console.log("📄 Params:", data); 
   const response = await axiosWithToken.patch(`/members/${memberId}`, data);
 
   return response.data;

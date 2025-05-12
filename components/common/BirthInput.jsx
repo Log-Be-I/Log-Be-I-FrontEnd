@@ -10,20 +10,22 @@ export default function BirthInput({
   placeholder = "YYYY-MM-DD",
 }) {
   const [showPicker, setShowPicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(
-    value ? new Date(value) : new Date()
-  );
+  // const [selectedDate, setSelectedDate] = useState(
+  //   value ? new Date(value) : new Date()
+  // );
 
   const onChange = (event, selected) => {
-    const currentDate = selected || selectedDate;
-    setShowPicker(Platform.OS === "ios");
-    setSelectedDate(currentDate);
-
+    setShowPicker(false);
+    // const currentDate = selected || selectedDate;
+    // setShowPicker(Platform.OS === "ios");
+    // setSelectedDate(currentDate);
     if (selected) {
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-      const day = String(currentDate.getDate()).padStart(2, "0");
-      handleValue(`${year}-${month}-${day}`);
+      const year = selected.getFullYear();
+      const month = String(selected.getMonth() + 1).padStart(2, "0");
+      const day = String(selected.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`;
+      console.log("✅ 선택된 날짜:", formattedDate);
+      handleValue(formattedDate);
     }
   };
 
@@ -40,7 +42,7 @@ export default function BirthInput({
 
       {showPicker && (
         <DateTimePicker
-          value={selectedDate}
+          value={value ? new Date(value) : new Date()}
           mode="date"
           display="default"
           maximumDate={new Date()}
