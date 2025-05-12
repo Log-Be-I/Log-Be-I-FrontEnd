@@ -1,30 +1,26 @@
 import React, { useEffect } from "react";
 import { Animated, StyleSheet, Text } from "react-native";
 
-export default function Toast({ message, visible, onHide }) {
+export default function BriefingToast({ message, onHide }) {
   const opacity = new Animated.Value(0);
 
   useEffect(() => {
-    if (visible) {
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(1400),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        onHide();
-      });
-    }
-  }, [visible]);
-
-  if (!visible) return null;
+    Animated.sequence([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.delay(1400),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onHide();
+    });
+  }, [message]);
 
   return (
     <Animated.View style={[styles.container, { opacity }]}>

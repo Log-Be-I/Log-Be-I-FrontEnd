@@ -29,7 +29,7 @@ export const getReportById = async (monthlyTitle) => {
   }
 };
 
-export const createTTSReport = async (reportIds) => {
+export const createTTSReport = async (reportIds, signal) => {
   if (!reportIds || reportIds.length === 0) {
     console.error("❗읽을 reportIds가 없습니다. 요청을 보내지 않습니다.");
     return;
@@ -40,9 +40,14 @@ export const createTTSReport = async (reportIds) => {
       headers: {
         "Content-Type": "application/json",
       },
+      signal,
     });
     return response.data;
   } catch (error) {
+    if (error.name === "CanceledError" || error.name === "AbortError") {
+      console.log("TTS 요청이 취소되었습니다.");
+      throw new Error("AbortError");
+    }
     console.error("리포트 읽기 실패:", error);
     throw error;
   }

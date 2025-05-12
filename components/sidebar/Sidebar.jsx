@@ -10,6 +10,7 @@ import { useMemberStore } from "../../zustand/stores/member";
 import { CATEGORIES } from "../../constants/CategoryData";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import useAuthStore from "../../zustand/stores/useAuthStore";
 
 export default function Sidebar({ onClose }) {
   const router = useRouter();
@@ -17,9 +18,13 @@ export default function Sidebar({ onClose }) {
 
   const handleLogout = async () => {
     try {
+      // 먼저 라우팅
+      router.replace("/(onBoard)");
+
+      // 그 다음 상태 초기화
       clearMember();
+      useAuthStore.getState().clearToken();
       await AsyncStorage.clear();
-      router.replace("/");
     } catch (error) {
       console.error("로그아웃 에러:", error);
     }
@@ -95,15 +100,15 @@ export default function Sidebar({ onClose }) {
                 ]}
                 onItemPress={(route) => router.push(route)}
               />
-            </ScrollView>
 
-            <View style={styles.logoutContainer}>
-              <View style={styles.logoutDivider} />
-              <Pressable style={styles.logoutButton} onPress={handleLogout}>
-                <LogoutIcon width={20} height={20} />
-                <Text style={styles.logoutText}>Log Out</Text>
-              </Pressable>
-            </View>
+              <View style={styles.logoutContainer}>
+                <View style={styles.logoutDivider} />
+                <Pressable style={styles.logoutButton} onPress={handleLogout}>
+                  <LogoutIcon width={20} height={20} />
+                  <Text style={styles.logoutText}>Log Out</Text>
+                </Pressable>
+              </View>
+            </ScrollView>
           </View>
         </View>
       </View>
@@ -144,7 +149,7 @@ const styles = StyleSheet.create({
     display: "flex",
   },
   scrollView: {
-    flex: 1,
+    flexGrow: 1,
   },
   sectionsContainer: {
     paddingVertical: 16,

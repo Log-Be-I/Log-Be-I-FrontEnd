@@ -23,6 +23,7 @@ const defineConfig = () => ({
   assetBundlePatterns: ["**/*"],
   ios: {
     supportsTablet: true,
+    bundleIdentifier: "com.taekho.aegirogilogbei",
   },
   android: {
     adaptiveIcon: {
@@ -55,6 +56,13 @@ const defineConfig = () => ({
       },
     ],
     ["@react-native-google-signin/google-signin"],
+    [
+      "expo-notifications",
+      {
+        icon: "./assets/girogi.png",
+        color: "#ffffff",
+      },
+    ],
   ],
   // scheme: "logbei"
   scheme: "com.taekho.aegirogilogbei",

@@ -57,6 +57,17 @@ export default function Footer({ currentTab, onTabPress }) {
           numberOfChannels: 1,
           bitRate: 128000,
         },
+        ios: {
+          extension: ".caf",
+          audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
+          sampleRate: 44100,
+          numberOfChannels: 1,
+          bitRate: 128000,
+          linearPCMBitDepth: 16,
+          linearPCMIsBigEndian: false,
+          linearPCMIsFloat: false,
+        },
+        isMeteringEnabled: true,
       };
 
       const { recording: newRecording } = await Audio.Recording.createAsync(

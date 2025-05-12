@@ -13,7 +13,7 @@ import { axiosWithoutToken } from "../../api/axios/axios";
 import { useMemberStore, useSignUpStore } from "../../zustand/stores/member";
 import Constants from "expo-constants";
 import * as Font from "expo-font";
-
+import useAuthStore from "../../zustand/stores/useAuthStore";
 WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
@@ -21,9 +21,9 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
-
   const { setMember } = useMemberStore();
   const { setSignUpState } = useSignUpStore();
+  const { setToken } = useAuthStore();
 
   // ✅ 폰트 로딩
   useEffect(() => {
@@ -47,6 +47,11 @@ export default function Login() {
       const response = await axiosWithoutToken.post("api/auth/google/code", {
         code: result.data.serverAuthCode,
       });
+      // console.log("🔑 구글 인증 코드:", response.data);
+
+      setToken(response.data.token);
+      const token = useAuthStore.getState().getToken();
+      // console.log("🔑🔑🔑🔑🔑🔑 토큰:", token);
 
       if (response.data.status === "login") {
         setMember(response.data.user);

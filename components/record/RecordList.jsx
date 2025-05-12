@@ -156,35 +156,39 @@ export default function RecordList({
         </Animated.View>
       )}
 
-      <SectionList
-        ref={listRef}
-        sections={sections}
-        renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
-        keyExtractor={(item) => item.recordId.toString()}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-        stickySectionHeadersEnabled
-        ListEmptyComponent={EmptyState}
-        ListFooterComponent={ListFooter}
-        onEndReached={onLoadMore}
-        onEndReachedThreshold={0.5}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={onRefresh}
-            colors={["#69BAFF"]}
-          />
-        }
-        contentContainerStyle={[
-          styles.listContent,
-          sections.length === 0 && styles.emptyContent,
-          { paddingBottom: 88 },
-        ]}
-      />
+      {sections.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <SectionList
+          ref={listRef}
+          sections={sections}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          keyExtractor={(item) => item.recordId.toString()}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+          stickySectionHeadersEnabled
+          ListEmptyComponent={EmptyState}
+          ListFooterComponent={ListFooter}
+          onEndReached={onLoadMore}
+          onEndReachedThreshold={0.5}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+              colors={["#69BAFF"]}
+            />
+          }
+          contentContainerStyle={[
+            styles.listContent,
+            sections.length === 0 && styles.emptyContent,
+            { paddingBottom: 88 },
+          ]}
+        />
+      )}
 
       <RecordDetailModal
         visible={showDetailModal}

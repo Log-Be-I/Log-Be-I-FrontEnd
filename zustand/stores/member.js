@@ -1,23 +1,11 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 프로필용 스토어
-export const useMemberStore = create((set) => ({
-  member: {
-    memberId: 0,
-    name: "",
-    nickname: "",
-    email: "",
-    region: "",
-    birth: "",
-    profile: "",
-    notification: false,
-    memberStatus: "",
-    lastLoginAt: "",
-  },
-  setMember: (newState) =>
-    set((state) => ({ member: { ...state.member, ...newState } })),
-  clearMember: () =>
-    set({
+export const useMemberStore = create(
+  persist(
+    (set) => ({
       member: {
         memberId: 0,
         name: "",
@@ -30,8 +18,30 @@ export const useMemberStore = create((set) => ({
         memberStatus: "",
         lastLoginAt: "",
       },
+      setMember: (newState) =>
+        set((state) => ({ member: { ...state.member, ...newState } })),
+      clearMember: () =>
+        set({
+          member: {
+            memberId: 0,
+            name: "",
+            nickname: "",
+            email: "",
+            region: "",
+            birth: "",
+            profile: "",
+            notification: false,
+            memberStatus: "",
+            lastLoginAt: "",
+          },
+        }),
     }),
-}));
+    {
+      name: "member-storage",
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);
 
 // 회원가입용 스토어
 export const useSignUpStore = create((set) => ({

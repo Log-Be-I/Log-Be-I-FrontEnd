@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import NotificationToggle from "../../../components/settings/NotificationToggle";
 import { useRouter } from "expo-router";
+import { TouchableOpacity } from "react-native";
+import { sendTestNotification } from "../../../utils/notifications";
 
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState({
@@ -21,6 +23,16 @@ export default function SettingsPage() {
       ...prev,
       [key]: !prev[key],
     }));
+  };
+
+  // 푸시 알림 테스트
+  const handleTestNotification = async () => {
+    try {
+      await sendTestNotification();
+      console.log("테스트 알림 전송 완료");
+    } catch (error) {
+      console.error("테스트 알림 전송 실패:", error);
+    }
   };
 
   return (
@@ -79,6 +91,13 @@ export default function SettingsPage() {
           <View style={styles.buttonBorder} />
         </Pressable>
       </View>
+      {/* 테스트 버튼 */}
+      <TouchableOpacity
+        style={styles.testButton}
+        onPress={handleTestNotification}
+      >
+        <Text style={styles.testButtonText}>푸시 알림 테스트</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -121,5 +140,25 @@ const styles = StyleSheet.create({
     height: 1,
     width: "100%",
     backgroundColor: "#5F5F5F",
+  },
+  testButton: {
+    // position: "absolute",
+    // bottom: 20,
+    // right: 20,
+    backgroundColor: "#007AFF",
+    padding: 12,
+    borderRadius: 8,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    zIndex: 1000,
+    width: "30%",
+  },
+  testButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
