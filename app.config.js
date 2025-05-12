@@ -6,6 +6,7 @@ config();
 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 const googleClientSecret = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET;
+const firebaseServiceAccountKey = process.env.EXPO_FIREBASE_SERVICE_ACCOUNT_KEY;
 
 const defineConfig = () => ({
   name: "Log-Be-I",
@@ -72,6 +73,7 @@ const defineConfig = () => ({
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     googleClientSecret: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET,
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    firebaseServiceAccountKey: process.env.EXPO_FIREBASE_SERVICE_ACCOUNT_KEY,
     eas: {
       projectId: "3b9fe13c-5188-46fa-80fe-dc73ca917cc4",
     },

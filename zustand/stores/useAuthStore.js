@@ -11,10 +11,10 @@ const useAuthStore = create(
       user: null,
       isLoggedIn: () => !!get().token,
       getToken: () => get().token,
-      setToken: (token) => {
+      setToken: async (token) => {
         set({ token });
         // 토큰 설정 시 푸시 토큰도 설정
-        setupPushToken();
+        await setupPushToken();
       },
       clearToken: async () => {
         // 로그아웃 시 푸시 토큰 정리
