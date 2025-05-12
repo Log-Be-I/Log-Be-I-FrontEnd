@@ -45,17 +45,29 @@ export default function MemberInfo() {
           ? `${selectedCity} ${selectedDistrict}`
           : member.region;
 
-      console.log("✅ 최종 지역 값:", newRegion);
+          console.log("✅ 최종 지역 값:", newRegion);
+          console.log("✅ 닉네임:", nicknameInput);
+          console.log("✅ 생년월일:", birthInput);
+          console.log("✅ member.nickname:", member.nickname);
+          console.log("✅ member.birth:", member.birth);
 
-      const response = await updateMember(member.memberId, member);
+    // ✅ 최신 상태 반영 - 사용자 입력 값만 적용
+    const updatedData = {
+      nickname: nicknameInput ? nicknameInput : member.nickname,
+      birth: birthInput ? birthInput : member.birth,
+      region: newRegion ? newRegion : member.region,
+    };
+
+      console.log("✅ 수정할 데이터:", updatedData);
+
+      // ✅ 수정 API 요청
+      const response = await updateMember(member.memberId, updatedData);
       console.log("response: ", response);
-      // 상태 업데이트
 
+      // 상태 업데이트
       setMember({
         ...member,
-        nickname: nicknameInput,
-        region: newRegion,
-        birth: birthInput,
+        ...updatedData, // 최신 데이터로 상태 업데이트
       });
       setIsEditMode(false);
     } catch (error) {
@@ -143,7 +155,8 @@ export default function MemberInfo() {
             {isEditMode ? (
               <BirthInput
                 value={birthInput}
-                setValue={(text) => setBirthInput(text)}
+                handleValue={setBirthInput}
+                //setValue={(text) => setBirthInput(text)}
                 placeholder={member.birth}
               />
             ) : (
@@ -157,8 +170,8 @@ export default function MemberInfo() {
             {isEditMode ? (
               <RegionDropdown
                 selectedCity={selectedCity}
-                selectedDistrict={selectedDistrict}
                 setSelectedCity={setSelectedCity}
+                selectedDistrict={selectedDistrict}
                 setSelectedDistrict={setSelectedDistrict}
               />
             ) : (

@@ -4,6 +4,7 @@ import QnaCard from './QnaCard';
 import IconComponent from './IconComponent';
 
 export default function QnaCardWrapper({ title, createdAt, questionAnswerStatus, onPress }) {
+  //console.log("✅ QnaCardWrapper 상태:", questionAnswerStatus);
   return (
     <Pressable onPress={onPress}>
       <View style={styles.wrapper}>

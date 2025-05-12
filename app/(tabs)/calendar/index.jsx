@@ -16,15 +16,17 @@ import { Holidays } from "../../../dummyData/Holidays";
 // ✅ 한국 시간 (Asia/Seoul) 기준으로 현재 날짜 가져오기
 const getKSTDate = () => {
   const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const kstOffset = 9 * 60 * 60000; // KST: UTC +9
-  return new Date(utc + kstOffset);
+  const utc = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
+  const kstTime = utc + 9 * 60 * 60 * 1000; // KST: UTC +9
+  console.log("🔥 kstTime:", new Date(kstTime));
+  return new Date(kstTime);
 };
 
 export default function MyCalendar() { 
   const router = useRouter();
   const { refresh, selectedDate } = useLocalSearchParams();
   const initialDate = getKSTDate();
+  console.log("🔥 초기 날짜:", initialDate);
 
   const [selected, setSelected] = useState(
     selectedDate ? new Date(selectedDate) : initialDate

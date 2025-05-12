@@ -30,13 +30,11 @@ export default function GetIssueCard() {
     const fetchKeywords = async () => {
       try {
         const response = await getKeywords();
-
-        const parsedData = response.data.map(item => ({
-            keyword: item.keyword,
-            news: item.news,
-          }
-        ));
-
+        // const parsedData = response.data.map(item => ({
+        //     keyword: item.keyword,
+        //     news: item.news,
+        //   }
+        // ));
         setKeywords(response.data); // 전체 키워드 + 뉴스 리스트 세팅
         setCards(response.data[0].news); // 첫번째 키워드의 뉴스로 초기 세팅
       } catch (error) {
