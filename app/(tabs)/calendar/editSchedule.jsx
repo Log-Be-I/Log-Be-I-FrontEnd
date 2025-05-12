@@ -45,6 +45,11 @@ export default function EditSchedule() {
   const [toastMessage, setToastMessage] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
 
+  const getKoreanDateString = (date) => {
+    const koreanDate = new Date(date.getTime() + 9 * 60 * 60 * 1000); // UTC+9 적용
+    return koreanDate.toISOString().split("T")[0];
+  };
+
   const handleDateRangeChange = (start, end) => {
     setStartTime(start);
     setEndTime(end);
@@ -101,7 +106,13 @@ export default function EditSchedule() {
       setOriginalEndTime(endTime);
       setIsEditing(false);
       setTimeout(() => {
-        router.replace("/calendar/");
+        router.replace({
+          pathname: "/(tabs)/calendar/",
+          params: {
+            refresh: true,
+            selectedDate: getKoreanDateString(startTime), // ✅ 수정된 일정의 날짜로 이동
+          },
+        });
       }, 1000);
     } catch (error) {
       console.error("일정 수정 실패:", error);
