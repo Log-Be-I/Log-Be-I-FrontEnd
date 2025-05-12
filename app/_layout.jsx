@@ -12,6 +12,7 @@ import useAuthStore from "../zustand/stores/useAuthStore";
 import {
   initializeNotifications,
   setNotificationResponseHandler,
+  setupPushToken,
 } from "../utils/notifications";
 import * as Notifications from "expo-notifications";
 
