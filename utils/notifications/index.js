@@ -102,6 +102,7 @@ export const sendTestNotification = async ({
       data: { type },
       sound: true,
       priority: Notifications.AndroidNotificationPriority.HIGH,
+      vibrate: [0, 250, 250, 250],
     };
 
     console.log("알림 내용:", notificationContent);
@@ -124,10 +125,19 @@ export const sendTestNotification = async ({
 export const setupPushToken = async () => {
   try {
     const token = await getPushToken();
-    if (!token) return false;
+    if (!token) {
+      console.log("푸시 토큰 발급 실패");
+      return false;
+    }
 
     const registered = await registerPushToken(token);
-    return registered;
+    if (!registered) {
+      console.log("푸시 토큰 서버 등록 실패");
+      return false;
+    }
+
+    console.log("푸시 토큰 설정 완료");
+    return true;
   } catch (error) {
     console.error("푸시 토큰 설정 실패:", error);
     return false;

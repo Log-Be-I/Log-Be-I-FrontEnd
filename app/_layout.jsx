@@ -12,6 +12,7 @@ import useAuthStore from "../zustand/stores/useAuthStore";
 import {
   initializeNotifications,
   setNotificationResponseHandler,
+  setupPushToken,
 } from "../utils/notifications";
 import * as Notifications from "expo-notifications";
 
@@ -62,8 +63,7 @@ export default function RootLayout() {
             // 로그인 상태일 경우에만 푸시 토큰 발급
             const isLoggedIn = useAuthStore.getState().isLoggedIn();
             if (isLoggedIn) {
-              const { login } = useAuthStore.getState();
-              await login(useAuthStore.getState().getToken());
+              await setupPushToken();
             }
           }
           return true;
