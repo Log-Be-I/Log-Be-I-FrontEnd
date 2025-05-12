@@ -65,7 +65,7 @@ export default function MainScheduleList() {
     const fetchSchedules = async () => {
       try {
         const data = await getTodaySchedules();
-        setTodaySchedules(data);
+        setTodaySchedules(data.data);
       } catch (error) {
         console.error("오늘의 일정을 불러오는데 실패했습니다.", error);
       }
