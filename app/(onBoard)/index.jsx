@@ -47,11 +47,11 @@ export default function Login() {
       const response = await axiosWithoutToken.post("api/auth/google/code", {
         code: result.data.serverAuthCode,
       });
-      console.log("🔑 구글 인증 코드:", response.data);
+      // console.log("🔑 구글 인증 코드:", response.data);
 
       setToken(response.data.token);
       const token = useAuthStore.getState().getToken();
-      console.log("🔑🔑🔑🔑🔑🔑 토큰:", token);
+      // console.log("🔑🔑🔑🔑🔑🔑 토큰:", token);
 
       if (response.data.status === "login") {
         setMember(response.data.user);

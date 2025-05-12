@@ -1,19 +1,39 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { logout as apiLogout } from "../../api/redis";
+import { setupPushToken, cleanupPushToken } from "../../utils/notifications";
 
 const useAuthStore = create(
   persist(
     (set, get) => ({
-      accessToken: null,
-
-      setToken: (token) => set({ accessToken: token }),
-
-      clearToken: () => set({ accessToken: null }),
-
-      isLoggedIn: () => !!get().accessToken,
-
-      getToken: () => get().accessToken,
+      token: null,
+      user: null,
+      isLoggedIn: () => !!get().token,
+      getToken: () => get().token,
+      setToken: (token) => {
+        set({ token });
+        // 토큰 설정 시 푸시 토큰도 설정
+        setupPushToken();
+      },
+      clearToken: async () => {
+        // 로그아웃 시 푸시 토큰 정리
+        await cleanupPushToken();
+        set({ token: null, user: null });
+      },
+      logout: async () => {
+        try {
+          const token = get().token;
+          if (token) {
+            await apiLogout(token);
+          }
+          await cleanupPushToken();
+          set({ token: null, user: null });
+        } catch (error) {
+          console.error("로그아웃 에러:", error);
+          throw error;
+        }
+      },
     }),
     {
       name: "auth-storage",

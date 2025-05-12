@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
 import { useRouter } from "expo-router";
 import Weather from "../../components/home/weather";
 import MainScheduleList from "../../components/home/MainScheduleList";
@@ -9,7 +9,6 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const { member } = useMemberStore();
-
 
   const handleLogout = async () => {
     try {

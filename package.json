@@ -66,7 +66,9 @@
     "uuid": "^11.1.0",
     "zustand": "^5.0.3",
     "expo-media-library": "~17.0.6",
-    "expo-sharing": "~13.0.1"
+    "expo-sharing": "~13.0.1",
+    "expo-notifications": "~0.29.14",
+    "expo-device": "~7.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
