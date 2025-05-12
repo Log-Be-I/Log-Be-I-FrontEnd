@@ -3,7 +3,7 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import "react-native-reanimated";
 import { ThemeProvider as CustomThemeProvider } from "../context/ThemeContext";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -17,7 +17,6 @@ import * as Notifications from "expo-notifications";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
-
 // 인증 상태에 따라 리다이렉션 처리
 export default function RootLayout() {
   const router = useRouter();

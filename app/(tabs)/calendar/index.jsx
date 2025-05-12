@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
 import { format } from "date-fns";
 
 import CalendarBody from "../../../components/calendar/CalendarBody";
@@ -16,53 +13,64 @@ import ScheduleComponent from "../../../components/calendar/ScheduleComponent";
 import { getAllSchedules } from "../../../api/schedule/scheduleApi";
 import { Holidays } from "../../../dummyData/Holidays";
 
-export default function MyCalendar() {
+// ✅ 한국 시간 (Asia/Seoul) 기준으로 현재 날짜 가져오기
+const getKSTDate = () => {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const kstOffset = 9 * 60 * 60000; // KST: UTC +9
+  return new Date(utc + kstOffset);
+};
+
+export default function MyCalendar() { 
   const router = useRouter();
-  const { refresh, selectedDate, targetMonth, targetYear } =
-    useLocalSearchParams();
+  const { refresh, selectedDate } = useLocalSearchParams();
+  const initialDate = getKSTDate();
+
   const [selected, setSelected] = useState(
-    selectedDate || new Date().toISOString().split("T")[0]
+    selectedDate ? new Date(selectedDate) : initialDate
   );
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDaySchedules, setSelectedDaySchedules] = useState([]);
   const [allSchedules, setAllSchedules] = useState({});
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(initialDate.getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(initialDate.getFullYear());
 
+  // 일정 데이터를 서버에서 가져와 달력에 마킹하고 표시하는 함수
   const fetchSchedules = async (year, month) => {
     try {
       const data = await getAllSchedules(year, month);
       const formatted = {};
       const marks = {};
 
-      data.forEach((item) => {
-        const start = new Date(item.startDateTime);
-        const end = new Date(item.endDateTime);
-        const current = new Date(start);
+      // 서버에서 받아온 일정 데이터 처리
+      data.data.forEach((item) => {
+        const startDate = item.startDateTime.split("T")[0];
+        const endDate = item.endDateTime.split("T")[0];
+        let currentDate = startDate;
 
-        // 시작일부터 종료일까지 모든 날짜에 마크 추가
-        while (current <= end) {
-          const dateKey = current.toISOString().split("T")[0];
-          if (!formatted[dateKey]) formatted[dateKey] = [];
-          formatted[dateKey].push({
+        while (currentDate <= endDate) {
+          if (!formatted[currentDate]) formatted[currentDate] = [];
+          formatted[currentDate].push({
             id: item.scheduleId,
             title: item.title,
             startDateTime: item.startDateTime,
             endDateTime: item.endDateTime,
             calendarId: item.calendarId,
           });
-          marks[dateKey] = {
-            ...(marks[dateKey] || {}),
+          marks[currentDate] = {
+            ...(marks[currentDate] || {}),
             marked: true,
             dotColor: "#69BAFF",
             originDotColor: "#69BAFF",
           };
-          current.setDate(current.getDate() + 1);
+          const nextDay = new Date(currentDate);
+          nextDay.setDate(nextDay.getDate() + 1);
+          currentDate = nextDay.toISOString().split("T")[0];
         }
       });
 
-      // 공휴일 마커 추가
-      Object.keys(Holidays).forEach((date) => {
+      // 공휴일 처리
+      Object.entries(Holidays).forEach(([date, holiday]) => {
         marks[date] = {
           ...(marks[date] || {}),
           marked: true,
@@ -70,74 +78,82 @@ export default function MyCalendar() {
           originDotColor: "#FF4B4B",
         };
         if (!formatted[date]) formatted[date] = [];
-        formatted[date].push({
-          title: Holidays[date].name,
-          startDateTime: `${date}T00:00:00`,
-          endDateTime: `${date}T23:59:59`,
-          isHoliday: true,
+        
+        const holidayList = Array.isArray(holiday) ? holiday : [holiday];
+        holidayList.forEach(h => {
+          formatted[date].push({
+            title: h.name,
+            startDateTime: `${date}T00:00:00`,
+            endDateTime: `${date}T23:59:59`,
+            isHoliday: true,
+          });
         });
       });
 
-      setAllSchedules((prev) => {
-        const merged = { ...prev, ...formatted };
-        return merged;
-      });
-
-      setMarkedDates((prev) => {
-        const merged = { ...prev, ...marks };
-        return merged;
-      });
-
-      setSelectedDaySchedules(formatted[selected] || []);
+      setAllSchedules(formatted);
+      setMarkedDates(marks);
+      setSelectedDaySchedules(formatted[format(selected, 'yyyy-MM-dd')] || []);
     } catch (error) {
       console.error("일정 조회 실패:", error);
     }
   };
 
-  // 새로고침 플래그가 있을 때 일정 다시 불러오기
+  // 초기 로딩 및 새로고침 처리
   useEffect(() => {
-    if (refresh) {
-      const date = new Date(selectedDate);
-      // 선택된 날짜의 월과 년도로 캘린더 이동
-      setCurrentMonth(date.getMonth() + 1);
-      setCurrentYear(date.getFullYear());
-      // 해당 월의 일정 불러오기
-      fetchSchedules(date.getFullYear(), date.getMonth() + 1);
-      // 선택된 날짜 설정
-      setSelected(selectedDate);
-    }
+    const date = refresh ? getKSTDate() : initialDate;
+    const selectedDateObj = selectedDate ? new Date(selectedDate) : date;
+    setSelected(selectedDateObj);
+    
+    // 선택된 날짜의 월과 년도로 캘린더 이동
+    setCurrentMonth(selectedDateObj.getMonth() + 1);
+    setCurrentYear(selectedDateObj.getFullYear());
+    
+    // 해당 월의 일정을 가져옴
+    fetchSchedules(selectedDateObj.getFullYear(), selectedDateObj.getMonth() + 1);
   }, [refresh, selectedDate]);
 
-  // 월이 변경될 때마다 일정 다시 불러오기
+  // 월 변경 처리
   useEffect(() => {
     fetchSchedules(currentYear, currentMonth);
   }, [currentYear, currentMonth]);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchSchedules(currentYear, currentMonth);
-    }, [currentYear, currentMonth])
-  );
+  const handleDayPress = (day) => {
+    const newSelected = new Date(day.dateString);
+    const newMonth = newSelected.getMonth() + 1;
+    const newYear = newSelected.getFullYear();
+
+    // 선택한 날짜가 현재 표시된 달과 다른 경우
+    if (newMonth !== currentMonth || newYear !== currentYear) {
+      setCurrentMonth(newMonth);
+      setCurrentYear(newYear);
+      // 새로운 달의 일정을 가져옴
+      fetchSchedules(newYear, newMonth).then(() => {
+        setSelected(newSelected);
+        setSelectedDaySchedules(allSchedules[day.dateString] || []);
+      });
+    } else {
+      setSelected(newSelected);
+      setSelectedDaySchedules(allSchedules[day.dateString] || []);
+    }
+  };
 
   const handleMonthChange = (date) => {
     const newMonth = date.getMonth() + 1;
     const newYear = date.getFullYear();
     setCurrentMonth(newMonth);
     setCurrentYear(newYear);
-    // 달이 변경될 때 선택된 날짜와 일정 초기화
     setSelected(null);
     setSelectedDaySchedules([]);
-  };
-
-  const handleDayPress = (day) => {
-    setSelected(day.dateString);
-    setSelectedDaySchedules(allSchedules[day.dateString] || []);
   };
 
   const handleAddSchedule = () => {
     router.push({
       pathname: "/(tabs)/calendar/addSchedule",
-      params: { selectedDate: selected },
+      params: { 
+        selectedDate: selected,
+        currentMonth: currentMonth,
+        currentYear: currentYear
+      },
     });
   };
 
@@ -162,7 +178,6 @@ export default function MyCalendar() {
       </View>
 
       <View style={styles.scheduleWrapper}>
-        {/* <SafeAreaView style={{ flex: 1, backgroundColor: "white" }} /> */}
         <ScheduleComponent
           schedules={selectedDaySchedules}
           onPress={handleSchedulePress}
@@ -187,12 +202,6 @@ const styles = StyleSheet.create({
   scheduleWrapper: {
     flex: 1,
     paddingHorizontal: 10,
-  },
-  scheduleScrollView: {
-    flex: 1,
-  },
-  scheduleContent: {
-    paddingBottom: 60, // 스크롤 뷰의 bottom이 60
   },
   addButton: {
     position: "absolute",

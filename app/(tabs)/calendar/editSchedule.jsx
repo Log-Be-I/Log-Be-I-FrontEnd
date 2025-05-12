@@ -29,7 +29,6 @@ export default function EditSchedule() {
   const scrollViewRef = useRef(null);
   const params = useLocalSearchParams();
   const schedule = JSON.parse(params.schedule);
-  console.log("수정할editSchedule", schedule);
   const [title, setTitle] = useState(schedule.title || schedule.name);
   const [startTime, setStartTime] = useState(new Date(schedule.startDateTime));
   const [endTime, setEndTime] = useState(new Date(schedule.endDateTime));

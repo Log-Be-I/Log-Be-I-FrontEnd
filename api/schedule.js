@@ -52,7 +52,5 @@ export const createAudioSchedule = async (data) => {
 // 당일 일정 조회
 export const getTodaySchedules = async () => {
   const response = await axiosWithToken.get(`/main`);
-  console.log("오늘 일정 : ", response);
-
   return response.data;
 };
