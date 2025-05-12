@@ -33,9 +33,6 @@ const defineConfig = () => ({
     googleServicesFile:
       process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
   },
-  extra: {
-    firebaseServiceAccountFile: "./google-services-firebase.json",
-  },
   web: {
     favicon: "./assets/girogi.png",
   },
@@ -48,7 +45,6 @@ const defineConfig = () => ({
           compileSdkVersion: 35,
           targetSdkVersion: 35,
           buildToolsVersion: "35.0.0",
-          useNextNotificationsApi: true,
         },
       },
     ],
@@ -59,7 +55,6 @@ const defineConfig = () => ({
       },
     ],
     ["@react-native-google-signin/google-signin"],
-    ["expo-notifications"],
   ],
   // scheme: "logbei"
   scheme: "com.taekho.aegirogilogbei",
