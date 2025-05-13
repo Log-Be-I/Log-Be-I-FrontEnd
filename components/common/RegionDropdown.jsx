@@ -14,19 +14,36 @@ export const RegionDropdown = ({
   const [showDistrictDropdown, setShowDistrictDropdown] = useState(false);
 
   const handleCitySelect = (city) => {
+    if (!CityData[city]) {
+      console.error("❌ 잘못된 시가 선택되었습니다.");
+      return;
+    }
     setSelectedCity(city); // 부모 state 업데이트
     setSelectedDistrict(""); // 구 초기화
     setShowCityDropdown(false);
   };
 
   const handleDistrictSelect = (district) => {
+    if (!selectedCity) {
+      console.error("❌ 시를 먼저 선택해야 합니다.");
+      return;
+    }
+
+    if (!CityData[selectedCity]?.includes(district)) {
+      console.error("❌ 잘못된 구/군이 선택되었습니다.");
+      return;
+    }
+
     setSelectedDistrict(district);
     setShowDistrictDropdown(false);
 
-    // if (handleValue) {
-    //   handleValue(`${selectedCity} ${district}`);
-    // }
-  };
+  // ✅ 안전하게 handleValue 실행 (존재할 경우에만)
+  if (typeof handleValue === "function") {
+    handleValue(`${selectedCity} ${district}`);
+  } else {
+    console.log(`✅ 선택된 지역: ${selectedCity} ${district}`);
+  }
+};
 
   const DropdownItem = ({
     value,

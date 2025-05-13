@@ -103,6 +103,13 @@ const SignUp = () => {
     console.log(signUpState);
   }, [signUpState]);
 
+  const handleRegionChange = (text) => {
+    setSignUpState((prevState) => ({
+      ...prevState,  // 기존 값 유지
+      region: text,  // region만 변경
+    }));
+  };
+  
   return (
     <SafeAreaView style={styles.container}>
       <BackgroundSVG style={styles.background} />
@@ -140,7 +147,7 @@ const SignUp = () => {
             />
             <RegionDropdown
               value={signUpState.region}
-              handleValue={(text) => setSignUpState({ region: text })}
+              handleValue={handleRegionChange}
               iconName="pin-outline"
               placeholder="서울특별시"
             />
