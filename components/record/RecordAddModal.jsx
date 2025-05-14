@@ -21,7 +21,7 @@ dayjs.extend(utc);
 export default function RecordAddModal({ visible, onClose, onSave }) {
   const { member } = useMemberStore();
 
-  const getKSTNow = () => dayjs().add(9, "hour");
+  const getKSTNow = () => dayjs();
   const [date, setDate] = useState(getKSTNow());
   const [time, setTime] = useState(getKSTNow().format("HH:mm"));
   const [category, setCategory] = useState(CATEGORIES[0].categoryId);
