@@ -1,45 +1,71 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
-
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Footer from "../../components/common/Footer";
+import Header from "../../components/common/Header";
+import { Slot, useRouter, usePathname } from "expo-router";
+import SidebarSlideOverlay from "../../components/sidebar/SidebarSlideOverlay";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const [currentTab, setCurrentTab] = useState("index");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const path = pathname.split("/")[1] || "index";
+    setCurrentTab(path);
+  }, [pathname]);
+
+  const handleTabPress = (tabName) => {
+    setCurrentTab(tabName);
+    switch (tabName) {
+      case "index":
+        router.push("/");
+        break;
+      case "record":
+        router.push("/record");
+        break;
+      case "calendar":
+        router.push("/calendar");
+        break;
+      case "settings":
+        router.push("/settings");
+        break;
+    }
+  };
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.mainContent}>
+          <Header onMenuPress={() => setIsSidebarOpen(true)} />
+          <View style={styles.content}>
+            <Slot />
+          </View>
+          <Footer currentTab={currentTab} onTabPress={handleTabPress} />
+        </View>
+      </SafeAreaView>
+      <SidebarSlideOverlay
+        visible={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  safeArea: {
+    flex: 1,
+  },
+  mainContent: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+});
